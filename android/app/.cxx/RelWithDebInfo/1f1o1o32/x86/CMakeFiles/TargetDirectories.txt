@@ -1,0 +1,2 @@
+/Users/admin/Work/dpt-ruralroad-mobile-main/dpt-ruralroad-mobile-main/android/app/.cxx/RelWithDebInfo/1f1o1o32/x86/CMakeFiles/edit_cache.dir
+/Users/admin/Work/dpt-ruralroad-mobile-main/dpt-ruralroad-mobile-main/android/app/.cxx/RelWithDebInfo/1f1o1o32/x86/CMakeFiles/rebuild_cache.dir

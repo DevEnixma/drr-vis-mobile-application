@@ -1,0 +1,2 @@
+/Users/admin/vis-mobile-application/android/app/.cxx/Debug/v5j4g5r1/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/admin/vis-mobile-application/android/app/.cxx/Debug/v5j4g5r1/armeabi-v7a/CMakeFiles/rebuild_cache.dir

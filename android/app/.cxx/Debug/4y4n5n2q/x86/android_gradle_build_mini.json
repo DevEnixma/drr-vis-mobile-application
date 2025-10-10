@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/admin/development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/admin/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/admin/Work/dpt-ruralroad-mobile-main/dpt-ruralroad-mobile-main/android/app/.cxx/Debug/4y4n5n2q/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/admin/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/admin/Work/dpt-ruralroad-mobile-main/dpt-ruralroad-mobile-main/android/app/.cxx/Debug/4y4n5n2q/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

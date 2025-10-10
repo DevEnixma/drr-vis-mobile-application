@@ -1,0 +1,23 @@
+# Flutter/Dart build files
+build/
+.dart_tool/
+*.apk
+*.aab
+*.ipa
+*.dill
+*.dSYM/
+
+# iOS
+*.ipa
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Pods/
+
+# Android
+*.apk
+*.aab
+android/app/release/
+
+# macOS
+macos/Flutter/
+*.app
