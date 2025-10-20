@@ -91,9 +91,8 @@ class _StopwatchVisitor extends RecursiveAstVisitor<void> {
   }
 
   bool _isInternal(LibraryElement libraryElement) {
-    return path.isWithin(
+    return libraryElement.identifier.startsWith(
       compilationUnit.session.analysisContext.contextRoot.root.path,
-      libraryElement.source.fullName,
     );
   }
 
@@ -118,7 +117,7 @@ class _StopwatchVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitConstructorName(ConstructorName node) {
-    final Element? element = node.staticElement;
+    final Element? element = node.element;
     if (element is! ConstructorElement) {
       assert(false, '$element of $node is not a ConstructorElement.');
       return;
@@ -136,13 +135,13 @@ class _StopwatchVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitSimpleIdentifier(SimpleIdentifier node) {
-    final bool isAllowed = switch (node.staticElement) {
+    final bool isAllowed = switch (node.element) {
       ExecutableElement(
         returnType: DartType(element: final ClassElement classElement),
         library: final LibraryElement libraryElement,
       ) =>
         _isInternal(libraryElement) || !_implementsStopwatch(classElement),
-      Element() || null => true,
+      _ => true,
     };
     if (isAllowed || _hasTrailingFlutterIgnore(node)) {
       return;
