@@ -16,7 +16,8 @@ class TabbarChartWidget extends StatefulWidget {
   State<TabbarChartWidget> createState() => _TabbarChartWidgetState();
 }
 
-class _TabbarChartWidgetState extends State<TabbarChartWidget> with SingleTickerProviderStateMixin {
+class _TabbarChartWidgetState extends State<TabbarChartWidget>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -39,7 +40,9 @@ class _TabbarChartWidgetState extends State<TabbarChartWidget> with SingleTicker
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return AspectRatio(
-        aspectRatio: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 0.85.h : 1.h,
+        aspectRatio: constraints.maxWidth > 400 && constraints.maxWidth < 600
+            ? 0.85.h
+            : 1.h,
         child: Column(
           children: [
             Padding(
@@ -67,8 +70,13 @@ class _TabbarChartWidgetState extends State<TabbarChartWidget> with SingleTicker
                 children: [
                   Column(
                     children: [
-                      SizedBox(height: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 15.h : 15.h),
-                      Text('ผลการตรวจสอบน้ำหนักทั้งหมด', style: AppTextStyle.title18bold()),
+                      SizedBox(
+                          height: constraints.maxWidth > 400 &&
+                                  constraints.maxWidth < 600
+                              ? 15.h
+                              : 15.h),
+                      Text('ผลการตรวจสอบน้ำหนักทั้งหมด',
+                          style: AppTextStyle.title18bold()),
                       Text(
                         'ผลการดำเนินการจัดตั้ง 7 วันล่าสุด',
                         style: AppTextStyle.title14normal(),
@@ -87,11 +95,17 @@ class _TabbarChartWidgetState extends State<TabbarChartWidget> with SingleTicker
                   ),
                   Column(
                     children: [
-                      SizedBox(height: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 15.h : 15.h),
-                      Text('แผนและผลการจัดตั้งหน่วยชั่งเคลื่อนที่', style: AppTextStyle.title18bold()),
+                      SizedBox(
+                          height: constraints.maxWidth > 400 &&
+                                  constraints.maxWidth < 600
+                              ? 15.h
+                              : 15.h),
+                      Text('แผนและผลการจัดตั้งหน่วยชั่งเคลื่อนที่',
+                          style: AppTextStyle.title18bold()),
                       BlocBuilder<DashboardBloc, DashboardState>(
                         builder: (context, state) {
-                          if (state.dashboardViewSumPlanChartStatus == DashboardViewSumPlanChart.success) {
+                          if (state.dashboardViewSumPlanChartStatus ==
+                              DashboardViewSumPlanChart.success) {
                             return Text(
                               'ประจำปีงบประมาณ ${state.planChartYear ?? ''}',
                               style: AppTextStyle.title14normal(),
@@ -102,7 +116,8 @@ class _TabbarChartWidgetState extends State<TabbarChartWidget> with SingleTicker
                       ),
                       BlocBuilder<DashboardBloc, DashboardState>(
                         builder: (context, state) {
-                          if (state.dashboardViewSumPlanChart != null && state.dashboardViewSumPlanChart!.isNotEmpty) {
+                          if (state.dashboardViewSumPlanChart != null &&
+                              state.dashboardViewSumPlanChart!.isNotEmpty) {
                             return LineChartWidget(
                               items: state.dashboardViewSumPlanChart ?? [],
                             );

@@ -37,22 +37,30 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           final List resultList = response.data["data"];
           var result = resultList.map((e) => CCTVResModel.fromJson(e)).toList();
 
-          emit(state.copyWith(dashboardCCTVStatus: DashboardCCTVStatus.success, cctv_list: result));
+          emit(state.copyWith(
+              dashboardCCTVStatus: DashboardCCTVStatus.success,
+              cctv_list: result));
           return;
         }
 
-        emit(state.copyWith(dashboardCCTVStatus: DashboardCCTVStatus.error, dashboardCCTVError: response.error));
+        emit(state.copyWith(
+            dashboardCCTVStatus: DashboardCCTVStatus.error,
+            dashboardCCTVError: response.error));
       } catch (e) {
-        emit(state.copyWith(dashboardCCTVStatus: DashboardCCTVStatus.error, dashboardCCTVError: e.toString()));
+        emit(state.copyWith(
+            dashboardCCTVStatus: DashboardCCTVStatus.error,
+            dashboardCCTVError: e.toString()));
         print('error ${e.toString()}');
       }
     });
 
     on<DailyWeighedSumVehicleFetchEvent>((event, emit) async {
-      emit(state.copyWith(dashboardSumVehicleStatus: DashboardSumVehicleStatus.loading));
+      emit(state.copyWith(
+          dashboardSumVehicleStatus: DashboardSumVehicleStatus.loading));
 
       try {
-        final response = await dashboardRepo.getDailyWeighedSumVehicle(event.payload.toJson());
+        final response = await dashboardRepo
+            .getDailyWeighedSumVehicle(event.payload.toJson());
         if (response.statusCode >= 200 && response.statusCode < 400) {
           DailyWeighedVehiclesSum result = DailyWeighedVehiclesSum.empty();
 
@@ -60,7 +68,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
             // print("XXXXX: ${response.data['data']['items']}");
             try {
               var matchingItem = response.data['data']['items'].firstWhere(
-                (item) => item['station_type_desc'] == 'หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่',
+                (item) =>
+                    item['station_type_desc'] ==
+                    'หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่',
                 orElse: () => null,
               );
 
@@ -71,25 +81,41 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
               print("Error finding matching item: $e");
             }
           } else {
-            var mockData = {"create_date": "18/10/2566", "station_type": 2, "station_type_eng": "spot", "station_type_desc": "หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่", "total": "1", "over": "0"};
+            var mockData = {
+              "create_date": "18/10/2566",
+              "station_type": 2,
+              "station_type_eng": "spot",
+              "station_type_desc": "หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่",
+              "total": "1",
+              "over": "0"
+            };
             result = DailyWeighedVehiclesSum.fromJson(mockData);
           }
 
-          emit(state.copyWith(dashboardSumVehicleStatus: DashboardSumVehicleStatus.success, daily_weighed_vehicles_sum: result));
+          emit(state.copyWith(
+              dashboardSumVehicleStatus: DashboardSumVehicleStatus.success,
+              daily_weighed_vehicles_sum: result));
           return;
         }
 
-        emit(state.copyWith(dashboardSumVehicleStatus: DashboardSumVehicleStatus.error, dashboardSumVehicleError: response.error));
+        emit(state.copyWith(
+            dashboardSumVehicleStatus: DashboardSumVehicleStatus.error,
+            dashboardSumVehicleError: response.error));
       } catch (e) {
-        emit(state.copyWith(dashboardSumVehicleStatus: DashboardSumVehicleStatus.error, dashboardSumVehicleError: e.toString()));
+        emit(state.copyWith(
+            dashboardSumVehicleStatus: DashboardSumVehicleStatus.error,
+            dashboardSumVehicleError: e.toString()));
         print('error ${e.toString()}');
       }
     });
 
     on<VehicleWeightInspectionFetchEvent>((event, emit) async {
       try {
-        emit(state.copyWith(dashboardVehicleWeightInspectionStatus: DashboardVehicleWeightInspectionStatus.loading));
-        final response = await dashboardRepo.getVehicleWeightInspection(event.payload.toJson());
+        emit(state.copyWith(
+            dashboardVehicleWeightInspectionStatus:
+                DashboardVehicleWeightInspectionStatus.loading));
+        final response = await dashboardRepo
+            .getVehicleWeightInspection(event.payload.toJson());
         if (response.statusCode >= 200 && response.statusCode < 400) {
           List<String> barChartLabel = [];
           List<int> barChartVechicleWeight = [];
@@ -101,16 +127,27 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
             int count = 7;
             late List<VehicleWeightInspectionModel> mockDataList = [];
             for (int i = 0; i < count; i++) {
-              var mockDate = {"create_date": ConvertDate.dateTimeSubtractDays(count - i), "filter_station": "all", "total_title": "รถเข้าชั่ง", "over_title": "รถน้ำหนักเกิน", "total": "0", "over": "0"};
+              var mockDate = {
+                "create_date": ConvertDate.dateTimeSubtractDays(count - i),
+                "filter_station": "all",
+                "total_title": "รถเข้าชั่ง",
+                "over_title": "รถน้ำหนักเกิน",
+                "total": "0",
+                "over": "0"
+              };
               mockDataList.add(VehicleWeightInspectionModel.fromJson(mockDate));
             }
 
             for (int j = 0; j < mockDataList.length; j++) {
-              total_chart_list.add(makeGroupData(j, double.parse(mockDataList[j].total.toString())));
+              total_chart_list.add(makeGroupData(
+                  j, double.parse(mockDataList[j].total.toString())));
 
-              barChartLabel.add(StringHleper.convertDDMMYYYYToDDMM(mockDataList[j].createDate.toString()));
-              barChartVechicleWeight.add(int.parse(mockDataList[j].total!.toString()));
-              barChartVechicleWeightOver.add(int.parse(mockDataList[j].over!.toString()));
+              barChartLabel.add(StringHleper.convertDDMMYYYYToDDMM(
+                  mockDataList[j].createDate.toString()));
+              barChartVechicleWeight
+                  .add(int.parse(mockDataList[j].total!.toString()));
+              barChartVechicleWeightOver
+                  .add(int.parse(mockDataList[j].over!.toString()));
             }
 
             emit(state.copyWith(
@@ -118,14 +155,20 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
             ));
           } else {
             final List resultList = response.data["data"];
-            var result = resultList.map((e) => VehicleWeightInspectionModel.fromJson(e)).toList();
+            var result = resultList
+                .map((e) => VehicleWeightInspectionModel.fromJson(e))
+                .toList();
 
             for (var i = 0; i < result.length; i++) {
-              total_chart_list.add(makeGroupData(i, double.parse(result[i].total.toString())));
+              total_chart_list.add(
+                  makeGroupData(i, double.parse(result[i].total.toString())));
 
-              barChartLabel.add(StringHleper.convertDDMMYYYYToDDMM(result[i].createDate.toString()));
-              barChartVechicleWeight.add(int.parse(result[i].total!.toString()));
-              barChartVechicleWeightOver.add(int.parse(result[i].over!.toString()));
+              barChartLabel.add(StringHleper.convertDDMMYYYYToDDMM(
+                  result[i].createDate.toString()));
+              barChartVechicleWeight
+                  .add(int.parse(result[i].total!.toString()));
+              barChartVechicleWeightOver
+                  .add(int.parse(result[i].over!.toString()));
             }
 
             emit(state.copyWith(
@@ -145,27 +188,37 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           ));
 
           emit(state.copyWith(
-            dashboardVehicleWeightInspectionStatus: DashboardVehicleWeightInspectionStatus.success,
+            dashboardVehicleWeightInspectionStatus:
+                DashboardVehicleWeightInspectionStatus.success,
           ));
           return;
         }
 
-        emit(state.copyWith(dashboardVehicleWeightInspectionStatus: DashboardVehicleWeightInspectionStatus.error, dashboardVehicleWeightInspectionError: response.error));
+        emit(state.copyWith(
+            dashboardVehicleWeightInspectionStatus:
+                DashboardVehicleWeightInspectionStatus.error,
+            dashboardVehicleWeightInspectionError: response.error));
       } catch (e) {
-        emit(state.copyWith(dashboardVehicleWeightInspectionStatus: DashboardVehicleWeightInspectionStatus.error, dashboardVehicleWeightInspectionError: e.toString()));
+        emit(state.copyWith(
+            dashboardVehicleWeightInspectionStatus:
+                DashboardVehicleWeightInspectionStatus.error,
+            dashboardVehicleWeightInspectionError: e.toString()));
       }
     });
 
     on<GetDashboardViewSumPlanChart>((event, emit) async {
       try {
-        emit(state.copyWith(dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.loading));
+        emit(state.copyWith(
+            dashboardViewSumPlanChartStatus:
+                DashboardViewSumPlanChart.loading));
         ;
         final response = await dashboardRepo.getDashboardViewSumPlanChart({});
         if (response.statusCode >= 200 && response.statusCode < 400) {
           emit(state.copyWith(planChartYear: response.data["plan_year"]));
           final List resultList = response.data["item"];
 
-          var result = resultList.map((e) => DashboardSumPlaneRes.fromJson(e)).toList();
+          var result =
+              resultList.map((e) => DashboardSumPlaneRes.fromJson(e)).toList();
 
           emit(state.copyWith(
             dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.success,
@@ -175,10 +228,14 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           return;
         }
 
-        emit(state.copyWith(dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.error, dashboardViewSumPlanChartError: response.error));
+        emit(state.copyWith(
+            dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.error,
+            dashboardViewSumPlanChartError: response.error));
         return;
       } catch (e) {
-        emit(state.copyWith(dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.error, dashboardViewSumPlanChartError: e.toString()));
+        emit(state.copyWith(
+            dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.error,
+            dashboardViewSumPlanChartError: e.toString()));
       }
     });
 
@@ -186,11 +243,13 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       emit(state.copyWith(topFiveRoadStatus: TopFiveRoadStatus.loading));
 
       try {
-        final response = await dashboardRepo.getTopFiveRoad(event.payload.toJson());
+        final response =
+            await dashboardRepo.getTopFiveRoad(event.payload.toJson());
         if (response.statusCode >= 200 && response.statusCode < 400) {
           final List resultList = response.data['data']["items"];
 
-          var result = resultList.map((e) => TopFiveRoadModelRes.fromJson(e)).toList();
+          var result =
+              resultList.map((e) => TopFiveRoadModelRes.fromJson(e)).toList();
 
           emit(state.copyWith(topFiveRoad: result));
 
@@ -199,16 +258,21 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           return;
         }
 
-        emit(state.copyWith(topFiveRoadStatus: TopFiveRoadStatus.error, topFiveRoadError: response.error));
+        emit(state.copyWith(
+            topFiveRoadStatus: TopFiveRoadStatus.error,
+            topFiveRoadError: response.error));
         return;
       } catch (e) {
-        emit(state.copyWith(topFiveRoadStatus: TopFiveRoadStatus.error, topFiveRoadError: e.toString()));
+        emit(state.copyWith(
+            topFiveRoadStatus: TopFiveRoadStatus.error,
+            topFiveRoadError: e.toString()));
       }
     });
 
     on<GetRoadCodeDetailEvent>((event, emit) async {
       try {
-        emit(state.copyWith(roadCodeDetailStatus: RoadCodeDetailStatus.loading));
+        emit(
+            state.copyWith(roadCodeDetailStatus: RoadCodeDetailStatus.loading));
         final response = await dashboardRepo.getRoadCodeDetail(event.roadCode);
         if (response.statusCode >= 200 && response.statusCode < 400) {
           var result = RoadCodeDetailModel.fromJson(response.data['data']);
@@ -229,17 +293,25 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
             result.lonEnd!,
           );
 
-          emit(state.copyWith(roadCodeDetail: result, positionRadiant: double.parse(radiant), positionMiddle: positionMiddle));
+          emit(state.copyWith(
+              roadCodeDetail: result,
+              positionRadiant: double.parse(radiant),
+              positionMiddle: positionMiddle));
 
-          emit(state.copyWith(roadCodeDetailStatus: RoadCodeDetailStatus.success));
+          emit(state.copyWith(
+              roadCodeDetailStatus: RoadCodeDetailStatus.success));
 
           return;
         }
 
-        emit(state.copyWith(roadCodeDetailStatus: RoadCodeDetailStatus.error, roadCodeDetailError: response.error));
+        emit(state.copyWith(
+            roadCodeDetailStatus: RoadCodeDetailStatus.error,
+            roadCodeDetailError: response.error));
         return;
       } catch (e) {
-        emit(state.copyWith(roadCodeDetailStatus: RoadCodeDetailStatus.error, roadCodeDetailError: e.toString()));
+        emit(state.copyWith(
+            roadCodeDetailStatus: RoadCodeDetailStatus.error,
+            roadCodeDetailError: e.toString()));
       }
     });
 
@@ -251,11 +323,13 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           emit(state.copyWith(roadCodeCarLoadMore: true));
         }
 
-        final response = await dashboardRepo.getRoadCodeCar(event.payload.toJson());
+        final response =
+            await dashboardRepo.getRoadCodeCar(event.payload.toJson());
         if (response.statusCode >= 200 && response.statusCode < 400) {
           final List resultList = response.data['data'];
 
-          final result = resultList.map((e) => RoadCodeCarModelRes.fromJson(e)).toList();
+          final result =
+              resultList.map((e) => RoadCodeCarModelRes.fromJson(e)).toList();
           if (event.payload.page != 1) {
             state.roadCodeCar!.addAll(result);
             emit(state.copyWith(roadCodeCar: state.roadCodeCar));
@@ -269,10 +343,14 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           return;
         }
 
-        emit(state.copyWith(roadCodeCarStatus: RoadCodeCarStatus.error, roadCodeCarError: response.error));
+        emit(state.copyWith(
+            roadCodeCarStatus: RoadCodeCarStatus.error,
+            roadCodeCarError: response.error));
         return;
       } catch (e) {
-        emit(state.copyWith(roadCodeCarStatus: RoadCodeCarStatus.error, roadCodeCarError: e.toString()));
+        emit(state.copyWith(
+            roadCodeCarStatus: RoadCodeCarStatus.error,
+            roadCodeCarError: e.toString()));
 
         return;
       }

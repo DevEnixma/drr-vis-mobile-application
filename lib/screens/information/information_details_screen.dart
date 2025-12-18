@@ -18,7 +18,8 @@ class InformationDetailsScreen extends StatefulWidget {
   final NewsModelRes item;
 
   @override
-  State<InformationDetailsScreen> createState() => _InformationDetailsScreenState();
+  State<InformationDetailsScreen> createState() =>
+      _InformationDetailsScreenState();
 }
 
 class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
@@ -36,21 +37,25 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
   void initScreen() async {
     if (widget.item.fileAttached1 != null && widget.item.fileAttached1 != '') {
       isFile += 1;
-      files.add(FileAttached(url: widget.item.fileAttached1.toString(), name: 'เอกสารตัวอย่างเรื่องการตรวจสอบ.pdf'));
+      files.add(FileAttached(
+          url: widget.item.fileAttached1.toString(), name: 'เอกสารแนบ 1.pdf'));
     }
     if (widget.item.fileAttached2 != null && widget.item.fileAttached2 != '') {
       isFile += 1;
-      files.add(FileAttached(url: widget.item.fileAttached2.toString(), name: 'ระบบที่ใช้ตรวจสอบ.pdf'));
+      files.add(FileAttached(
+          url: widget.item.fileAttached2.toString(), name: 'เอกสารแนบ 2.pdf'));
     }
     if (widget.item.fileAttached3 != null && widget.item.fileAttached3 != '') {
       isFile += 1;
-      files.add(FileAttached(url: widget.item.fileAttached3.toString(), name: 'ระบบที่ใช้ตรวจสอบ.pdf'));
+      files.add(FileAttached(
+          url: widget.item.fileAttached3.toString(), name: 'เอกสารแนบ 3.pdf'));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -67,7 +72,8 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
         title: Text(
           'ข่าวสาร',
           textAlign: TextAlign.center,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.surface),
         ),
       ),
       body: Stack(
@@ -97,7 +103,8 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
                       child: Image.network(
                         widget.item.newsImage!,
                         fit: BoxFit.cover,
-                        errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                        errorBuilder: (BuildContext context, Object error,
+                            StackTrace? stackTrace) {
                           return Image.asset(
                             'assets/images/app_logo.png',
                             fit: BoxFit.cover,
@@ -107,24 +114,25 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
                     ),
                   ),
                   SizedBox(height: 15),
-                  Row(
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.item.newsHeader ?? '-',
-                            style: AppTextStyle.title14normal(),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Divider(
-                    height: 25,
-                  ),
-                  HtmlFullcontentWidget(item: widget.item.newsContent.toString()),
+                  // Row(
+                  //   children: [
+                  //     Column(
+                  //       mainAxisAlignment: MainAxisAlignment.start,
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       children: [
+                  //         Text(
+                  //           widget.item.newsHeader ?? '-',
+                  //           style: AppTextStyle.title14normal(),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ],
+                  // ),
+                  // Divider(
+                  //   height: 25,
+                  // ),
+                  HtmlFullcontentWidget(
+                      item: widget.item.newsContent.toString()),
                   SizedBox(
                     height: 15.h,
                   ),
@@ -133,22 +141,32 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('ไฟล์เอกสารที่แนบ', style: AppTextStyle.title16bold()),
-                        Text('${files.length} รายการ', style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.onTertiary)),
+                        Text('ไฟล์เอกสารที่แนบ',
+                            style: AppTextStyle.title16bold()),
+                        Text('${files.length} รายการ',
+                            style: AppTextStyle.title16bold(
+                                color:
+                                    Theme.of(context).colorScheme.onTertiary)),
                       ],
                     ),
                   ),
                   for (var item in files)
                     GestureDetector(
                       onTap: () {
-                        Routes.gotoPreviewFile(context: context, url: item.url.toString(), nameFile: item.name.toString());
+                        Routes.gotoPreviewFile(
+                            context: context,
+                            url: item.url.toString(),
+                            nameFile: item.name.toString());
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 12.h),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 10.h, horizontal: 12.h),
                         margin: EdgeInsets.symmetric(vertical: 5.h),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4.r),
-                          border: Border.all(width: 1, color: Theme.of(context).colorScheme.primary),
+                          border: Border.all(
+                              width: 1,
+                              color: Theme.of(context).colorScheme.primary),
                         ),
                         child: Row(
                           children: [
@@ -156,7 +174,8 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
                             SizedBox(width: 5.h),
                             Text(
                               item.name.toString(),
-                              style: AppTextStyle.title14normal(color: Theme.of(context).colorScheme.primary),
+                              style: AppTextStyle.title14normal(
+                                  color: Theme.of(context).colorScheme.primary),
                             ),
                           ],
                         ),
@@ -178,8 +197,9 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   maxLines: 2,
-                  'สำนัก 4 (เพชรบุรี) ตรวจสอบเพื่อสอบทาน       \n(Spot Check) ตามระบบ QCS',
-                  style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.surface),
+                  widget.item.newsHeader ?? '-',
+                  style: AppTextStyle.title16bold(
+                      color: Theme.of(context).colorScheme.surface),
                 ),
               ),
             ],
