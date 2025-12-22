@@ -49,7 +49,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     scrollController = ScrollController();
 
     scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
         loadMore();
       }
     });
@@ -75,8 +76,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void getWeightUnits() {
     context.read<WeightUnitBloc>().add(
           GetWeightUnitsEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeSubstract(startDate, 7)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeSubstract(endDate, 1)),
+            start_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeSubstract(startDate, 7)),
+            end_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeSubstract(endDate, 1)),
             page: page,
             pageSize: pageSize,
             search: search,
@@ -124,7 +127,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -132,17 +136,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
         centerTitle: true,
         title: Text(
           widget.title,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.surface),
         ),
         actions: [
           GestureDetector(
             onTap: () {
-              accessToken != null && accessToken != '' ? Routes.gotoProfile(context) : Navigator.pushNamed(context, RoutesName.loginScreen);
+              accessToken != null && accessToken != ''
+                  ? Routes.gotoProfile(context)
+                  : Navigator.pushNamed(context, RoutesName.loginScreen);
             },
             child: Row(
               children: [
                 SvgPicture.asset(
-                  accessToken != null && accessToken != '' ? 'assets/svg/ph_sign-out-bold.svg' : 'assets/svg/iconamoon_profile-fill.svg',
+                  accessToken != null && accessToken != ''
+                      ? 'assets/svg/ph_sign-out-bold.svg'
+                      : 'assets/svg/iconamoon_profile-fill.svg',
                   color: Theme.of(context).colorScheme.surface,
                   width: 22.h,
                 ),
@@ -160,7 +169,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.onTertiaryContainer,
                       borderRadius: BorderRadius.circular(30.r),
@@ -178,7 +188,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             decoration: InputDecoration(
                               isDense: true,
                               hintText: 'ค้นหาสายทาง',
-                              hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
+                              hintStyle: AppTextStyle.title16normal(
+                                  color: ColorApps.colorGray),
                               border: InputBorder.none,
                             ),
                             style: AppTextStyle.title16normal(),
@@ -196,7 +207,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('รายการทั้งหมด', style: AppTextStyle.title16bold()),
-                  Text('${StringHleper.convertFormatYearTh(ConvertDate.dateTimeSubstract(startDate, 7), 'dd MMMM')} - ${StringHleper.convertFormatYearTh(ConvertDate.dateTimeSubstract(startDate, 1), 'dd MMMM yyyy')}', style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.onTertiary, fontSize: 12)),
+                  Text(
+                      '${StringHleper.convertFormatYearTh(ConvertDate.dateTimeSubstract(startDate, 7), 'dd MMMM')} - ${StringHleper.convertFormatYearTh(ConvertDate.dateTimeSubstract(startDate, 1), 'dd MMMM yyyy')}',
+                      style: AppTextStyle.title16bold(
+                          color: Theme.of(context).colorScheme.onTertiary,
+                          fontSize: 12)),
                 ],
               ),
             ),
@@ -216,12 +231,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           controller: scrollController,
                           padding: EdgeInsets.zero,
                           separatorBuilder: (context, index) => Divider(
-                            color: Theme.of(context).colorScheme.tertiaryContainer, // You can change the color or thickness of the divider here
+                            color: Theme.of(context)
+                                .colorScheme
+                                .tertiaryContainer, // You can change the color or thickness of the divider here
                             height: 1, // Height between items
                             indent: 20,
                             endIndent: 20,
                           ),
-                          itemCount: state.weightUnits!.length, // Number of items in the list
+                          itemCount: state.weightUnits!
+                              .length, // Number of items in the list
                           itemBuilder: (context, index) {
                             return ItemListWidget(
                               item: state.weightUnits![index],
@@ -232,7 +250,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     }
                   }
 
-                  if (state.weightUnitsStatus == WeightUnitStatus.error && state.weightUnitsError != '') {
+                  if (state.weightUnitsStatus == WeightUnitStatus.error &&
+                      state.weightUnitsError != '') {
                     showSnackbarBottom(context, state.weightUnitsError!);
                   }
 
@@ -240,7 +259,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 },
               ),
             ),
-            BlocBuilder<WeightUnitBloc, WeightUnitState>(builder: (context, state) {
+            BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                builder: (context, state) {
               if (state.weightUnitsLoadmore == true) {
                 return const Center(child: CustomLoadingPagination());
               }

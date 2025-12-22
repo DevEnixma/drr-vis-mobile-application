@@ -20,16 +20,19 @@ import '../../screens/weight_unit_screen/weight_unit_detail_screen/widgets/unit_
 import '../../screens/widgets/error_screen.dart';
 import '../../utils/widgets/custom_preview_file.dart';
 import 'routes_constant.dart';
+import '../../screens/arrest/arrest_screen.dart';
 
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case RoutesName.splashScreen:
-        return MaterialPageRoute(builder: (context) => const AfterSplashScreen());
+        return MaterialPageRoute(
+            builder: (context) => const AfterSplashScreen());
       case RoutesName.loginScreen:
         return MaterialPageRoute(builder: (context) => const LoginScreen());
       case RoutesName.dashboardScreen:
-        return MaterialPageRoute(builder: (context) => BottomNavigationBarScreen(index_menu: 2));
+        return MaterialPageRoute(
+            builder: (context) => BottomNavigationBarScreen(index_menu: 2));
       default:
         return MaterialPageRoute(builder: (context) {
           return Scaffold(
@@ -50,7 +53,9 @@ class Routes {
     print('Routes gotoBottomNavigation');
     await Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => BottomNavigationBarScreen(index_menu: index_menu)),
+      MaterialPageRoute(
+          builder: (context) =>
+              BottomNavigationBarScreen(index_menu: index_menu)),
       (Route<dynamic> route) => false,
     );
   }
@@ -58,7 +63,9 @@ class Routes {
   static Future<dynamic> gotoBottomNavigationRe(context, int index_menu) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => BottomNavigationBarScreen(index_menu: index_menu)),
+      MaterialPageRoute(
+          builder: (context) =>
+              BottomNavigationBarScreen(index_menu: index_menu)),
     );
     return data;
   }
@@ -66,7 +73,8 @@ class Routes {
   static Future<dynamic> gotoOpenStreetMap(context, String title) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => OpenStreetMapScreen(title: title)),
+      MaterialPageRoute(
+          builder: (context) => OpenStreetMapScreen(title: title)),
     );
     return data;
   }
@@ -95,15 +103,18 @@ class Routes {
     return data;
   }
 
-  static Future<dynamic> gotoWeightUnitDetailsScreen(context, String tid) async {
+  static Future<dynamic> gotoWeightUnitDetailsScreen(
+      context, String tid) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => WeightUnitDetailsScreen(tid: tid)),
+      MaterialPageRoute(
+          builder: (context) => WeightUnitDetailsScreen(tid: tid)),
     );
     return data;
   }
 
-  static Future<dynamic> gotoUnitDetailsWeighingTrucks(context, String tid, String tdId, bool isEdit) async {
+  static Future<dynamic> gotoUnitDetailsWeighingTrucks(
+      context, String tid, String tdId, bool isEdit) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -125,7 +136,8 @@ class Routes {
     return data;
   }
 
-  static Future<dynamic> gotoArrestFormScreen({context, required MobileCarModel item}) async {
+  static Future<dynamic> gotoArrestFormScreen(
+      {context, required MobileCarModel item}) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ArrestFormScreen(item: item)),
@@ -133,10 +145,13 @@ class Routes {
     return data;
   }
 
-  static Future<dynamic> gotoPreviewFile({context, required String url, nameFile}) async {
+  static Future<dynamic> gotoPreviewFile(
+      {context, required String url, nameFile}) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CustomPreviewFile(url: url, nameFile: nameFile)),
+      MaterialPageRoute(
+          builder: (context) =>
+              CustomPreviewFile(url: url, nameFile: nameFile)),
     );
     return data;
   }
@@ -149,15 +164,18 @@ class Routes {
     return data;
   }
 
-  static Future<dynamic> gotoInformationDetails(context, NewsModelRes item) async {
+  static Future<dynamic> gotoInformationDetails(
+      context, NewsModelRes item) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => InformationDetailsScreen(item: item)),
+      MaterialPageRoute(
+          builder: (context) => InformationDetailsScreen(item: item)),
     );
     return data;
   }
 
-  static Future<dynamic> gotoHistoryDetails(context, MobileMasterModel tid) async {
+  static Future<dynamic> gotoHistoryDetails(
+      context, MobileMasterModel tid) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => HistoryDetailsScreen(item: tid)),
@@ -165,7 +183,8 @@ class Routes {
     return data;
   }
 
-  static Future<dynamic> gotoHistoryDetailsView(context, String tid, String tdId) async {
+  static Future<dynamic> gotoHistoryDetailsView(
+      context, String tid, String tdId) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -174,6 +193,16 @@ class Routes {
           tdId: tdId,
         ),
       ),
+    );
+    return data;
+  }
+
+  static Future<dynamic> gotoArrestScreen(
+      {required BuildContext context}) async {
+    Map<String, dynamic>? data = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const ArrestScreen(title: 'การจับกุม')),
     );
     return data;
   }

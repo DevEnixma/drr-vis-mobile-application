@@ -33,7 +33,8 @@ class HistoryDetailsScreen extends StatefulWidget {
   State<HistoryDetailsScreen> createState() => _HistoryDetailsScreenState();
 }
 
-class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with SingleTickerProviderStateMixin {
+class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
+    with SingleTickerProviderStateMixin {
   ScrollController? _scrollController;
   late TabController _tabController;
   final FocusNode focusNode = FocusNode();
@@ -77,7 +78,9 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
   }
 
   void getDetailWeightUnit() {
-    context.read<WeightUnitBloc>().add(GetWeightUnitDetail(widget.item.tID.toString()));
+    context
+        .read<WeightUnitBloc>()
+        .add(GetWeightUnitDetail(widget.item.tID.toString()));
   }
 
   void getMobileCarList() {
@@ -132,13 +135,15 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: LayoutBuilder(builder: (context, constraints) {
         print('maxWidth ${constraints.maxWidth}');
         print('maxHeight ${constraints.maxHeight}');
-        print('Width is between 400 and 600 ${constraints.maxWidth > 400 && constraints.maxWidth < 600}');
+        print(
+            'Width is between 400 and 600 ${constraints.maxWidth > 400 && constraints.maxWidth < 600}');
         return CustomScrollView(
           controller: _scrollController,
           slivers: <Widget>[
@@ -162,10 +167,14 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                       alignment: Alignment.centerLeft,
                       child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
                         builder: (context, state) {
-                          if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                          if (state.weightUnitDetailStatus ==
+                                  WeightUnitDetailStatus.success &&
+                              state.weightUnitDetail != null) {
                             return Text(
-                              StringHleper.checkString(state.weightUnitDetail!.wayId),
-                              style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.surface),
+                              StringHleper.checkString(
+                                  state.weightUnitDetail!.wayId),
+                              style: AppTextStyle.title16bold(
+                                  color: Theme.of(context).colorScheme.surface),
                             );
                           }
                           return SizedBox.shrink();
@@ -173,7 +182,10 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                       ),
                     ),
               backgroundColor: Theme.of(context).colorScheme.onPrimary,
-              expandedHeight: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 200.h : 250.h,
+              expandedHeight:
+                  constraints.maxWidth > 400 && constraints.maxWidth < 600
+                      ? 200.h
+                      : 250.h,
               toolbarHeight: constraints.maxWidth > 600 ? 70.h : 52.h,
               floating: false,
               pinned: true,
@@ -199,14 +211,20 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                       children: [
                         SvgPicture.asset(
                           'assets/svg/iconamoon_news-fill.svg',
-                          color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                          color: _tabController.index == 0
+                              ? Theme.of(context).colorScheme.surface
+                              : Theme.of(context).colorScheme.onSurface,
                           width: 20.h,
                         ),
                         SizedBox(width: 5.h),
                         Text(
                           'รถเข้าชั่ง (${widget.item.total})',
                           style: TextStyle(
-                            color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                            color: _tabController.index == 0
+                                ? Theme.of(context).colorScheme.surface
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface, // Change color on select
                           ),
                         ),
                       ],
@@ -217,14 +235,22 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                       children: [
                         SvgPicture.asset(
                           'assets/svg/truck_icon.svg',
-                          color: _tabController.index == 1 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                          color: _tabController.index == 1
+                              ? Theme.of(context).colorScheme.surface
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface, // Change color on select
                           width: 22.h,
                         ),
                         SizedBox(width: 5.h),
                         Text(
                           'รถน้ำหนักเกิน (${widget.item.totalOver})',
                           style: TextStyle(
-                            color: _tabController.index == 1 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                            color: _tabController.index == 1
+                                ? Theme.of(context).colorScheme.surface
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface, // Change color on select
                           ),
                         ),
                       ],
@@ -249,10 +275,12 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                 IconButton(
                                   icon: Icon(
                                     Icons.arrow_back_rounded,
-                                    color: Theme.of(context).colorScheme.surface,
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
                                   ),
                                   onPressed: () {
-                                    Navigator.popUntil(context, (route) => route.isFirst);
+                                    Navigator.popUntil(
+                                        context, (route) => route.isFirst);
                                   },
                                 ),
                               ],
@@ -267,11 +295,16 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
 
                                   BlocBuilder<WeightUnitBloc, WeightUnitState>(
                                     builder: (context, state) {
-                                      if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                                      if (state.weightUnitDetailStatus ==
+                                              WeightUnitDetailStatus.success &&
+                                          state.weightUnitDetail != null) {
                                         return Text(
-                                          StringHleper.checkString(state.weightUnitDetail!.wayId),
+                                          StringHleper.checkString(
+                                              state.weightUnitDetail!.wayId),
                                           style: AppTextStyle.title20bold(
-                                            color: Theme.of(context).colorScheme.surface,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surface,
                                           ),
                                         );
                                       }
@@ -282,18 +315,27 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                     children: [
                                       Text(
                                         'จัดตั้งโดย:',
-                                        style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.surface),
+                                        style: AppTextStyle.title16bold(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surface),
                                       ),
                                       SizedBox(
                                         width: 6,
                                       ),
-                                      BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                                      BlocBuilder<WeightUnitBloc,
+                                          WeightUnitState>(
                                         builder: (context, state) {
-                                          if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                                          if (state.weightUnitDetailStatus ==
+                                                  WeightUnitDetailStatus
+                                                      .success &&
+                                              state.weightUnitDetail != null) {
                                             return Text(
                                               '${StringHleper.checkString(state.weightUnitDetail!.firstName)} ${StringHleper.checkString(state.weightUnitDetail!.lastName)}',
                                               style: AppTextStyle.title16normal(
-                                                color: Theme.of(context).colorScheme.surface,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .surface,
                                               ),
                                             );
                                           }
@@ -306,7 +348,10 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                     children: [
                                       Text(
                                         'กม.ที่:',
-                                        style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                                        style: AppTextStyle.title16normal(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surface),
                                       ),
                                       SizedBox(
                                         width: 6,
@@ -314,17 +359,34 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                       Container(
                                         // height: 30,
                                         decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.surface.withOpacity(0.3),
-                                          borderRadius: BorderRadius.circular(32.r),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .surface
+                                              .withOpacity(0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(32.r),
                                         ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 1),
                                         child: Center(
-                                          child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                                          child: BlocBuilder<WeightUnitBloc,
+                                              WeightUnitState>(
                                             builder: (context, state) {
-                                              if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                                              if (state.weightUnitDetailStatus ==
+                                                      WeightUnitDetailStatus
+                                                          .success &&
+                                                  state.weightUnitDetail !=
+                                                      null) {
                                                 return Text(
-                                                  StringHleper.checkString(state.weightUnitDetail!.kmFrom),
-                                                  style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                                                  StringHleper.checkString(state
+                                                      .weightUnitDetail!
+                                                      .kmFrom),
+                                                  style: AppTextStyle
+                                                      .title16normal(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .surface),
                                                 );
                                               }
                                               return SizedBox.shrink();
@@ -337,7 +399,10 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                       ),
                                       Text(
                                         'ถึง',
-                                        style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                                        style: AppTextStyle.title16normal(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surface),
                                       ),
                                       SizedBox(
                                         width: 6,
@@ -345,17 +410,33 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                       Container(
                                         // height: 30,
                                         decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.surface.withOpacity(0.3),
-                                          borderRadius: BorderRadius.circular(32.r),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .surface
+                                              .withOpacity(0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(32.r),
                                         ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 1),
                                         child: Center(
-                                          child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                                          child: BlocBuilder<WeightUnitBloc,
+                                              WeightUnitState>(
                                             builder: (context, state) {
-                                              if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                                              if (state.weightUnitDetailStatus ==
+                                                      WeightUnitDetailStatus
+                                                          .success &&
+                                                  state.weightUnitDetail !=
+                                                      null) {
                                                 return Text(
-                                                  StringHleper.checkString(state.weightUnitDetail!.kmTo),
-                                                  style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                                                  StringHleper.checkString(state
+                                                      .weightUnitDetail!.kmTo),
+                                                  style: AppTextStyle
+                                                      .title16normal(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .surface),
                                                 );
                                               }
                                               return SizedBox.shrink();
@@ -369,7 +450,9 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                     height: 10,
                                   ),
                                   Divider(
-                                    color: Theme.of(context).colorScheme.tertiaryContainer, // You can change the color or thickness of the divider here
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .tertiaryContainer, // You can change the color or thickness of the divider here
                                     height: 1, // Height between items
                                   ),
                                   SizedBox(
@@ -381,17 +464,31 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                         flex: 2,
                                         child: Text(
                                           'ผู้ร่วมบูรณาการ',
-                                          style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.surface),
+                                          style: AppTextStyle.title16bold(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .surface),
                                         ),
                                       ),
                                       Expanded(
                                         flex: 3,
-                                        child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                                        child: BlocBuilder<WeightUnitBloc,
+                                            WeightUnitState>(
                                           builder: (context, state) {
-                                            if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                                            if (state.weightUnitDetailStatus ==
+                                                    WeightUnitDetailStatus
+                                                        .success &&
+                                                state.weightUnitDetail !=
+                                                    null) {
                                               return Text(
-                                                StringHleper.checkString(state.weightUnitDetail!.collaboration),
-                                                style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                                                StringHleper.checkString(state
+                                                    .weightUnitDetail!
+                                                    .collaboration),
+                                                style:
+                                                    AppTextStyle.title16normal(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .surface),
                                               );
                                             }
                                             return SizedBox.shrink();
@@ -406,17 +503,29 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                         flex: 2,
                                         child: Text(
                                           'ที่อยู่',
-                                          style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.surface),
+                                          style: AppTextStyle.title16bold(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .surface),
                                         ),
                                       ),
                                       Expanded(
                                         flex: 3,
-                                        child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                                        child: BlocBuilder<WeightUnitBloc,
+                                            WeightUnitState>(
                                           builder: (context, state) {
-                                            if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                                            if (state.weightUnitDetailStatus ==
+                                                    WeightUnitDetailStatus
+                                                        .success &&
+                                                state.weightUnitDetail !=
+                                                    null) {
                                               return Text(
                                                 '${StringHleper.checkString(state.weightUnitDetail!.subDistrict)}, ${StringHleper.checkString(state.weightUnitDetail!.district)}, ${StringHleper.checkString(state.weightUnitDetail!.province)}, ${StringHleper.checkString(state.weightUnitDetail!.province)}',
-                                                style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                                                style:
+                                                    AppTextStyle.title16normal(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .surface),
                                               );
                                             }
                                             return SizedBox.shrink();
@@ -426,7 +535,10 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                                     ],
                                   ),
 
-                                  constraints.maxWidth > 400 && constraints.maxWidth < 600 ? SizedBox(height: 30.h) : SizedBox(height: 40.h),
+                                  constraints.maxWidth > 400 &&
+                                          constraints.maxWidth < 600
+                                      ? SizedBox(height: 30.h)
+                                      : SizedBox(height: 40.h),
                                 ],
                               ),
                             ),
@@ -486,7 +598,8 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                     decoration: InputDecoration(
                       isDense: true,
                       hintText: 'ค้นหาสายทางss',
-                      hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
+                      hintStyle: AppTextStyle.title16normal(
+                          color: ColorApps.colorGray),
                       border: InputBorder.none,
                     ),
                   ),
@@ -497,15 +610,19 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
           Expanded(
             child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
               builder: (context, state) {
-                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.loading) {
+                if (state.weightUnitCarsStatus ==
+                    WeightUnitCarsStatus.loading) {
                   return const Center(child: CustomLoadingPagination());
                 }
-                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
+                if (state.weightUnitCarsStatus ==
+                    WeightUnitCarsStatus.success) {
                   if (state.weightUnitsCars!.isNotEmpty) {
                     return ListView.separated(
                       padding: EdgeInsets.zero,
                       separatorBuilder: (context, index) => Divider(
-                        color: Theme.of(context).colorScheme.tertiaryContainer, // You can change the color or thickness of the divider here
+                        color: Theme.of(context)
+                            .colorScheme
+                            .tertiaryContainer, // You can change the color or thickness of the divider here
                         height: 1, // Height between items
                         indent: 20,
                         endIndent: 20,
@@ -515,12 +632,15 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                         final carItem = state.weightUnitsCars![index];
                         return GestureDetector(
                           onTap: () {
-                            final isLoggedIn = accessToken != null && accessToken!.isNotEmpty;
+                            final isLoggedIn =
+                                accessToken != null && accessToken!.isNotEmpty;
 
                             if (isLoggedIn) {
-                              Routes.gotoHistoryDetailsView(context, carItem.tId!.toString(), carItem.tdId!);
+                              Routes.gotoHistoryDetailsView(context,
+                                  carItem.tId!.toString(), carItem.tdId!);
                             } else {
-                              Navigator.pushNamed(context, RoutesName.loginScreen);
+                              Navigator.pushNamed(
+                                  context, RoutesName.loginScreen);
                             }
                           },
                           child: CarItemWidget(
@@ -530,11 +650,14 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                       },
                     );
                   } else {
-                    return EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
+                    return EmptyWidget(
+                        title: 'ไม่พบรายการรถเข้าชั่ง',
+                        label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
                   }
                 }
 
-                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error && state.weightUnitsError != '') {
+                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error &&
+                    state.weightUnitsError != '') {
                   showSnackbarBottom(context, state.weightUnitsError!);
                 }
 
@@ -582,7 +705,8 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                       decoration: InputDecoration(
                         isDense: true,
                         hintText: 'ค้นหาทะเบียนรถบรรทุก',
-                        hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
+                        hintStyle: AppTextStyle.title16normal(
+                            color: ColorApps.colorGray),
                         border: InputBorder.none,
                       ),
                       style: AppTextStyle.title16normal(),
@@ -594,15 +718,18 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
             Expanded(
               child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
                 builder: (context, state) {
-                  if (state.weightUnitCarsStatus == WeightUnitCarsStatus.loading) {
+                  if (state.weightUnitCarsStatus ==
+                      WeightUnitCarsStatus.loading) {
                     return const Center(child: CustomLoadingPagination());
                   }
-                  if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
+                  if (state.weightUnitCarsStatus ==
+                      WeightUnitCarsStatus.success) {
                     if (state.weightUnitsCars!.isNotEmpty) {
                       return ListView.separated(
                         padding: EdgeInsets.zero,
                         separatorBuilder: (context, index) => Divider(
-                          color: Theme.of(context).colorScheme.tertiaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.tertiaryContainer,
                           height: 1,
                           indent: 20,
                           endIndent: 20,
@@ -612,13 +739,16 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                           final carItem = state.weightUnitsCars![index];
                           return GestureDetector(
                             onTap: () {
-                              final isLoggedIn = accessToken != null && accessToken!.isNotEmpty;
+                              final isLoggedIn = accessToken != null &&
+                                  accessToken!.isNotEmpty;
 
                               if (isLoggedIn) {
                                 // Routes.gotoUnitDetailsWeighingTrucks(context, carItem.tId!.toString(), carItem.tdId!, false);
-                                Routes.gotoHistoryDetailsView(context, carItem.tId!.toString(), carItem.tdId!);
+                                Routes.gotoHistoryDetailsView(context,
+                                    carItem.tId!.toString(), carItem.tdId!);
                               } else {
-                                Navigator.pushNamed(context, RoutesName.loginScreen);
+                                Navigator.pushNamed(
+                                    context, RoutesName.loginScreen);
                               }
                             },
                             child: CarItemWidget(item: carItem),
@@ -634,11 +764,15 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen> with Single
                         },
                       );
                     } else {
-                      return EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
+                      return EmptyWidget(
+                          title: 'ไม่พบรายการรถเข้าชั่ง',
+                          label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
                     }
                   }
 
-                  if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error && state.weightUnitsError != '') {
+                  if (state.weightUnitCarsStatus ==
+                          WeightUnitCarsStatus.error &&
+                      state.weightUnitsError != '') {
                     showSnackbarBottom(context, state.weightUnitsError!);
                   }
 

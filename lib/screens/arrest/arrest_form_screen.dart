@@ -61,9 +61,13 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
 
   void onSubmitForm() {
     if (widget.item.arrestId != null) {
-      context.read<ArrestBloc>().add(PutArrestFormEvent(int.parse(widget.item.tdId!)));
+      context
+          .read<ArrestBloc>()
+          .add(PutArrestFormEvent(int.parse(widget.item.tdId!)));
     } else {
-      context.read<ArrestBloc>().add(PostArrestFormEvent(int.parse(widget.item.tdId!)));
+      context
+          .read<ArrestBloc>()
+          .add(PostArrestFormEvent(int.parse(widget.item.tdId!)));
     }
   }
 
@@ -84,7 +88,9 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
   }
 
   void updateIsArrestStatus(String arrestFormPostId) {
-    context.read<WeightUnitBloc>().add(UpdateIsArrestUnitsEvent(widget.item.tdId!, arrestFormPostId));
+    context
+        .read<WeightUnitBloc>()
+        .add(UpdateIsArrestUnitsEvent(widget.item.tdId!, arrestFormPostId));
   }
 
   void onBackPage(String arrestFormPostId) {
@@ -101,13 +107,19 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
     setState(() {
       if (selectedStep == 0) {
         isSelectedStep2 = true;
-        pageController.animateToPage(1, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+        pageController.animateToPage(1,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut);
       } else if (selectedStep == 1) {
         isSelectedStep3 = true;
-        pageController.animateToPage(2, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+        pageController.animateToPage(2,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut);
       } else if (selectedStep == 2) {
         isSelectedStep4 = true;
-        pageController.animateToPage(3, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+        pageController.animateToPage(3,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut);
       } else if (selectedStep == 3) {
         showCustomBottomSheetConfirm(context);
       }
@@ -120,13 +132,19 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
         _showCustomBottomSheetConfirmBack(context);
       } else if (selectedStep == 1) {
         isSelectedStep2 = false;
-        pageController.animateToPage(0, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+        pageController.animateToPage(0,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut);
       } else if (selectedStep == 2) {
         isSelectedStep3 = false;
-        pageController.animateToPage(1, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+        pageController.animateToPage(1,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut);
       } else if (selectedStep == 3) {
         isSelectedStep4 = false;
-        pageController.animateToPage(2, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+        pageController.animateToPage(2,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut);
       }
     });
   }
@@ -153,7 +171,8 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
         title: Text(
           'การจับกุม',
           textAlign: TextAlign.center,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.surface),
         ),
       ),
       body: Stack(
@@ -176,7 +195,8 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                   ),
                 );
               }
-              if (state.arrestFormStatus == ArrestFormStatus.error && state.arrestError != '') {
+              if (state.arrestFormStatus == ArrestFormStatus.error &&
+                  state.arrestError != '') {
                 showSnackbarBottom(context, state.arrestError);
               }
             },
@@ -193,7 +213,8 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                   alignment: Alignment.center,
                   child: Text(
                     'รายละเอียดรถบรรทุก ${StringHleper.checkString(item.lpHeadNo)} ${StringHleper.checkString(item.lpHeadProvinceName)}',
-                    style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.surface),
+                    style: AppTextStyle.title16normal(
+                        color: Theme.of(context).colorScheme.surface),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -208,16 +229,48 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                child: (isSelectedStep1) ? _buildselectedStep(context, textStep: '1', textUnder: 'ข้อมูลคนขับรถ', active: true) : _buildselectedStep(context, textStep: '1', textUnder: 'ข้อมูลการจำคุก', active: false),
+                                child: (isSelectedStep1)
+                                    ? _buildselectedStep(context,
+                                        textStep: '1',
+                                        textUnder: 'ข้อมูลคนขับรถ',
+                                        active: true)
+                                    : _buildselectedStep(context,
+                                        textStep: '1',
+                                        textUnder: 'ข้อมูลการจำคุก',
+                                        active: false),
                               ),
                               Expanded(
-                                child: (isSelectedStep2) ? _buildselectedStep(context, textStep: '2', textUnder: 'ข้อมูลรถบรรทุก', active: true) : _buildselectedStep(context, textStep: '2', textUnder: 'ข้อมูลรถบรรทุก', active: false),
+                                child: (isSelectedStep2)
+                                    ? _buildselectedStep(context,
+                                        textStep: '2',
+                                        textUnder: 'ข้อมูลรถบรรทุก',
+                                        active: true)
+                                    : _buildselectedStep(context,
+                                        textStep: '2',
+                                        textUnder: 'ข้อมูลรถบรรทุก',
+                                        active: false),
                               ),
                               Expanded(
-                                child: (isSelectedStep3) ? _buildselectedStep(context, textStep: '3', textUnder: 'ข้อมูลการจับกุม', active: true) : _buildselectedStep(context, textStep: '3', textUnder: 'ข้อมูลการจับกุม', active: false),
+                                child: (isSelectedStep3)
+                                    ? _buildselectedStep(context,
+                                        textStep: '3',
+                                        textUnder: 'ข้อมูลการจับกุม',
+                                        active: true)
+                                    : _buildselectedStep(context,
+                                        textStep: '3',
+                                        textUnder: 'ข้อมูลการจับกุม',
+                                        active: false),
                               ),
                               Expanded(
-                                child: (isSelectedStep4) ? _buildselectedStep(context, textStep: '4', textUnder: 'ข้อมูลการจำคุก', active: true) : _buildselectedStep(context, textStep: '4', textUnder: 'ข้อมูลการจำคุก', active: false),
+                                child: (isSelectedStep4)
+                                    ? _buildselectedStep(context,
+                                        textStep: '4',
+                                        textUnder: 'ข้อมูลการจำคุก',
+                                        active: true)
+                                    : _buildselectedStep(context,
+                                        textStep: '4',
+                                        textUnder: 'ข้อมูลการจำคุก',
+                                        active: false),
                               ),
                             ],
                           ),
@@ -240,7 +293,9 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                                 height: 5.h,
                                 width: 30.w,
                                 decoration: BoxDecoration(
-                                  color: (isSelectedStep2 && isSelectedStep3) ? Theme.of(context).colorScheme.primary : Colors.grey,
+                                  color: (isSelectedStep2 && isSelectedStep3)
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.grey,
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                               ),
@@ -249,7 +304,11 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                                 height: 5.h,
                                 width: 30.w,
                                 decoration: BoxDecoration(
-                                  color: (isSelectedStep2 && isSelectedStep3 && isSelectedStep4) ? Theme.of(context).colorScheme.primary : Colors.grey,
+                                  color: (isSelectedStep2 &&
+                                          isSelectedStep3 &&
+                                          isSelectedStep4)
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.grey,
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                               ),
@@ -271,44 +330,35 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                     children: <Widget>[
                       BlocBuilder<ArrestBloc, ArrestState>(
                         builder: (context, state) {
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.loading) {
-                            return const Center(child: CustomLoadingPagination());
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.loading) {
+                            return const Center(
+                                child: CustomLoadingPagination());
                           }
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.initial) {
-                            return FormSteponeWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
-                          }
-
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.success) {
-                            return FormSteponeWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
-                          }
-
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.error) {
-                            showSnackbarBottom(context, state.arrestLogDetailError.toString());
-                            return FormSteponeWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.initial) {
+                            return FormSteponeWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
                           }
 
-                          return SizedBox.shrink();
-                        },
-                      ),
-                      BlocBuilder<ArrestBloc, ArrestState>(
-                        builder: (context, state) {
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.success) {
-                            return FormSteptwoWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
-                          }
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.initial) {
-                            return FormSteptwoWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.success) {
+                            return FormSteponeWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
                           }
 
-                          return SizedBox.shrink();
-                        },
-                      ),
-                      BlocBuilder<ArrestBloc, ArrestState>(
-                        builder: (context, state) {
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.success) {
-                            return FormStepthreeWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
-                          }
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.initial) {
-                            return FormStepthreeWidget(item: item, onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.error) {
+                            showSnackbarBottom(
+                                context, state.arrestLogDetailError.toString());
+                            return FormSteponeWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
                           }
 
                           return SizedBox.shrink();
@@ -316,11 +366,57 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
                       ),
                       BlocBuilder<ArrestBloc, ArrestState>(
                         builder: (context, state) {
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.success) {
-                            return FormStepfourWidget(onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.success) {
+                            return FormSteptwoWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
                           }
-                          if (state.arrestLogDetailStatus == ArrestLogDetailStatus.initial) {
-                            return FormStepfourWidget(onStepSubmitForm: onStepSubmitForm, onStepFormBack: onStepFormBack);
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.initial) {
+                            return FormSteptwoWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
+                          }
+
+                          return SizedBox.shrink();
+                        },
+                      ),
+                      BlocBuilder<ArrestBloc, ArrestState>(
+                        builder: (context, state) {
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.success) {
+                            return FormStepthreeWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
+                          }
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.initial) {
+                            return FormStepthreeWidget(
+                                item: item,
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
+                          }
+
+                          return SizedBox.shrink();
+                        },
+                      ),
+                      BlocBuilder<ArrestBloc, ArrestState>(
+                        builder: (context, state) {
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.success) {
+                            return FormStepfourWidget(
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
+                          }
+                          if (state.arrestLogDetailStatus ==
+                              ArrestLogDetailStatus.initial) {
+                            return FormStepfourWidget(
+                                onStepSubmitForm: onStepSubmitForm,
+                                onStepFormBack: onStepFormBack);
                           }
 
                           return SizedBox.shrink();
@@ -409,7 +505,8 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
         return CustomBottomSheetWidget(
           icon: 'question_icon_shadow',
           title: 'กลับหน้าหลัก',
-          message: 'ถ้ากลับหน้าหลักข้อมูลหน้านี้จะหายไป \nคุณต้องการ กลับหน้าหลัก ใช่หรือไม่  ?',
+          message:
+              'ถ้ากลับหน้าหลักข้อมูลหน้านี้จะหายไป \nคุณต้องการ กลับหน้าหลัก ใช่หรือไม่  ?',
           onConfirm: () {
             onClearForm();
             Navigator.popUntil(context, (route) => route.isFirst);
@@ -462,17 +559,28 @@ class _ArrestFormScreenState extends State<ArrestFormScreen> {
   }
 }
 
-Widget _buildselectedStep(context, {required String textStep, required String textUnder, required bool active}) {
+Widget _buildselectedStep(context,
+    {required String textStep,
+    required String textUnder,
+    required bool active}) {
   return Container(
     margin: EdgeInsets.only(bottom: 5.h),
     padding: EdgeInsets.all(5.h),
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      border: Border.all(width: 2, color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onTertiary),
+      border: Border.all(
+          width: 2,
+          color: active
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onTertiary),
       color: Theme.of(context).colorScheme.surface,
     ),
     child: Center(
-      child: Text(textStep, style: AppTextStyle.title14bold(color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onTertiary)),
+      child: Text(textStep,
+          style: AppTextStyle.title14bold(
+              color: active
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onTertiary)),
     ),
   );
 }

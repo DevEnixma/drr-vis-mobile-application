@@ -71,7 +71,9 @@ class _ArrestScreenState extends State<ArrestScreen> {
   }
 
   void getWeightUnitDetail(String tid) {
-    context.read<EstablishBloc>().add(MobileMasterDepartmentFetchEvent(tid: tid));
+    context
+        .read<EstablishBloc>()
+        .add(MobileMasterDepartmentFetchEvent(tid: tid));
   }
 
   void getWeightUnitCars(String tid) {
@@ -114,7 +116,8 @@ class _ArrestScreenState extends State<ArrestScreen> {
       });
     }
 
-    if (_scrollController!.position.pixels == _scrollController!.position.maxScrollExtent) {
+    if (_scrollController!.position.pixels ==
+        _scrollController!.position.maxScrollExtent) {
       loadMore();
     }
   }
@@ -149,7 +152,8 @@ class _ArrestScreenState extends State<ArrestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -157,18 +161,24 @@ class _ArrestScreenState extends State<ArrestScreen> {
         body: tId != ''
             ? BlocBuilder<EstablishBloc, EstablishState>(
                 builder: (context, state) {
-                  if (state.establishMobileMasterDepartmentStatus == EstablishMobileMasterDepartmentStatus.loading) {
+                  if (state.establishMobileMasterDepartmentStatus ==
+                      EstablishMobileMasterDepartmentStatus.loading) {
                     return const Center(child: CustomLoadingPagination());
                   }
-                  if (state.establishMobileMasterDepartmentStatus == EstablishMobileMasterDepartmentStatus.success) {
+                  if (state.establishMobileMasterDepartmentStatus ==
+                      EstablishMobileMasterDepartmentStatus.success) {
                     if (state.mobileMasterDepartmentData != null) {
                       return LayoutBuilder(builder: (context, constraints) {
                         return CustomScrollView(
                           controller: _scrollController,
                           slivers: <Widget>[
                             SliverAppBar(
-                              expandedHeight: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 200.h : 200.h,
-                              toolbarHeight: constraints.maxWidth > 600 ? 30.h : 32.h,
+                              expandedHeight: constraints.maxWidth > 400 &&
+                                      constraints.maxWidth < 600
+                                  ? 200.h
+                                  : 200.h,
+                              toolbarHeight:
+                                  constraints.maxWidth > 600 ? 30.h : 32.h,
                               pinned: true,
                               flexibleSpace: FlexibleSpaceBar(
                                 collapseMode: CollapseMode.parallax,
@@ -183,15 +193,27 @@ class _ArrestScreenState extends State<ArrestScreen> {
                               delegate: SliverChildListDelegate(
                                 [
                                   Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 18.h, vertical: 10.h),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 18.h, vertical: 10.h),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('รายการการจับกุม', style: AppTextStyle.title16bold()),
-                                        BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                                        Text('รายการการจับกุม',
+                                            style: AppTextStyle.title16bold()),
+                                        BlocBuilder<WeightUnitBloc,
+                                            WeightUnitState>(
                                           builder: (context, state) {
-                                            if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
-                                              return Text('${state.weightUnitCarsTotal} รายการ', style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.onTertiary));
+                                            if (state.weightUnitCarsStatus ==
+                                                WeightUnitCarsStatus.success) {
+                                              return Text(
+                                                  '${state.weightUnitCarsTotal} รายการ',
+                                                  style:
+                                                      AppTextStyle.title16bold(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .onTertiary));
                                             }
                                             return SizedBox.shrink();
                                           },
@@ -200,10 +222,14 @@ class _ArrestScreenState extends State<ArrestScreen> {
                                     ),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.symmetric(horizontal: 12.h),
-                                    padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 12.h),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 16.h, vertical: 4.h),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.onTertiaryContainer,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onTertiaryContainer,
                                       borderRadius: BorderRadius.circular(30.r),
                                     ),
                                     child: Row(
@@ -220,7 +246,10 @@ class _ArrestScreenState extends State<ArrestScreen> {
                                             decoration: InputDecoration(
                                               isDense: true,
                                               hintText: 'ค้นหาทะเบียนรถบรรทุก',
-                                              hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
+                                              hintStyle:
+                                                  AppTextStyle.title16normal(
+                                                      color:
+                                                          ColorApps.colorGray),
                                               border: InputBorder.none,
                                             ),
                                           ),
@@ -233,21 +262,26 @@ class _ArrestScreenState extends State<ArrestScreen> {
                             ),
                             BlocBuilder<WeightUnitBloc, WeightUnitState>(
                               builder: (context, state) {
-                                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.loading) {
+                                if (state.weightUnitCarsStatus ==
+                                    WeightUnitCarsStatus.loading) {
                                   return SliverFillRemaining(
                                     child: Center(
                                       child: SkeletionContainerWidget(
                                         height: 80.h,
                                         width: 300.w,
-                                        color: Theme.of(context).colorScheme.surface,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                       ),
                                     ),
                                   );
                                 }
 
-                                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
+                                if (state.weightUnitCarsStatus ==
+                                    WeightUnitCarsStatus.success) {
                                   isLoadmore = false;
-                                  if (state.weightUnitsCars != null && state.weightUnitsCars!.isEmpty) {
+                                  if (state.weightUnitsCars != null &&
+                                      state.weightUnitsCars!.isEmpty) {
                                     return SliverFillRemaining(
                                       child: EmptyWidget(
                                         title: 'ไม่พบรายการการจับกุม',
@@ -259,7 +293,8 @@ class _ArrestScreenState extends State<ArrestScreen> {
                                   return SliverList(
                                     delegate: SliverChildBuilderDelegate(
                                       (BuildContext context, int index) {
-                                        final carItem = state.weightUnitsCars![index];
+                                        final carItem =
+                                            state.weightUnitsCars![index];
                                         return GestureDetector(
                                           onTap: () {
                                             goToArrestLogDetail(carItem);
@@ -271,7 +306,8 @@ class _ArrestScreenState extends State<ArrestScreen> {
                                           ),
                                         );
                                       },
-                                      childCount: state.weightUnitsCars?.length ?? 0,
+                                      childCount:
+                                          state.weightUnitsCars?.length ?? 0,
                                     ),
                                   );
                                 }
@@ -285,7 +321,8 @@ class _ArrestScreenState extends State<ArrestScreen> {
                               SliverList(
                                 delegate: SliverChildListDelegate(
                                   [
-                                    const Center(child: CustomLoadingPagination()),
+                                    const Center(
+                                        child: CustomLoadingPagination()),
                                   ],
                                 ),
                               ),
@@ -301,7 +338,9 @@ class _ArrestScreenState extends State<ArrestScreen> {
                       });
                     } else {
                       return const Center(
-                        child: EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง'),
+                        child: EmptyWidget(
+                            title: 'ไม่พบรายการรถเข้าชั่ง',
+                            label: 'กรุณาเพิ่มรายการรถเข้าชั่ง'),
                       );
                     }
                   }
@@ -312,7 +351,9 @@ class _ArrestScreenState extends State<ArrestScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง'),
+                  EmptyWidget(
+                      title: 'ไม่พบรายการรถเข้าชั่ง',
+                      label: 'กรุณาเพิ่มรายการรถเข้าชั่ง'),
                 ],
               ),
       ),

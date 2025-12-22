@@ -68,37 +68,46 @@ class UnitDetailsWeighingTrucksScreen extends StatefulWidget {
   final bool isEdit;
 
   @override
-  State<UnitDetailsWeighingTrucksScreen> createState() => _UnitDetailsWeighingTrucksScreenState();
+  State<UnitDetailsWeighingTrucksScreen> createState() =>
+      _UnitDetailsWeighingTrucksScreenState();
 }
 
-class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTrucksScreen> {
+class _UnitDetailsWeighingTrucksScreenState
+    extends State<UnitDetailsWeighingTrucksScreen> {
   final newFormKey = GlobalKey<FormState>();
 
   final TextEditingController carLicenseController = TextEditingController();
   final FocusNode carLicenseFocusNode = FocusNode();
 
-  final TextEditingController carLicenseProvinceController = TextEditingController();
+  final TextEditingController carLicenseProvinceController =
+      TextEditingController();
   final FocusNode carLicenseProvinceFocusNode = FocusNode();
 
-  final TextEditingController carLicenseTailController = TextEditingController();
+  final TextEditingController carLicenseTailController =
+      TextEditingController();
 
-  final TextEditingController carLicenseTailProvinceController = TextEditingController();
+  final TextEditingController carLicenseTailProvinceController =
+      TextEditingController();
 
   final TextEditingController carTypeController = TextEditingController();
   final FocusNode carTypeFocusNode = FocusNode();
 
-  final TextEditingController carDriveShaftTotalController = TextEditingController();
+  final TextEditingController carDriveShaftTotalController =
+      TextEditingController();
   final FocusNode carDriveShaftTotalFocusNode = FocusNode();
 
   final TextEditingController carWeightLawController = TextEditingController();
   final FocusNode carWeightLawFocusNode = FocusNode();
 
-  final TextEditingController carTruckMaterialController = TextEditingController();
+  final TextEditingController carTruckMaterialController =
+      TextEditingController();
 
-  final TextEditingController carWeightTotalController = TextEditingController();
+  final TextEditingController carWeightTotalController =
+      TextEditingController();
   final FocusNode carWeightTotalFocusNode = FocusNode();
 
-  final TextEditingController carWeightStatusController = TextEditingController();
+  final TextEditingController carWeightStatusController =
+      TextEditingController();
   final FocusNode carWeightStatusFocusNode = FocusNode();
 
   List<TextEditingController> carDriveShaftController = [];
@@ -191,7 +200,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
     if (carDetail == null) return;
 
     logger.i(carDetail.toJson());
-    logger.i('============[test]=======0=vehicleClassId: $vehicleClassId==> ${carDetail.toJson()}');
+    logger.i(
+        '============[test]=======0=vehicleClassId: $vehicleClassId==> ${carDetail.toJson()}');
 
     try {
       setState(() {
@@ -201,29 +211,41 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
       carLicenseController.text = carDetail.lpHeadNo ?? '';
       carLicenseProvinceController.text = carDetail.lpHeadProvinceName ?? '';
       carLicenseTailController.text = carDetail.lpTailNo ?? '';
-      carLicenseTailProvinceController.text = carDetail.lpTailProvinceName ?? '';
+      carLicenseTailProvinceController.text =
+          carDetail.lpTailProvinceName ?? '';
       carTypeController.text = carDetail.vehicleClassDesc ?? '';
-      carDriveShaftTotalController.text = carDetail.vehicleClassLegalDriveShaftRef ?? '';
-      carWeightLawController.text = StringHleper.convertStringToKilo(carDetail.legalWeight);
+      carDriveShaftTotalController.text =
+          carDetail.vehicleClassLegalDriveShaftRef ?? '';
+      carWeightLawController.text =
+          StringHleper.convertStringToKilo(carDetail.legalWeight);
       carTruckMaterialController.text = carDetail.masterialName ?? '';
       carWeightStatusController.text = carDetail.isOverWeightDesc ?? '';
 
       if (carDetail.grossWeight != null) {
         final grossWeight = StringHleper.stringToDouble(carDetail.grossWeight);
         if (carDetail.isOverWeight == 'Y') {
-          carWeightTotalController.text = StringHleper.numberAddComma(WeightUnit.tonToKilo(grossWeight).toString()).split('.')[0];
+          carWeightTotalController.text = StringHleper.numberAddComma(
+                  WeightUnit.tonToKilo(grossWeight).toString())
+              .split('.')[0];
         } else {
-          carWeightTotalController.text = StringHleper.numberAddComma(WeightUnit.tonToKilo(grossWeight).toString()).split('.')[0];
+          carWeightTotalController.text = StringHleper.numberAddComma(
+                  WeightUnit.tonToKilo(grossWeight).toString())
+              .split('.')[0];
         }
       }
 
       carWeightStatusController.text = carDetail.isOverWeightDesc ?? '';
 
-      licentProvinceId = carDetail.lpHeadProvinceId != null ? int.tryParse(carDetail.lpHeadProvinceId.toString()) ?? 0 : 0;
-      tailProvinceId = carDetail.lpTailProvinceId != null ? int.tryParse(carDetail.lpTailProvinceId.toString()) ?? 0 : 0;
+      licentProvinceId = carDetail.lpHeadProvinceId != null
+          ? int.tryParse(carDetail.lpHeadProvinceId.toString()) ?? 0
+          : 0;
+      tailProvinceId = carDetail.lpTailProvinceId != null
+          ? int.tryParse(carDetail.lpTailProvinceId.toString()) ?? 0
+          : 0;
 
       if (carDetail.vehicleClassIdRef != null) {
-        vehicleClassId = int.tryParse(carDetail.vehicleClassIdRef.toString()) ?? 0;
+        vehicleClassId =
+            int.tryParse(carDetail.vehicleClassIdRef.toString()) ?? 0;
       }
 
       if (carDetail.isOverWeight == 'N') {
@@ -232,8 +254,10 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
         isCarOverLoadColor = ColorApps.colorRed;
       }
 
-      if (carDetail.vehicleClassLegalDriveShaftRef != null && carDetail.legalWeight != null) {
-        final shaftCount = int.tryParse(carDetail.vehicleClassLegalDriveShaftRef!) ?? 0;
+      if (carDetail.vehicleClassLegalDriveShaftRef != null &&
+          carDetail.legalWeight != null) {
+        final shaftCount =
+            int.tryParse(carDetail.vehicleClassLegalDriveShaftRef!) ?? 0;
         final legalWeight = double.tryParse(carDetail.legalWeight!) ?? 0.0;
 
         if (shaftCount > 0 && legalWeight > 0) {
@@ -245,17 +269,40 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
       setState(() {});
 
       List<String> carDetails = [
-        carDetail.ds1 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds1)).toString() : '0',
-        carDetail.ds2 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds2)).toString() : '0',
-        carDetail.ds3 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds3)).toString() : '0',
-        carDetail.ds4 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds4)).toString() : '0',
-        carDetail.ds5 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds5)).toString() : '0',
-        carDetail.ds6 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds6)).toString() : '0',
-        carDetail.ds7 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds7)).toString() : '0',
+        carDetail.ds1 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds1))
+                .toString()
+            : '0',
+        carDetail.ds2 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds2))
+                .toString()
+            : '0',
+        carDetail.ds3 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds3))
+                .toString()
+            : '0',
+        carDetail.ds4 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds4))
+                .toString()
+            : '0',
+        carDetail.ds5 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds5))
+                .toString()
+            : '0',
+        carDetail.ds6 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds6))
+                .toString()
+            : '0',
+        carDetail.ds7 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds7))
+                .toString()
+            : '0',
       ];
 
       setState(() {
-        for (int i = 0; i < carDriveShaftController.length && i < carDetails.length; i++) {
+        for (int i = 0;
+            i < carDriveShaftController.length && i < carDetails.length;
+            i++) {
           if (carDetails[i].isNotEmpty && carDetails[i] != '0') {
             carDriveShaftController[i].text = carDetails[i].split('.')[0];
           }
@@ -263,13 +310,27 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
       });
 
       setState(() {
-        ds1 = carDetail.ds1 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds1)) : 0;
-        ds2 = carDetail.ds2 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds2)) : 0;
-        ds3 = carDetail.ds3 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds3)) : 0;
-        ds4 = carDetail.ds4 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds4)) : 0;
-        ds5 = carDetail.ds5 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds5)) : 0;
-        ds6 = carDetail.ds6 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds6)) : 0;
-        ds7 = carDetail.ds7 != null ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds7)) : 0;
+        ds1 = carDetail.ds1 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds1))
+            : 0;
+        ds2 = carDetail.ds2 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds2))
+            : 0;
+        ds3 = carDetail.ds3 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds3))
+            : 0;
+        ds4 = carDetail.ds4 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds4))
+            : 0;
+        ds5 = carDetail.ds5 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds5))
+            : 0;
+        ds6 = carDetail.ds6 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds6))
+            : 0;
+        ds7 = carDetail.ds7 != null
+            ? WeightUnit.tonToKilo(StringHleper.stringToDouble(carDetail.ds7))
+            : 0;
       });
     } catch (e) {
       logger.e('=======[update set data error]=====> $e');
@@ -284,7 +345,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
 
   void isSelectVehicleType(VehicleRes? selectVehicle) {
     try {
-      logger.i('=====[isSelectVehicleType]====1====> ${selectVehicle?.toJson()}');
+      logger
+          .i('=====[isSelectVehicleType]====1====> ${selectVehicle?.toJson()}');
 
       if (selectVehicle != null) {
         final driveShaftRef = selectVehicle.driveShaftRef;
@@ -302,7 +364,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
 
             driveShaft = shaftCount;
             carDriveShaftTotalController.text = driveShaftRef;
-            carWeightLawController.text = StringHleper.convertStringToKilo(legalWeight);
+            carWeightLawController.text =
+                StringHleper.convertStringToKilo(legalWeight);
           }
         }
 
@@ -338,7 +401,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
   }
 
   void getCarImate() {
-    context.read<EstablishBloc>().add(GetCarDetailImageEvent(widget.tid, widget.tdId));
+    context
+        .read<EstablishBloc>()
+        .add(GetCarDetailImageEvent(widget.tid, widget.tdId));
   }
 
   void getMaterialBloc({bool isLoadMore = false}) {
@@ -368,7 +433,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
         }
       }
 
-      final legalWeight = double.tryParse(StringHleper.numberStringCutComma(carWeightLawController.text)) ?? 0;
+      final legalWeight = double.tryParse(
+              StringHleper.numberStringCutComma(carWeightLawController.text)) ??
+          0;
 
       if (total > legalWeight) {
         isCarOverLoad = true;
@@ -380,7 +447,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
         isCarOverLoadColor = ColorApps.colorGreen;
       }
 
-      carWeightTotalController.text = StringHleper.doubleToStringComma(total.toString());
+      carWeightTotalController.text =
+          StringHleper.doubleToStringComma(total.toString());
 
       double parsedValue = double.tryParse(value ?? '0') ?? 0;
 
@@ -430,7 +498,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
         carWeightStatusController.text = 'เกินเพลา';
         isCarOverLoadColor = ColorApps.contentColorOrenge;
       } else {
-        final legalWeight = double.tryParse(StringHleper.numberStringCutComma(carWeightLawController.text)) ?? 0;
+        final legalWeight = double.tryParse(StringHleper.numberStringCutComma(
+                carWeightLawController.text)) ??
+            0;
         if (total > legalWeight) {
           isCarOverLoad = true;
           carWeightStatusController.text = 'เกินกำหนด';
@@ -442,7 +512,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
         }
       }
 
-      carWeightTotalController.text = StringHleper.doubleToStringComma(total.toString());
+      carWeightTotalController.text =
+          StringHleper.doubleToStringComma(total.toString());
 
       double parsedValue = double.tryParse(value ?? '0') ?? 0;
 
@@ -564,17 +635,45 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
 
   void newValidateForm() {
     final List<Map<String, dynamic>> fields = [
-      {'controller': carLicenseController, 'focusNode': carLicenseFocusNode, 'label': 'หมายเลขทะเบียนรถ'},
-      {'controller': carTypeController, 'focusNode': carTypeFocusNode, 'label': 'ประเภทของรถ'},
-      {'controller': carDriveShaftTotalController, 'focusNode': carDriveShaftTotalFocusNode, 'label': 'จำนวนเพลาขับเคลื่อน'},
-      {'controller': carWeightLawController, 'focusNode': carWeightLawFocusNode, 'label': 'น้ำหนักตามกฎหมาย'},
-      {'controller': carWeightTotalController, 'focusNode': carWeightTotalFocusNode, 'label': 'น้ำหนักรวม'},
-      {'controller': carWeightStatusController, 'focusNode': carWeightStatusFocusNode, 'label': 'สถานะน้ำหนัก'},
+      {
+        'controller': carLicenseController,
+        'focusNode': carLicenseFocusNode,
+        'label': 'หมายเลขทะเบียนรถ'
+      },
+      {
+        'controller': carTypeController,
+        'focusNode': carTypeFocusNode,
+        'label': 'ประเภทของรถ'
+      },
+      {
+        'controller': carDriveShaftTotalController,
+        'focusNode': carDriveShaftTotalFocusNode,
+        'label': 'จำนวนเพลาขับเคลื่อน'
+      },
+      {
+        'controller': carWeightLawController,
+        'focusNode': carWeightLawFocusNode,
+        'label': 'น้ำหนักตามกฎหมาย'
+      },
+      {
+        'controller': carWeightTotalController,
+        'focusNode': carWeightTotalFocusNode,
+        'label': 'น้ำหนักรวม'
+      },
+      {
+        'controller': carWeightStatusController,
+        'focusNode': carWeightStatusFocusNode,
+        'label': 'สถานะน้ำหนัก'
+      },
     ];
 
     for (int i = 0; i < carDriveShaftController.length; i++) {
       if (i < carDriveShaftFocusNode.length) {
-        fields.add({'controller': carDriveShaftController[i], 'focusNode': carDriveShaftFocusNode[i], 'label': 'เพลาขับเคลื่อน #${i + 1}'});
+        fields.add({
+          'controller': carDriveShaftController[i],
+          'focusNode': carDriveShaftFocusNode[i],
+          'label': 'เพลาขับเคลื่อน #${i + 1}'
+        });
       }
     }
 
@@ -638,7 +737,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงกล้อง',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -655,7 +755,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงรูปภาพ',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -705,7 +806,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงกล้อง',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -722,7 +824,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงรูปภาพ',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -746,7 +849,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
   Future<void> genControllersWeightShafts(int value) async {
     if (value != 0) {
       setState(() {
-        carDriveShaftController = List.generate(value, (index) => TextEditingController());
+        carDriveShaftController =
+            List.generate(value, (index) => TextEditingController());
         carDriveShaftFocusNode = List.generate(value, (index) => FocusNode());
       });
     }
@@ -853,14 +957,17 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
   }
 
   void getWeightUnitDetail() {
-    context.read<EstablishBloc>().add(MobileMasterDepartmentFetchEvent(tid: widget.tid));
+    context
+        .read<EstablishBloc>()
+        .add(MobileMasterDepartmentFetchEvent(tid: widget.tid));
   }
 
   @override
   Widget build(BuildContext context) {
     final profileState = context.read<ProfileBloc>().state;
     var role = profileState.profile?.deptType;
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
 
     Widget buildShaftWidget() {
       switch (vehicleClassId) {
@@ -872,7 +979,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft1: 2500,
             shaft2: 7000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 2:
           return ShartType2Widget(
@@ -882,7 +991,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft1: 4000,
             shaft2: 11000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 3:
           return ShartType3Widget(
@@ -892,7 +1003,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft1: 5000,
             shaft23: 13000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 4:
           return ShartType3Widget(
@@ -902,7 +1015,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft1: 5000,
             shaft23: 16500,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 5:
           return ShartType3Widget(
@@ -912,7 +1027,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft1: 5000,
             shaft23: 20000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 6:
           return ShartType3sWidget(
@@ -923,7 +1040,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft1: 3000,
             shaft2: 7000,
             shaft3: 11000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 7:
           return ShartType4Widget(
@@ -933,7 +1052,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft12: 10000,
             shaft34: 13000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 8:
           return ShartType4Widget(
@@ -943,7 +1064,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft12: 10000,
             shaft34: 20000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 9:
           return ShartType4sWidget(
@@ -954,7 +1077,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft1: 4000,
             shaft2: 11000,
             shaft34: 20000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 10:
           return ShartType5Widget(
@@ -965,7 +1090,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft1: 5000,
             shaft23: 20000,
             shaft45: 20000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 11:
           return ShartType6Widget(
@@ -976,7 +1103,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft1: 0,
             shaft23: 20000,
             shaft456: 25500,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 15:
           return ShartType7SWidget(
@@ -987,7 +1116,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft12: 2500,
             shaft34: 20000,
             shaft567: 25500,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 16:
           return ShartType62356Widget(
@@ -999,7 +1130,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft23: 20000,
             shaft4: 10000,
             shaft56: 18000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 17:
           return ShartType312Widget(
@@ -1009,7 +1142,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             onTextChange: inputDriveShaft2,
             shaft12: 1000,
             shaft3: 11000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 18:
           return ShartType4AllWidget(
@@ -1021,7 +1156,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft2: 11000,
             shaft3: 11000,
             shaft4: 11000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 19:
           return ShartType4AllWidget(
@@ -1033,7 +1170,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft2: 11000,
             shaft3: 7000,
             shaft4: 7000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 20:
           return ShartType6123456Widget(
@@ -1044,7 +1183,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft12: 1000,
             shaft34: 20000,
             shaft56: 20000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 21:
           return ShartType5345Widget(
@@ -1055,7 +1196,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft1: 4000,
             shaft2: 11000,
             shaft345: 25500,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 22:
           return ShartType4AllWidget(
@@ -1067,7 +1210,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft2: 11000,
             shaft3: 7000,
             shaft4: 7000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 23:
           return ShartType6123456Widget(
@@ -1078,7 +1223,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft12: 1000,
             shaft34: 20000,
             shaft56: 20000,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         case 24:
           return ShartType5345Widget(
@@ -1089,7 +1236,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
             shaft1: 4000,
             shaft2: 11000,
             shaft345: 25500,
-            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+            isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit
+                ? null
+                : true,
           );
         default:
           return Wrap(
@@ -1115,11 +1264,20 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       controller: carDriveShaftController[index],
                       focusNode: carDriveShaftFocusNode[index],
                       onTextChange: inputDriveShaft,
+                      keyBoardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
                       isSuffixIcon: true,
-                      isCalDriveShaft: index < carWeigthDriveShaftOvers.length ? carWeigthDriveShaftOvers[index] : 0,
+                      isCalDriveShaft: index < carWeigthDriveShaftOvers.length
+                          ? carWeigthDriveShaftOvers[index]
+                          : 0,
                       isDs: true,
                       isShowIconError2: isShowIconError2,
-                      isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                      isDisable:
+                          RolePermission.checkRoleViewer(role) && widget.isEdit
+                              ? null
+                              : true,
                     ),
                   ],
                 ),
@@ -1146,7 +1304,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
         title: Text(
           'การเข้าชั่งน้ำหนัก',
           textAlign: TextAlign.center,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.surface),
         ),
       ),
       body: GestureDetector(
@@ -1162,26 +1321,34 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
               children: [
                 BlocListener<EstablishBloc, EstablishState>(
                   listener: (context, state) {
-                    if (state.carDetailStatus == CarInUnitDetailStatus.success) {
-                      if (state.carDetail != null && state.carDetail?.lpHeadNo != null) {
+                    if (state.carDetailStatus ==
+                        CarInUnitDetailStatus.success) {
+                      if (state.carDetail != null &&
+                          state.carDetail?.lpHeadNo != null) {
                         setDataUpdate(state.carDetail);
                       }
                     }
-                    if (state.carDetailStatus == CarInUnitDetailStatus.error && state.carDetailError == '') {
-                      showSnackbarBottom(context, state.carDetailError.toString());
+                    if (state.carDetailStatus == CarInUnitDetailStatus.error &&
+                        state.carDetailError == '') {
+                      showSnackbarBottom(
+                          context, state.carDetailError.toString());
                     }
                   },
                   child: const SizedBox.shrink(),
                 ),
                 BlocListener<EstablishBloc, EstablishState>(
                   listener: (context, state) {
-                    if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                    if (state.carInUnitDetailImageStatus ==
+                        CarInUnitDetailImageStatus.success) {
                       if (state.carDatailImage != null) {
                         setDataUpdateImage(state.carDatailImage);
                       }
                     }
-                    if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.error && state.carDetailError == '') {
-                      showSnackbarBottom(context, state.carDetailError.toString());
+                    if (state.carInUnitDetailImageStatus ==
+                            CarInUnitDetailImageStatus.error &&
+                        state.carDetailError == '') {
+                      showSnackbarBottom(
+                          context, state.carDetailError.toString());
                     }
                   },
                   child: const SizedBox.shrink(),
@@ -1198,10 +1365,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                         context,
                         MaterialPageRoute(
                           builder: (context) => SuccessScreen(
-                            icon: 'assets/svg/ant-design_check-circle-filled.svg',
+                            icon:
+                                'assets/svg/ant-design_check-circle-filled.svg',
                             titleBT: 'กลับหน้าแรก',
                             title: 'บันทึกการเข้าชั่งสำเร็จ',
-                            message: 'สามารถเข้าดูรายละเอียดที่หน้า "รายงานรถเข้าชั่ง"',
+                            message:
+                                'สามารถเข้าดูรายละเอียดที่หน้า "รายงานรถเข้าชั่ง"',
                             onConfirm: () {
                               Navigator.pop(context);
                             },
@@ -1209,8 +1378,10 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                         ),
                       );
                     }
-                    if (state.weightCarStatus == WeightCarStatus.error && state.weightCarError.isNotEmpty) {
-                      showSnackbarBottom(context, state.weightCarError.toString());
+                    if (state.weightCarStatus == WeightCarStatus.error &&
+                        state.weightCarError.isNotEmpty) {
+                      showSnackbarBottom(
+                          context, state.weightCarError.toString());
                     }
                   },
                   child: const SizedBox.shrink(),
@@ -1229,7 +1400,14 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                   hint: carLicense,
                   controller: carLicenseController,
                   focusNode: carLicenseFocusNode,
-                  isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                  keyBoardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  isDisable:
+                      RolePermission.checkRoleViewer(role) && widget.isEdit
+                          ? null
+                          : true,
                 ),
                 SizedBox(height: 12.0.h),
                 LabelInputWidget(
@@ -1243,9 +1421,11 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     }
                     if (state.selectProvince != null) {
                       final selectedProvince = state.selectProvince!;
-                      if (selectedProvince.id != null && selectedProvince.name != null) {
+                      if (selectedProvince.id != null &&
+                          selectedProvince.name != null) {
                         licentProvinceId = selectedProvince.id!;
-                        carLicenseProvinceController.text = selectedProvince.name!;
+                        carLicenseProvinceController.text =
+                            selectedProvince.name!;
                       }
                     }
                   },
@@ -1253,12 +1433,16 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     label: "Text Input 1",
                     hint: carLicenseProvince,
                     controller: carLicenseProvinceController,
-                    isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                    isDisable:
+                        RolePermission.checkRoleViewer(role) && widget.isEdit
+                            ? null
+                            : true,
                     onTap: () => {
                       if (RolePermission.checkRoleViewer(role) && widget.isEdit)
                         {
                           showModalBottomSheet(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
                             context: context,
                             isScrollControlled: true,
                             constraints: BoxConstraints(
@@ -1270,7 +1454,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                                 minChildSize: 0.6,
                                 maxChildSize: 0.8,
                                 expand: false,
-                                builder: (BuildContext context, ScrollController scrollController) {
+                                builder: (BuildContext context,
+                                    ScrollController scrollController) {
                                   return CustomModalBottomSheet(
                                     data_list: province,
                                     scrollController: scrollController,
@@ -1297,7 +1482,14 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                   label: "Text Input 1",
                   hint: carLicenseTail,
                   controller: carLicenseTailController,
-                  isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                  keyBoardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  isDisable:
+                      RolePermission.checkRoleViewer(role) && widget.isEdit
+                          ? null
+                          : true,
                 ),
                 SizedBox(height: 12.0.h),
                 LabelInputWidget(
@@ -1307,9 +1499,11 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                   listener: (context, state) {
                     if (state.selectProvinceTail != null) {
                       final selectedProvinceTail = state.selectProvinceTail!;
-                      if (selectedProvinceTail.id != null && selectedProvinceTail.name != null) {
+                      if (selectedProvinceTail.id != null &&
+                          selectedProvinceTail.name != null) {
                         tailProvinceId = selectedProvinceTail.id!;
-                        carLicenseTailProvinceController.text = selectedProvinceTail.name!;
+                        carLicenseTailProvinceController.text =
+                            selectedProvinceTail.name!;
                       }
                     }
                   },
@@ -1317,12 +1511,16 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     label: "Text Input 1",
                     hint: carLicenseTailProvince,
                     controller: carLicenseTailProvinceController,
-                    isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                    isDisable:
+                        RolePermission.checkRoleViewer(role) && widget.isEdit
+                            ? null
+                            : true,
                     onTap: () => {
                       if (RolePermission.checkRoleViewer(role) && widget.isEdit)
                         {
                           showModalBottomSheet(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
                             context: context,
                             isScrollControlled: true,
                             constraints: BoxConstraints(
@@ -1334,7 +1532,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                                 minChildSize: 0.6,
                                 maxChildSize: 0.8,
                                 expand: false,
-                                builder: (BuildContext context, ScrollController scrollController) {
+                                builder: (BuildContext context,
+                                    ScrollController scrollController) {
                                   return CustomModalBottomSheet(
                                     data_list: province,
                                     scrollController: scrollController,
@@ -1371,12 +1570,16 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     label: "Text Input 1",
                     hint: carType,
                     controller: carTypeController,
-                    isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                    isDisable:
+                        RolePermission.checkRoleViewer(role) && widget.isEdit
+                            ? null
+                            : true,
                     onTap: () => {
                       if (RolePermission.checkRoleViewer(role) && widget.isEdit)
                         {
                           showModalBottomSheet(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
                             context: context,
                             isScrollControlled: true,
                             constraints: BoxConstraints(
@@ -1388,7 +1591,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                                 minChildSize: 0.6,
                                 maxChildSize: 0.8,
                                 expand: false,
-                                builder: (BuildContext context, ScrollController scrollController) {
+                                builder: (BuildContext context,
+                                    ScrollController scrollController) {
                                   return CustomModalBottomSheet(
                                     data_list: vehicleCar,
                                     scrollController: scrollController,
@@ -1462,7 +1666,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       materials = state.materials ?? [];
 
                       // อัพเดทสถานะ pagination
-                      if (state.materials != null && state.materials.length < materialPageSize) {
+                      if (state.materials != null &&
+                          state.materials.length < materialPageSize) {
                         hasMoreData = false;
                       }
                     }
@@ -1474,16 +1679,21 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     }
 
                     if (state.material?.goodsName != null) {
-                      carTruckMaterialController.text = state.material!.goodsName!;
+                      carTruckMaterialController.text =
+                          state.material!.goodsName!;
                     }
                   },
                   child: DropdownInputCustomWidget(
                     label: "Text Input 1",
                     hint: carTruckMaterial,
                     controller: carTruckMaterialController,
-                    isDisable: RolePermission.checkRoleViewer(role) && widget.isEdit ? null : true,
+                    isDisable:
+                        RolePermission.checkRoleViewer(role) && widget.isEdit
+                            ? null
+                            : true,
                     onTap: () {
-                      if (RolePermission.checkRoleViewer(role) && widget.isEdit) {
+                      if (RolePermission.checkRoleViewer(role) &&
+                          widget.isEdit) {
                         // รีเซ็ตค่า pagination ก่อนเปิด modal
                         setState(() {
                           materialPage = 1;
@@ -1492,7 +1702,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                         });
 
                         showModalBottomSheet(
-                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.surface,
                           context: context,
                           isScrollControlled: true,
                           constraints: BoxConstraints(
@@ -1504,10 +1715,14 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                               minChildSize: 0.6,
                               maxChildSize: 0.8,
                               expand: false,
-                              builder: (BuildContext context, ScrollController scrollController) {
+                              builder: (BuildContext context,
+                                  ScrollController scrollController) {
                                 // เพิ่ม scroll listener สำหรับ pagination
                                 scrollController.addListener(() {
-                                  if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
+                                  if (scrollController.position.pixels >=
+                                      scrollController
+                                              .position.maxScrollExtent -
+                                          200) {
                                     if (!isLoadingMore && hasMoreData) {
                                       setState(() {
                                         isLoadingMore = true;
@@ -1517,7 +1732,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                                   }
                                 });
 
-                                return BlocBuilder<MaterialsBloc, MaterialsState>(
+                                return BlocBuilder<MaterialsBloc,
+                                    MaterialsState>(
                                   builder: (context, state) {
                                     return Column(
                                       children: [
@@ -1536,15 +1752,21 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                                           Container(
                                             padding: EdgeInsets.all(16.0),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
                                                 SizedBox(
                                                   width: 16.0,
                                                   height: 16.0,
-                                                  child: CircularProgressIndicator(
+                                                  child:
+                                                      CircularProgressIndicator(
                                                     strokeWidth: 2.0,
-                                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                                      Theme.of(context).colorScheme.primary,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                            Color>(
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .primary,
                                                     ),
                                                   ),
                                                 ),
@@ -1553,7 +1775,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                                                   'กำลังโหลดข้อมูลเพิ่มเติม...',
                                                   style: TextStyle(
                                                     fontSize: 16.0,
-                                                    color: Theme.of(context).colorScheme.onSurface,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
                                                   ),
                                                 ),
                                               ],
@@ -1639,10 +1863,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     children: [
                       BlocBuilder<EstablishBloc, EstablishState>(
                         builder: (context, state) {
-                          if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                          if (state.carInUnitDetailImageStatus ==
+                              CarInUnitDetailImageStatus.success) {
                             if (state.carDatailImage != null) {
                               return InputImageUpdateWidget(
-                                  imageUrl: state.carDatailImage!.imagePath1 ?? '',
+                                  imageUrl:
+                                      state.carDatailImage!.imagePath1 ?? '',
                                   label: 'ด้านหน้า',
                                   keyName: 'front',
                                   isDisable: widget.isEdit,
@@ -1656,10 +1882,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       ),
                       BlocBuilder<EstablishBloc, EstablishState>(
                         builder: (context, state) {
-                          if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                          if (state.carInUnitDetailImageStatus ==
+                              CarInUnitDetailImageStatus.success) {
                             if (state.carDatailImage != null) {
                               return InputImageUpdateWidget(
-                                  imageUrl: state.carDatailImage!.imagePath2 ?? '',
+                                  imageUrl:
+                                      state.carDatailImage!.imagePath2 ?? '',
                                   label: 'ด้านหลัง',
                                   keyName: 'back',
                                   isDisable: widget.isEdit,
@@ -1673,10 +1901,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       ),
                       BlocBuilder<EstablishBloc, EstablishState>(
                         builder: (context, state) {
-                          if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                          if (state.carInUnitDetailImageStatus ==
+                              CarInUnitDetailImageStatus.success) {
                             if (state.carDatailImage != null) {
                               return InputImageUpdateWidget(
-                                  imageUrl: state.carDatailImage!.imagePath3 ?? '',
+                                  imageUrl:
+                                      state.carDatailImage!.imagePath3 ?? '',
                                   label: 'ด้านซ้าย',
                                   keyName: 'left',
                                   isDisable: widget.isEdit,
@@ -1690,10 +1920,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       ),
                       BlocBuilder<EstablishBloc, EstablishState>(
                         builder: (context, state) {
-                          if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                          if (state.carInUnitDetailImageStatus ==
+                              CarInUnitDetailImageStatus.success) {
                             if (state.carDatailImage != null) {
                               return InputImageUpdateWidget(
-                                  imageUrl: state.carDatailImage!.imagePath4 ?? '',
+                                  imageUrl:
+                                      state.carDatailImage!.imagePath4 ?? '',
                                   label: 'ด้านขวา',
                                   keyName: 'right',
                                   isDisable: widget.isEdit,
@@ -1707,10 +1939,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       ),
                       BlocBuilder<EstablishBloc, EstablishState>(
                         builder: (context, state) {
-                          if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                          if (state.carInUnitDetailImageStatus ==
+                              CarInUnitDetailImageStatus.success) {
                             if (state.carDatailImage != null) {
                               return InputImageUpdateWidget(
-                                  imageUrl: state.carDatailImage!.imagePath5 ?? '',
+                                  imageUrl:
+                                      state.carDatailImage!.imagePath5 ?? '',
                                   label: 'สลิปน้ำหนัก',
                                   keyName: 'weight',
                                   isDisable: widget.isEdit,
@@ -1724,10 +1958,12 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       ),
                       BlocBuilder<EstablishBloc, EstablishState>(
                         builder: (context, state) {
-                          if (state.carInUnitDetailImageStatus == CarInUnitDetailImageStatus.success) {
+                          if (state.carInUnitDetailImageStatus ==
+                              CarInUnitDetailImageStatus.success) {
                             if (state.carDatailImage != null) {
                               return InputImageUpdateWidget(
-                                  imageUrl: state.carDatailImage!.imagePath6 ?? '',
+                                  imageUrl:
+                                      state.carDatailImage!.imagePath6 ?? '',
                                   label: 'ใบขับขี่',
                                   keyName: 'license',
                                   isDisable: widget.isEdit,
@@ -1750,7 +1986,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                       _buildImagePicker('ด้านหลัง', _imageBack, 'back', role),
                       _buildImagePicker('ด้านซ้าย', _imageLeft, 'left', role),
                       _buildImagePicker('ด้านขวา', _imageRight, 'right', role),
-                      _buildImagePicker('สลิปน้ำหนัก', _weightSlip, 'weight', role),
+                      _buildImagePicker(
+                          'สลิปน้ำหนัก', _weightSlip, 'weight', role),
                       _buildImagePicker('ใบขับขี่', _license, 'license', role),
                     ],
                   ),
@@ -1770,7 +2007,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
     );
   }
 
-  Widget _buildImagePicker(String label, File? imageFile, String type, int? role) {
+  Widget _buildImagePicker(
+      String label, File? imageFile, String type, int? role) {
     return GestureDetector(
       onTap: () {
         select_photo_bottom_sheet(
@@ -1889,7 +2127,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
     );
   }
 
-  Future<dynamic> select_photo_bottom_sheet(BuildContext context, Function() tab_camera, Function() tab_gallery) {
+  Future<dynamic> select_photo_bottom_sheet(
+      BuildContext context, Function() tab_camera, Function() tab_gallery) {
     return showModalBottomSheet(
       backgroundColor: Theme.of(context).colorScheme.surface,
       context: context,
@@ -1924,7 +2163,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     Container(
                         height: 32.h,
                         width: 32.h,
-                        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(90.r)),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(90.r)),
                         child: Icon(
                           Icons.camera_alt_outlined,
                           color: Theme.of(context).colorScheme.surface,
@@ -1934,7 +2175,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     Text(
                       'เปิดกล้องถ่ายรูป',
                       textAlign: TextAlign.center,
-                      style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
+                      style: AppTextStyle.title18bold(
+                          color: Theme.of(context).colorScheme.primary),
                     )
                   ],
                 ),
@@ -1947,7 +2189,9 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     Container(
                         height: 32.h,
                         width: 32.h,
-                        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(90.r)),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(90.r)),
                         child: Icon(
                           Icons.photo_size_select_actual_outlined,
                           color: Theme.of(context).colorScheme.surface,
@@ -1957,7 +2201,8 @@ class _UnitDetailsWeighingTrucksScreenState extends State<UnitDetailsWeighingTru
                     Text(
                       'เลือกรูปจากคลังภาพ',
                       textAlign: TextAlign.center,
-                      style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
+                      style: AppTextStyle.title18bold(
+                          color: Theme.of(context).colorScheme.primary),
                     )
                   ],
                 ),

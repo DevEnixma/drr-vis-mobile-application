@@ -13,7 +13,11 @@ class MobileMasterFetchEvent extends EstablishEvent {
   final int page;
   final int pageSize;
 
-  const MobileMasterFetchEvent({required this.start_date, required this.end_date, required this.page, required this.pageSize});
+  const MobileMasterFetchEvent(
+      {required this.start_date,
+      required this.end_date,
+      required this.page,
+      required this.pageSize});
 }
 
 class MobileMasterDepartmentFetchEvent extends EstablishEvent {
@@ -70,7 +74,11 @@ class GetWeightUnitsIsJoinEvent extends EstablishEvent {
   final int page;
   final int pageSize;
 
-  const GetWeightUnitsIsJoinEvent({required this.start_date, required this.end_date, required this.page, required this.pageSize});
+  const GetWeightUnitsIsJoinEvent(
+      {required this.start_date,
+      required this.end_date,
+      required this.page,
+      required this.pageSize});
 }
 
 class ClearPostJoinWeightUnit extends EstablishEvent {

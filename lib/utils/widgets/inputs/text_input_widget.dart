@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wts_bloc/main.dart';
 
@@ -13,7 +14,8 @@ class TextInputWidget extends StatefulWidget {
   final bool? isMultiLine;
   final bool? isDisable;
   final TextInputType? keyBoardType;
-  final Function(String, String)? onTextChange; // Callback สำหรับส่งสองค่าไปที่ Parent
+  final List<TextInputFormatter>? inputFormatters;
+  final Function(String, String)? onTextChange;
   final bool? isCustomStyleColorText;
   final Color? customStyleColorText;
   final bool? isSuffixIcon;
@@ -32,6 +34,7 @@ class TextInputWidget extends StatefulWidget {
     this.isMultiLine,
     this.isDisable,
     this.keyBoardType,
+    this.inputFormatters,
     this.onTextChange,
     this.isCustomStyleColorText,
     this.customStyleColorText,
@@ -78,19 +81,26 @@ class _TextInputWidgetState extends State<TextInputWidget> {
     return TextFormField(
       controller: widget.controller,
       focusNode: widget.focusNode != null ? widget.focusNode : null,
-      maxLines: widget.isMultiLine != null ? 60 ~/ 20 : null, // multi line
-      enabled: widget.isDisable != null ? false : true, // Disable input
+      maxLines: widget.isMultiLine != null ? 60 ~/ 20 : null,
+      enabled: widget.isDisable != null ? false : true,
       maxLength: widget.isMultiLine != null ? 255 : null,
       keyboardType: widget.keyBoardType != null ? widget.keyBoardType : null,
-      style: widget.isCustomStyleColorText != null ? AppTextStyle.title16bold(color: widget.customStyleColorText) : AppTextStyle.title18normal(),
+      inputFormatters: widget.inputFormatters,
+      style: widget.isCustomStyleColorText != null
+          ? AppTextStyle.title16bold(color: widget.customStyleColorText)
+          : AppTextStyle.title18normal(),
       cursorColor: Theme.of(context).colorScheme.onSecondary,
       decoration: InputDecoration(
         hintText: widget.hint,
         hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
         isDense: true,
         filled: true,
-        fillColor: widget.isDisable != null ? widget.isDisableBgColor ?? ColorApps.colorGray : Theme.of(context).colorScheme.surface,
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: ColorApps.grayBorder)),
+        fillColor: widget.isDisable != null
+            ? widget.isDisableBgColor ?? ColorApps.colorGray
+            : Theme.of(context).colorScheme.surface,
+        disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.r),
+            borderSide: const BorderSide(color: ColorApps.grayBorder)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
         ),
@@ -106,7 +116,8 @@ class _TextInputWidgetState extends State<TextInputWidget> {
               color: ColorApps.grayBorder,
               width: 1,
             )),
-        errorStyle: AppTextStyle.label12bold(color: Theme.of(context).colorScheme.error),
+        errorStyle: AppTextStyle.label12bold(
+            color: Theme.of(context).colorScheme.error),
         suffixIcon: widget.isSuffixIcon != null && isShowIconError
             ? IconButton(
                 icon: Icon(
@@ -120,13 +131,12 @@ class _TextInputWidgetState extends State<TextInputWidget> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          // ตรวจสอบถ้าเป็นค่าว่าง
           if (widget.focusNode != null) {
-            widget.focusNode!.requestFocus(); // Auto-focus กลับไปที่ฟิลด์นี้
+            widget.focusNode!.requestFocus();
             return "กรุณากรอกข้อมูล";
           }
         }
-        return null; // ถ้าถูกต้องไม่คืนค่าใดๆ
+        return null;
       },
       onChanged: (value) {
         try {
@@ -142,7 +152,7 @@ class _TextInputWidgetState extends State<TextInputWidget> {
                 });
               }
             }
-            widget.onTextChange!(value, widget.label); // เรียก Callback เมื่อไม่เป็น null
+            widget.onTextChange!(value, widget.label);
           }
         } catch (e) {
           logger.e('===test===> $e');

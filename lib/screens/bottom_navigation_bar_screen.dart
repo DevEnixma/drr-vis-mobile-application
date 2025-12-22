@@ -9,7 +9,7 @@ import '../blocs/profile/profile_bloc.dart';
 import '../local_storage.dart';
 import '../utils/constants/key_localstorage.dart';
 import '../utils/constants/text_style.dart';
-import 'arrest/arrest_screen.dart';
+import 'arrest/arrest_list_screen.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'history/history_screen.dart';
 import 'information/information_screen.dart';
@@ -20,7 +20,8 @@ class BottomNavigationBarScreen extends StatefulWidget {
   const BottomNavigationBarScreen({super.key, required this.index_menu});
 
   @override
-  State<BottomNavigationBarScreen> createState() => _BottomNavigationBarScreenState();
+  State<BottomNavigationBarScreen> createState() =>
+      _BottomNavigationBarScreenState();
 }
 
 class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
@@ -31,7 +32,7 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     const InformationScreen(title: 'ข่าวสาร'),
     const DashboardScreen(),
     const HistoryScreen(title: 'ดูข้อมูลย้อนหลัง'),
-    const ArrestScreen(title: 'การจับกุม4'),
+    const ArrestListScreen(),
   ];
 
   int _selectedIndex = 2;
@@ -45,7 +46,8 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
   }
 
   void checkLogin() async {
-    String? accessToken = await storage.getValueString(KeyLocalStorage.accessToken);
+    String? accessToken =
+        await storage.getValueString(KeyLocalStorage.accessToken);
     print('accessToken $accessToken');
     print('isLogged checkLogin $isLogged');
 
@@ -77,7 +79,8 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     //   });
     // }
 
-    String? accessToken = await storage.getValueString(KeyLocalStorage.accessToken);
+    String? accessToken =
+        await storage.getValueString(KeyLocalStorage.accessToken);
 
     if (index == 4) {
       if (accessToken == null || accessToken.isEmpty) {
@@ -147,7 +150,9 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
                     child: SvgPicture.asset(
                       'assets/svg/entypo_traffic-cone.svg',
                       // ignore: deprecated_member_use
-                      color: _selectedIndex == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                      color: _selectedIndex == 0
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.onSurface,
 
                       width: 20.h,
                     ),
@@ -160,7 +165,9 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
                     child: SvgPicture.asset(
                       'assets/svg/iconamoon_news-fill.svg',
                       // ignore: deprecated_member_use
-                      color: _selectedIndex == 1 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                      color: _selectedIndex == 1
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.onSurface,
                       width: 20.h,
                     ),
                   ),
@@ -172,7 +179,9 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
                     child: SvgPicture.asset(
                       'assets/svg/mage_dashboard-fill.svg',
                       // ignore: deprecated_member_use
-                      color: _selectedIndex == 2 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                      color: _selectedIndex == 2
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.onSurface,
                       width: 20.h,
                     ),
                   ),
@@ -184,7 +193,9 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
                     child: SvgPicture.asset(
                       'assets/svg/mdi_graph-line.svg',
                       // ignore: deprecated_member_use
-                      color: _selectedIndex == 3 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                      color: _selectedIndex == 3
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.onSurface,
                       width: 20.h,
                     ),
                   ),
@@ -196,15 +207,19 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: Image.asset(
                       'assets/images/handcuffs.png',
-                      color: _selectedIndex == 4 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                      color: _selectedIndex == 4
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   label: 'การจับกุม',
                 ),
               ],
               onTap: _onItemTapped,
-              unselectedLabelStyle: AppTextStyle.label12normal(color: Theme.of(context).colorScheme.onSurface),
-              selectedLabelStyle: AppTextStyle.label12normal(color: Theme.of(context).colorScheme.surface),
+              unselectedLabelStyle: AppTextStyle.label12normal(
+                  color: Theme.of(context).colorScheme.onSurface),
+              selectedLabelStyle: AppTextStyle.label12normal(
+                  color: Theme.of(context).colorScheme.surface),
             ),
           ),
         ),
