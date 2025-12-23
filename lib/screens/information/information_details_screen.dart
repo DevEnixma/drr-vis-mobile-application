@@ -156,7 +156,7 @@ class _InformationDetailsScreenState extends State<InformationDetailsScreen> {
                         Routes.gotoPreviewFile(
                             context: context,
                             url: item.url.toString(),
-                            nameFile: item.name.toString());
+                            fileName: item.name.toString());
                       },
                       child: Container(
                         padding: EdgeInsets.symmetric(

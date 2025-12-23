@@ -4,4 +4,7 @@ abstract class ArrestRepo {
   Future<dynamic> postArrestLogs(String body);
   Future<dynamic> putArrestLogs(String tdId, body);
   Future<dynamic> getArrestLogsShow(String arrestId);
+
+  // เพิ่มใหม่: method สำหรับดึง PDF URL
+  String getArrestLogsPdfUrl(String arrestId);
 }

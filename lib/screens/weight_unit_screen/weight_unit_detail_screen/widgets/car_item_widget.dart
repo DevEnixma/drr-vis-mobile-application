@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../app/config/server_config.dart';
 import '../../../../app/routes/routes.dart';
 import '../../../../data/models/establish/mobile_car_model.dart';
+import '../../../../data/repo/repo.dart';
 import '../../../../utils/constants/text_style.dart';
 import '../../../../utils/libs/string_helper.dart';
 import '../../../../utils/widgets/tag_car_over_weight_widget.dart';
@@ -27,9 +27,39 @@ class _CarItemWidgetState extends State<CarItemWidget> {
   bool _isLoading = false;
 
   void getPdf(String arrestId) async {
-    final pdfUrl = '${ServerConfig.baseUrl}/arrest_record/${arrestId}/export_pdf';
+    if (_isLoading) return;
 
-    Routes.gotoPreviewFile(context: context, url: pdfUrl, nameFile: 'บันทึกจับกุม_${widget.item.tdId}.pdf');
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // ใช้ repo เพื่อดึง PDF URL
+      final pdfUrl = arrestRepo.getArrestLogsPdfUrl(arrestId);
+
+      // นำทางไปยังหน้าแสดง PDF
+      Routes.gotoPreviewFile(
+        context: context,
+        url: pdfUrl,
+        fileName: 'บันทึกจับกุม_${widget.item.tdId}.pdf',
+      );
+    } catch (e) {
+      // แสดง error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ไม่สามารถเปิดเอกสารได้: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -53,11 +83,15 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                 Container(
                   padding: EdgeInsets.only(top: 5),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('${StringHleper.checkString(item.lpHeadNo)} ${StringHleper.checkString(item.lpHeadProvinceName)}', style: AppTextStyle.title16bold()),
+                        Text(
+                          '${StringHleper.checkString(item.lpHeadNo)} ${StringHleper.checkString(item.lpHeadProvinceName)}',
+                          style: AppTextStyle.title16bold(),
+                        ),
                       ],
                     ),
                   ),
@@ -84,7 +118,8 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                         child: Image.network(
                           widget.item.imagePath1 ?? '',
                           fit: BoxFit.cover,
-                          errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                          errorBuilder: (BuildContext context, Object error,
+                              StackTrace? stackTrace) {
                             return Image.asset(
                               'assets/images/icon_placeholder_car.png',
                               fit: BoxFit.cover,
@@ -100,20 +135,60 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               TagCarOverWeightWidget(
-                                isOverWeight: StringHleper.checkString(item.isOverWeight),
-                                isOverWeightDesc: StringHleper.checkString(item.isOverWeightDesc),
+                                isOverWeight:
+                                    StringHleper.checkString(item.isOverWeight),
+                                isOverWeightDesc: StringHleper.checkString(
+                                    item.isOverWeightDesc),
                               ),
-                              if (widget.isShowArrest != null && item.isArrested != null && item.isArrested == 1)
+                              if (widget.isShowArrest != null &&
+                                  item.isArrested != null &&
+                                  item.isArrested == 1)
                                 GestureDetector(
-                                  onTap: () {
-                                    getPdf(widget.item.arrestId.toString());
-                                  },
+                                  onTap: _isLoading
+                                      ? null
+                                      : () {
+                                          getPdf(
+                                              widget.item.arrestId.toString());
+                                        },
                                   child: Container(
-                                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(5.r), border: Border.all(color: Theme.of(context).colorScheme.primary)),
+                                    decoration: BoxDecoration(
+                                      color: _isLoading
+                                          ? Colors.grey[300]
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .surface,
+                                      borderRadius: BorderRadius.circular(5.r),
+                                      border: Border.all(
+                                        color: _isLoading
+                                            ? Colors.grey
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                      ),
+                                    ),
                                     margin: const EdgeInsets.only(bottom: 6.0),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 4),
                                     child: Center(
-                                      child: Text('ดูบันทึกการจับกุม', style: AppTextStyle.title14bold(color: Theme.of(context).colorScheme.primary)),
+                                      child: _isLoading
+                                          ? SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
+                                            )
+                                          : Text(
+                                              'ดูบันทึกการจับกุม',
+                                              style: AppTextStyle.title14bold(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                 ),
@@ -130,7 +205,8 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                               ),
                               Expanded(
                                 child: Text(
-                                  StringHleper.checkString(item.vehicleClassDesc),
+                                  StringHleper.checkString(
+                                      item.vehicleClassDesc),
                                   style: AppTextStyle.title14normal(),
                                 ),
                               ),
@@ -147,7 +223,8 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                               ),
                               Expanded(
                                 child: Text(
-                                  StringHleper.convertTimeThai(item.createDate.toString()),
+                                  StringHleper.convertTimeThai(
+                                      item.createDate.toString()),
                                   style: AppTextStyle.title14normal(),
                                 ),
                               ),
@@ -163,12 +240,15 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('น้ำหนักที่ชั่งรวม', style: AppTextStyle.title16bold()),
+                      Text('น้ำหนักที่ชั่งรวม',
+                          style: AppTextStyle.title16bold()),
                       SizedBox(
                         width: 5.h,
                       ),
-                      // Text('${StringHleper.convertStringToKilo(item.isOverWeight == 'N' ? item.grossWeight : item.grossWeightOver)} กิโลกรัม', style: AppTextStyle.title16bold()),
-                      Text('${StringHleper.convertStringToKilo(item.grossWeight)} กิโลกรัม', style: AppTextStyle.title16bold()),
+                      Text(
+                        '${StringHleper.convertStringToKilo(item.grossWeight)} กิโลกรัม',
+                        style: AppTextStyle.title16bold(),
+                      ),
                     ],
                   ),
                 ),
@@ -176,19 +256,16 @@ class _CarItemWidgetState extends State<CarItemWidget> {
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4.h),
                   child: Row(
                     children: [
-                      Text('น้ำหนักตามกฎหมายกำหนด ${StringHleper.convertStringToKilo(item.legalWeight)} กิโลกรัม', style: AppTextStyle.title14normal()),
+                      Text(
+                        'น้ำหนักตามกฎหมายกำหนด ${StringHleper.convertStringToKilo(item.legalWeight)} กิโลกรัม',
+                        style: AppTextStyle.title14normal(),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          // Divider(
-          //   color: Theme.of(context).colorScheme.tertiaryContainer,
-          //   height: 1,
-          //   indent: 20,
-          //   endIndent: 20,
-          // ),
         ],
       ),
     );

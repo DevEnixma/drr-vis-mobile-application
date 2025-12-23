@@ -2,147 +2,197 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import '../../main.dart';
 import '../../service/token_refresh.service.dart';
+import '../../local_storage.dart';
+import '../constants/key_localstorage.dart';
 import '../constants/text_style.dart';
 
 class CustomPreviewFile extends StatefulWidget {
   const CustomPreviewFile({
     super.key,
-    this.url,
-    this.nameFile,
+    required this.url,
+    required this.fileName,
   });
 
-  final String? url;
-  final String? nameFile;
+  final String url;
+  final String fileName;
 
   @override
   State<CustomPreviewFile> createState() => _CustomPreviewFileState();
 }
 
 class _CustomPreviewFileState extends State<CustomPreviewFile> {
-  File? downloadedFile;
+  File? _downloadedFile;
+  String? _errorMessage;
+  bool _isSharing = false;
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+  final LocalStorage _storage = LocalStorage();
 
   @override
   void initState() {
     super.initState();
-
-    initScreen();
+    _downloadPdf();
   }
 
-  void initScreen() async {
-    if (widget.url != null) {
-      final file = await downloadAndOpenPdf(widget.url!, widget.nameFile!);
-
-      setState(() {
-        downloadedFile = file;
-      });
-    }
-  }
-
-  Future<File?> downloadAndOpenPdf(String url, String filename) async {
+  Future<String?> _getAccessToken() async {
     try {
-      // Get temporary directory
-      final directory = await getTemporaryDirectory();
-      final filePath = '${directory.path}/$filename';
-
-      // Download the file
-      final dio = Dio();
-      await dio.download(url, filePath);
-      print('File downloaded to $filePath');
-
-      return File(filePath);
+      final token = await _storage.getValueString(KeyLocalStorage.accessToken);
+      if (token != null && token.isNotEmpty) {
+        return token;
+      }
+      return null;
     } catch (e) {
-      print('Error: $e');
+      logger.e('Error getting access token: $e');
       return null;
     }
   }
 
-  Future<File?> downloadAndSavePdf(BuildContext context, String url, String filename) async {
+  Future<void> _downloadPdf() async {
+    if (_isDownloading) return;
+
+    setState(() {
+      _isDownloading = true;
+      _errorMessage = null;
+      _downloadProgress = 0.0;
+    });
+
     try {
-      Directory? directory;
+      final directory = await getTemporaryDirectory();
+      final filePath = '${directory.path}/${widget.fileName}';
 
-      if (Platform.isAndroid) {
-        // Show permission request modal
-        final status = await Permission.manageExternalStorage.status;
-        if (!status.isGranted) {
-          final result = await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text("Permission Required"),
-              content: const Text("This app needs permission to save files to your device."),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-                TextButton(
-                  child: const Text('Grant'),
-                  onPressed: () => Navigator.of(context).pop(true),
-                ),
-              ],
-            ),
-          );
-
-          if (result == true) {
-            await Permission.manageExternalStorage.request(); // Request permission after user clicks "Grant"
-            if (await Permission.manageExternalStorage.isGranted) {
-              // Check if permission is granted after request
-              directory = Directory('/storage/emulated/0/Download'); // Downloads folder
-            } else {
-              // Permission denied after request
-              showDialog(
-                context: context,
-                builder: (BuildContext context) => AlertDialog(
-                  title: const Text("Permission Denied"),
-                  content: const Text("Permission to save files was denied."),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('OK'),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-              );
-              return null;
-            }
-          } else {
-            // User cancelled the permission request
-            return null;
-          }
-        } else {
-          directory = Directory('/storage/emulated/0/Download'); // Permission already granted
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
+      // Check if file already exists
+      final file = File(filePath);
+      if (await file.exists()) {
+        setState(() {
+          _downloadedFile = file;
+          _isDownloading = false;
+          _downloadProgress = 1.0;
+        });
+        return;
       }
 
-      if (directory == null) return null;
+      // Get access token
+      final accessToken = await _getAccessToken();
 
-      final filePath = '${directory.path}/$filename';
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('ไม่พบ Access Token กรุณาเข้าสู่ระบบใหม่');
+      }
+
+      // Download the file with authorization header
       final dio = Dio();
-      await dio.download(url, filePath);
+      dio.options.headers['Authorization'] = 'Bearer $accessToken';
+      dio.options.receiveTimeout = const Duration(minutes: 10);
+      dio.options.connectTimeout = const Duration(minutes: 2);
 
-      return File(filePath);
+      await dio.download(
+        widget.url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1 && mounted) {
+            setState(() {
+              _downloadProgress = received / total;
+            });
+          }
+        },
+      );
+
+      // Verify file was downloaded
+      final downloadedFile = File(filePath);
+      if (!await downloadedFile.exists()) {
+        throw Exception('ไม่สามารถบันทึกไฟล์ได้');
+      }
+
+      final fileSize = await downloadedFile.length();
+      if (fileSize == 0) {
+        throw Exception('ไฟล์ที่ดาวน์โหลดมีขนาด 0 bytes');
+      }
+
+      if (mounted) {
+        setState(() {
+          _downloadedFile = downloadedFile;
+          _isDownloading = false;
+          _downloadProgress = 1.0;
+        });
+      }
+    } on DioException catch (e) {
+      logger.e('DioException: ${e.type} - ${e.message}');
+      logger.e('Status Code: ${e.response?.statusCode}');
+
+      String errorMsg = 'ไม่สามารถดาวน์โหลดไฟล์ได้';
+
+      if (e.response?.statusCode == 401) {
+        errorMsg = 'หมดเวลาเข้าใช้งาน กรุณาเข้าสู่ระบบใหม่';
+      } else if (e.response?.statusCode == 404) {
+        errorMsg = 'ไม่พบไฟล์ที่ต้องการ';
+      } else if (e.response?.statusCode == 403) {
+        errorMsg = 'ไม่มีสิทธิ์เข้าถึงไฟล์นี้';
+      } else if (e.response?.statusCode == 504) {
+        errorMsg =
+            'เซิร์ฟเวอร์ใช้เวลาสร้างเอกสารนานเกินไป\nกรุณาลองใหม่อีกครั้ง';
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMsg = 'เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        errorMsg = 'ดาวน์โหลดไฟล์ใช้เวลานานเกินไป\nกรุณาลองใหม่อีกครั้ง';
+      } else if (e.type == DioExceptionType.unknown &&
+          e.error is SocketException) {
+        errorMsg = 'ไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้';
+      }
+
+      if (mounted) {
+        setState(() {
+          _errorMessage = errorMsg;
+          _isDownloading = false;
+        });
+      }
     } catch (e) {
-      logger.e('==111==downloadAndSavePdf==error==> ${e}');
-      print('Error: $e');
-      return null;
+      logger.e('Download error: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'เกิดข้อผิดพลาด: ${e.toString()}';
+          _isDownloading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _shareFile() async {
+    if (_downloadedFile == null || _isSharing) return;
+
+    setState(() => _isSharing = true);
+
+    try {
+      final xfile = XFile(_downloadedFile!.path, mimeType: 'application/pdf');
+      await Share.shareXFiles([xfile], text: widget.fileName);
+    } catch (e) {
+      logger.e('Share error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ไม่สามารถแชร์ไฟล์ได้'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSharing = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -152,60 +202,122 @@ class _CustomPreviewFileState extends State<CustomPreviewFile> {
             Icons.arrow_back_rounded,
             color: Theme.of(context).colorScheme.surface,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-            FocusScope.of(context).unfocus();
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'เอกสาร',
           textAlign: TextAlign.center,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+            color: Theme.of(context).colorScheme.surface,
+          ),
         ),
         actions: [
-          GestureDetector(
-            onTap: () async {
-              // downloadAndSavePdf(context, widget.url!, widget.nameFile!);
-              // final file = await _loadPdfFromAssets();
-              // final xfile = XFile(file.path, mimeType: 'application/pdf');
-              // Share.shareXFiles([xfile]);
-              final file = await downloadAndSavePdf(context, widget.url!, widget.nameFile!);
-              if (file != null) {
-                final xfile = XFile(file.path, mimeType: 'application/pdf');
-                Share.shareXFiles([xfile]);
-              } else {
-                logger.e("Failed to download the file for sharing.");
-              }
-            },
-            child: Padding(
-              padding: EdgeInsets.only(right: 12.h),
-              child: SvgPicture.asset('assets/svg/material-symbols_upload-file-outline.svg'),
+          if (_downloadedFile != null)
+            IconButton(
+              icon: _isSharing
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.surface,
+                      ),
+                    )
+                  : Icon(
+                      Icons.ios_share,
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+              onPressed: _isSharing ? null : _shareFile,
             ),
-          )
         ],
       ),
-      body: downloadedFile != null
-          ? SfPdfViewer.file(downloadedFile!)
-          : Center(
-              child: CircularProgressIndicator(),
-            ),
+      body: _buildBody(),
     );
   }
 
-  Future<File> _loadPdfFromAssets() async {
-    // Load the PDF from assets folder
+  Widget _buildBody() {
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage!,
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() => _errorMessage = null);
+                  _downloadPdf();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('ลองใหม่'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
-    final byteData = await rootBundle.load('assets/sample.pdf');
+    if (_isDownloading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 60,
+              height: 60,
+              child: CircularProgressIndicator(
+                value: _downloadProgress > 0 ? _downloadProgress : null,
+                strokeWidth: 6,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _downloadProgress > 0
+                  ? 'กำลังดาวน์โหลด ${(_downloadProgress * 100).toStringAsFixed(0)}%'
+                  : 'กำลังเตรียมเอกสาร...',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                widget.fileName,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
-    // Get the app's directory to store the file temporarily
-    final directory = await getApplicationDocumentsDirectory();
+    if (_downloadedFile == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    // Create a new file in that directory
-    final file = File('${directory.path}/${widget.nameFile!}');
+    return SfPdfViewer.file(
+      _downloadedFile!,
+      onDocumentLoadFailed: (details) {
+        logger.e('PDF load failed: ${details.error} - ${details.description}');
+        setState(() {
+          _errorMessage = 'ไม่สามารถโหลด PDF ได้: ${details.description}';
+        });
+      },
+    );
+  }
 
-    // Write the PDF data into the file
-    await file.writeAsBytes(byteData.buffer.asUint8List());
-
-    return file;
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

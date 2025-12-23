@@ -7,18 +7,21 @@ class ApiPath {
 
   static const String getCCTV = '/dashboards/cctv';
 
-  static const String getDailyWeighedSumVehicle = '/dashboards/daily_weighed_vehicles_sum';
+  static const String getDailyWeighedSumVehicle =
+      '/dashboards/daily_weighed_vehicles_sum';
 
-  static const String getVehicleWeightInspection = '/dashboards/vehicle_weight_inspection';
+  static const String getVehicleWeightInspection =
+      '/dashboards/vehicle_weight_inspection';
 
-  static const String getDashboardViewSumPlanChart = '/dashboards/view_sum_plan_chart';
+  static const String getDashboardViewSumPlanChart =
+      '/dashboards/view_sum_plan_chart';
 
   static const String getMobileMaster = '/weight/mobile_master';
 
   static const String getMobileCar = '/weight/weight_mobile_car';
 
   static String getMobileCarDetail(String tdId) {
-    return '/weight/weight_mobile_car/${tdId}';
+    return '/weight/weight_mobile_car/$tdId';
   }
 
   static const String getInfoWeightArretSport = '/info/weight_arrest/spot';
@@ -34,13 +37,13 @@ class ApiPath {
   static const String getCollaborative = '/masters/collaborative_list';
   static const String getWays = '/masters/way_all';
   static String getWayID(String wayID) {
-    return '/masters/way/${wayID}';
+    return '/masters/way/$wayID';
   }
 
   static const String postUnitWeight = '/weight/weight_mobile_master';
 
   static String postUnitWeightImage(unitID) {
-    return '/weight/weight_mobile_master/${unitID}/photo';
+    return '/weight/weight_mobile_master/$unitID/photo';
   }
 
   static String getMasterVehicleClass = '/masters/vehicle_class';
@@ -53,25 +56,30 @@ class ApiPath {
   static String putWeightAddCar = '/weight/weight_mobile_master_detail';
 
   static String postWeightAddCarImage(tId, tdId) {
-    return '/weight/weight_mobile_master_detail/photo/${tId}/${tdId}';
+    return '/weight/weight_mobile_master_detail/photo/$tId/$tdId';
   }
 
   static String getWeightAddCarImage(tId, tdId) {
-    return '/weight/weight_mobile_master_detail/photo/${tId}/${tdId}';
+    return '/weight/weight_mobile_master_detail/photo/$tId/$tdId';
   }
 
   static String getNews = '/news';
   static String getNewsDetail(newsId) {
-    return '/news/${newsId}';
+    return '/news/$newsId';
   }
 
   static const String postArrestLogs = '/arrest_record';
-  static String getArrestLogs(String td_id) {
-    return '/arrest_record/$td_id';
+  static String getArrestLogs(String tdId) {
+    return '/arrest_record/$tdId';
   }
 
-  static String putArrestLogs(String td_id) {
-    return '/arrest_record/$td_id';
+  static String putArrestLogs(String tdId) {
+    return '/arrest_record/$tdId';
+  }
+
+  // เพิ่มใหม่: API path สำหรับ PDF
+  static String getArrestLogsPdf(String arrestId) {
+    return '/arrest_record/$arrestId/export_pdf';
   }
 
   static const String getProvinceMaster = '/masters/provinces';
@@ -80,17 +88,17 @@ class ApiPath {
 
   static const String postJoinUnitWeight = '/weight/weight_mobile_master/join';
   static String deleteJoinUnitWeight(String tId, username) {
-    return '/weight/weight_mobile_master/join/${tId}/${username}';
+    return '/weight/weight_mobile_master/join/$tId/$username';
   }
 
   static String postCloseWeightUnit(String tId) {
-    return '/weight/weight_mobile_master/${tId}/close';
+    return '/weight/weight_mobile_master/$tId/close';
   }
 
   static const String getTopFiveRoad = '/info/current_vehicle_status/itemsSum';
 
   static String getRoadCodeDetail(String roadCode) {
-    return '/masters/roads/road_code/${roadCode}';
+    return '/masters/roads/road_code/$roadCode';
   }
 
   static const String getRoadCodeCar = '/info/current_vehicle_status';

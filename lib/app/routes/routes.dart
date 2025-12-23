@@ -146,12 +146,12 @@ class Routes {
   }
 
   static Future<dynamic> gotoPreviewFile(
-      {context, required String url, nameFile}) async {
+      {context, required String url, required String fileName}) async {
     Map<String, dynamic>? data = await Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) =>
-              CustomPreviewFile(url: url, nameFile: nameFile)),
+              CustomPreviewFile(url: url, fileName: fileName)),
     );
     return data;
   }
