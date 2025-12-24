@@ -22,23 +22,42 @@ import 'login/login_repo_impl.dart';
 final getIt = GetIt.instance;
 
 void initRepo() {
-  getIt.registerLazySingleton<ProductRepo>(() => ProductRepoImpl());
-  getIt.registerLazySingleton<LoginRepo>(() => LoginRepoImpl());
-  getIt.registerLazySingleton<DashboardRepo>(() => DashboardRepoImpl());
-  getIt.registerLazySingleton<EstablishRepo>(() => EstablishRepoImpl());
-  getIt.registerLazySingleton<ProfileRepo>(() => ProfileRepoImpl());
-  getIt.registerLazySingleton<ArrestRepo>(() => ArrestRepoImpl());
-  getIt.registerLazySingleton<CollaborativeRepo>(() => CollaborativeRepoImpl());
-  getIt.registerLazySingleton<MasterDataRepo>(() => MasterDataRepoImpl());
-  getIt.registerLazySingleton<NewsRepo>(() => NewsRepoImpl());
+  if (!getIt.isRegistered<ProductRepo>()) {
+    getIt.registerLazySingleton<ProductRepo>(() => ProductRepoImpl());
+  }
+  if (!getIt.isRegistered<LoginRepo>()) {
+    getIt.registerLazySingleton<LoginRepo>(() => LoginRepoImpl());
+  }
+  if (!getIt.isRegistered<DashboardRepo>()) {
+    getIt.registerLazySingleton<DashboardRepo>(() => DashboardRepoImpl());
+  }
+  if (!getIt.isRegistered<EstablishRepo>()) {
+    getIt.registerLazySingleton<EstablishRepo>(() => EstablishRepoImpl());
+  }
+  if (!getIt.isRegistered<ProfileRepo>()) {
+    getIt.registerLazySingleton<ProfileRepo>(() => ProfileRepoImpl());
+  }
+  if (!getIt.isRegistered<ArrestRepo>()) {
+    getIt.registerLazySingleton<ArrestRepo>(() => ArrestRepoImpl());
+  }
+  if (!getIt.isRegistered<CollaborativeRepo>()) {
+    getIt.registerLazySingleton<CollaborativeRepo>(
+        () => CollaborativeRepoImpl());
+  }
+  if (!getIt.isRegistered<MasterDataRepo>()) {
+    getIt.registerLazySingleton<MasterDataRepo>(() => MasterDataRepoImpl());
+  }
+  if (!getIt.isRegistered<NewsRepo>()) {
+    getIt.registerLazySingleton<NewsRepo>(() => NewsRepoImpl());
+  }
 }
 
-ProductRepo get productRepo => getIt.get<ProductRepo>();
-LoginRepo get loginRepo => getIt.get<LoginRepo>();
-DashboardRepo get dashboardRepo => getIt.get<DashboardRepo>();
-EstablishRepo get establishRepo => getIt.get<EstablishRepo>();
-ProfileRepo get profileRepo => getIt.get<ProfileRepo>();
-ArrestRepo get arrestRepo => getIt.get<ArrestRepo>();
-CollaborativeRepo get collaborativeRepo => getIt.get<CollaborativeRepo>();
-MasterDataRepo get masterDataRepo => getIt.get<MasterDataRepo>();
-NewsRepo get newsRepo => getIt.get<NewsRepo>();
+ProductRepo get productRepo => getIt<ProductRepo>();
+LoginRepo get loginRepo => getIt<LoginRepo>();
+DashboardRepo get dashboardRepo => getIt<DashboardRepo>();
+EstablishRepo get establishRepo => getIt<EstablishRepo>();
+ProfileRepo get profileRepo => getIt<ProfileRepo>();
+ArrestRepo get arrestRepo => getIt<ArrestRepo>();
+CollaborativeRepo get collaborativeRepo => getIt<CollaborativeRepo>();
+MasterDataRepo get masterDataRepo => getIt<MasterDataRepo>();
+NewsRepo get newsRepo => getIt<NewsRepo>();
