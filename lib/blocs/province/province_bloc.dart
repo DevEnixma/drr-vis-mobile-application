@@ -9,56 +9,95 @@ part 'province_event.dart';
 part 'province_state.dart';
 
 class ProvinceBloc extends Bloc<ProvinceEvent, ProvinceState> {
+  static const int _defaultPage = 1;
+  static const int _defaultPageSize = 999;
+
   ProvinceBloc() : super(const ProvinceState()) {
-    on<GetProvince>((event, emit) async {
-      try {
-        emit(state.copyWith(provinceStatus: ProvinceStatus.loading));
+    on<GetProvince>(_onGetProvince);
+    on<SelectProvince>(_onSelectProvince);
+    on<SelectProvinceTail>(_onSelectProvinceTail);
+    on<ClearSelectProvince>(_onClearSelectProvince);
+    on<ClearSelectProvinceTail>(_onClearSelectProvinceTail);
+    on<SelectProvinceArrest>(_onSelectProvinceArrest);
+    on<SelectProvincePolice>(_onSelectProvincePolice);
+  }
 
-        var body = ProvinceModelReq(
-          page: 1,
-          pageSize: 999,
-          textSearch: event.payload,
-        );
+  Future<void> _onGetProvince(
+    GetProvince event,
+    Emitter<ProvinceState> emit,
+  ) async {
+    emit(state.copyWith(provinceStatus: ProvinceStatus.loading));
 
-        final response = await masterDataRepo.getMasterProvince(body.toJson());
+    try {
+      final body = ProvinceModelReq(
+        page: _defaultPage,
+        pageSize: _defaultPageSize,
+        textSearch: event.payload,
+      );
 
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List items = response.data['data'];
-          var result = items.map((e) => ProvinceModelRes.fromJson(e)).toList();
+      final response = await masterDataRepo.getMasterProvince(body.toJson());
 
-          emit(state.copyWith(provinceStatus: ProvinceStatus.success, province: result));
-          return;
-        }
-        emit(state.copyWith(provinceStatus: ProvinceStatus.error, provinceError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(provinceStatus: ProvinceStatus.error, provinceError: e.toString()));
-        return;
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data'];
+        final result = items.map((e) => ProvinceModelRes.fromJson(e)).toList();
+
+        emit(state.copyWith(
+          provinceStatus: ProvinceStatus.success,
+          province: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          provinceStatus: ProvinceStatus.error,
+          provinceError: response.error ?? 'Unknown error',
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        provinceStatus: ProvinceStatus.error,
+        provinceError: e.toString(),
+      ));
+    }
+  }
 
-    on<SelectProvince>((event, emit) async {
-      emit(state.copyWith(selectProvince: event.payload));
-    });
+  void _onSelectProvince(
+    SelectProvince event,
+    Emitter<ProvinceState> emit,
+  ) {
+    emit(state.copyWith(selectProvince: event.payload));
+  }
 
-    on<SelectProvinceTail>((event, emit) async {
-      emit(state.copyWith(selectProvinceTail: event.payload));
-    });
+  void _onSelectProvinceTail(
+    SelectProvinceTail event,
+    Emitter<ProvinceState> emit,
+  ) {
+    emit(state.copyWith(selectProvinceTail: event.payload));
+  }
 
-    on<ClearSelectProvince>((event, emit) async {
-      emit(state.copyWith(selectProvince: ProvinceModelRes.empty()));
-    });
+  void _onClearSelectProvince(
+    ClearSelectProvince event,
+    Emitter<ProvinceState> emit,
+  ) {
+    emit(state.copyWith(selectProvince: ProvinceModelRes.empty()));
+  }
 
-    on<ClearSelectProvinceTail>((event, emit) async {
-      emit(state.copyWith(selectProvinceTail: ProvinceModelRes.empty()));
-    });
+  void _onClearSelectProvinceTail(
+    ClearSelectProvinceTail event,
+    Emitter<ProvinceState> emit,
+  ) {
+    emit(state.copyWith(selectProvinceTail: ProvinceModelRes.empty()));
+  }
 
-    on<SelectProvinceArrest>((event, emit) async {
-      emit(state.copyWith(selectProvinceArrest: event.payload));
-    });
+  void _onSelectProvinceArrest(
+    SelectProvinceArrest event,
+    Emitter<ProvinceState> emit,
+  ) {
+    emit(state.copyWith(selectProvinceArrest: event.payload));
+  }
 
-    on<SelectProvincePolice>((event, emit) async {
-      emit(state.copyWith(selectProvincePolice: event.payload));
-    });
+  void _onSelectProvincePolice(
+    SelectProvincePolice event,
+    Emitter<ProvinceState> emit,
+  ) {
+    emit(state.copyWith(selectProvincePolice: event.payload));
   }
 }

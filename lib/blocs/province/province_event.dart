@@ -7,40 +7,55 @@ sealed class ProvinceEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetProvince extends ProvinceEvent {
+final class GetProvince extends ProvinceEvent {
   final String payload;
 
   const GetProvince(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class SelectProvince extends ProvinceEvent {
+final class SelectProvince extends ProvinceEvent {
   final ProvinceModelRes payload;
 
   const SelectProvince(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class SelectProvinceTail extends ProvinceEvent {
+final class SelectProvinceTail extends ProvinceEvent {
   final ProvinceModelRes payload;
 
   const SelectProvinceTail(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class ClearSelectProvince extends ProvinceEvent {
+final class ClearSelectProvince extends ProvinceEvent {
   const ClearSelectProvince();
 }
 
-class ClearSelectProvinceTail extends ProvinceEvent {
+final class ClearSelectProvinceTail extends ProvinceEvent {
   const ClearSelectProvinceTail();
 }
 
-class SelectProvinceArrest extends ProvinceEvent {
+final class SelectProvinceArrest extends ProvinceEvent {
   final ProvinceModelRes payload;
 
   const SelectProvinceArrest(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class SelectProvincePolice extends ProvinceEvent {
+final class SelectProvincePolice extends ProvinceEvent {
   final ProvinceModelRes payload;
 
   const SelectProvincePolice(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
