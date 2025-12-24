@@ -26,8 +26,8 @@ class _TitleCardWidgetState extends State<TitleCardWidget> {
     return Container(
       child: BlocBuilder<DashboardBloc, DashboardState>(
         builder: (context, state) {
-          if (state.dashboardSumVehicleStatus == DashboardSumVehicleStatus.success) {
-            // print("XXXXX: ${state.daily_weighed_vehicles_sum!.stationTypeDesc}");
+          if (state.dashboardSumVehicleStatus ==
+              DashboardSumVehicleStatus.success) {
             return Container(
               margin: EdgeInsets.symmetric(vertical: 12.h, horizontal: 18.h),
               decoration: BoxDecoration(
@@ -47,7 +47,8 @@ class _TitleCardWidgetState extends State<TitleCardWidget> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${state.daily_weighed_vehicles_sum?.total ?? 0} คัน', style: AppTextStyle.title20bold()),
+                      Text('${state.dailyWeighedVehiclesSum?.total ?? 0} คัน',
+                          style: AppTextStyle.title20bold()),
                       Text(
                         'จำนวนรถเข้าชั่ง',
                         style: AppTextStyle.title14normal(),
@@ -57,10 +58,13 @@ class _TitleCardWidgetState extends State<TitleCardWidget> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${state.daily_weighed_vehicles_sum?.over ?? 0} คัน', style: AppTextStyle.title20bold(color: Theme.of(context).colorScheme.error)),
+                      Text('${state.dailyWeighedVehiclesSum?.over ?? 0} คัน',
+                          style: AppTextStyle.title20bold(
+                              color: Theme.of(context).colorScheme.error)),
                       Text(
                         'บรรทุกเกิน',
-                        style: AppTextStyle.title14normal(color: Theme.of(context).colorScheme.error),
+                        style: AppTextStyle.title14normal(
+                            color: Theme.of(context).colorScheme.error),
                       ),
                     ],
                   ),

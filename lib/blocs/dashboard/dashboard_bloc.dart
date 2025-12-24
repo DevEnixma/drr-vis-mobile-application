@@ -27,7 +27,9 @@ part 'dashboard_event.dart';
 part 'dashboard_state.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
-  DashboardBloc() : super(DashboardState()) {
+  static const String _mobileStationType = 'หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่';
+
+  DashboardBloc() : super(const DashboardState()) {
     on<CCTVFetchEvent>(_onCCTVFetch);
     on<DailyWeighedSumVehicleFetchEvent>(_onDailyWeighedSumVehicleFetch);
     on<VehicleWeightInspectionFetchEvent>(_onVehicleWeightInspectionFetch);
@@ -52,12 +54,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
         emit(state.copyWith(
           dashboardCCTVStatus: DashboardCCTVStatus.success,
-          cctv_list: result,
+          cctvList: result,
         ));
       } else {
         emit(state.copyWith(
           dashboardCCTVStatus: DashboardCCTVStatus.error,
-          dashboardCCTVError: response.error,
+          dashboardCCTVError: response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {
@@ -86,12 +88,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
         emit(state.copyWith(
           dashboardSumVehicleStatus: DashboardSumVehicleStatus.success,
-          daily_weighed_vehicles_sum: result,
+          dailyWeighedVehiclesSum: result,
         ));
       } else {
         emit(state.copyWith(
           dashboardSumVehicleStatus: DashboardSumVehicleStatus.error,
-          dashboardSumVehicleError: response.error,
+          dashboardSumVehicleError: response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {
@@ -106,32 +108,29 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final items = data['data']['items'] as List;
 
     if (items.isEmpty) {
-      return DailyWeighedVehiclesSum.fromJson(_getMockDailyWeighedData());
+      return DailyWeighedVehiclesSum.fromJson(_mockDailyWeighedData);
     }
 
     try {
       final matchingItem = items.firstWhere(
-        (item) =>
-            item['station_type_desc'] == 'หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่',
-        orElse: () => _getMockDailyWeighedData(),
+        (item) => item['station_type_desc'] == _mobileStationType,
+        orElse: () => _mockDailyWeighedData,
       );
 
       return DailyWeighedVehiclesSum.fromJson(matchingItem);
     } catch (e) {
-      return DailyWeighedVehiclesSum.fromJson(_getMockDailyWeighedData());
+      return DailyWeighedVehiclesSum.fromJson(_mockDailyWeighedData);
     }
   }
 
-  Map<String, dynamic> _getMockDailyWeighedData() {
-    return {
-      "create_date": "18/10/2566",
-      "station_type": 2,
-      "station_type_eng": "spot",
-      "station_type_desc": "หน่วยชั่งน้ำหนักยานพาหนะเคลื่อนที่",
-      "total": "1",
-      "over": "0"
-    };
-  }
+  static final Map<String, dynamic> _mockDailyWeighedData = {
+    "create_date": "18/10/2566",
+    "station_type": 2,
+    "station_type_eng": "spot",
+    "station_type_desc": _mobileStationType,
+    "total": "1",
+    "over": "0"
+  };
 
   Future<void> _onVehicleWeightInspectionFetch(
     VehicleWeightInspectionFetchEvent event,
@@ -157,15 +156,16 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         emit(state.copyWith(
           dashboardVehicleWeightInspectionStatus:
               DashboardVehicleWeightInspectionStatus.success,
-          vehicle_weight_inspection_list: data.list,
-          total_chart_list: data.chartList,
+          vehicleWeightInspectionList: data.list,
+          totalChartList: data.chartList,
           vehicleWeightInspectionBarChart: data.barChart,
         ));
       } else {
         emit(state.copyWith(
           dashboardVehicleWeightInspectionStatus:
               DashboardVehicleWeightInspectionStatus.error,
-          dashboardVehicleWeightInspectionError: response.error,
+          dashboardVehicleWeightInspectionError:
+              response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {
@@ -276,7 +276,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       } else {
         emit(state.copyWith(
           dashboardViewSumPlanChartStatus: DashboardViewSumPlanChart.error,
-          dashboardViewSumPlanChartError: response.error,
+          dashboardViewSumPlanChartError: response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {
@@ -310,7 +310,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       } else {
         emit(state.copyWith(
           topFiveRoadStatus: TopFiveRoadStatus.error,
-          topFiveRoadError: response.error,
+          topFiveRoadError: response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {
@@ -357,7 +357,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       } else {
         emit(state.copyWith(
           roadCodeDetailStatus: RoadCodeDetailStatus.error,
-          roadCodeDetailError: response.error,
+          roadCodeDetailError: response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {
@@ -400,7 +400,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       } else {
         emit(state.copyWith(
           roadCodeCarStatus: RoadCodeCarStatus.error,
-          roadCodeCarError: response.error,
+          roadCodeCarError: response.error ?? 'Unknown error',
         ));
       }
     } catch (e) {

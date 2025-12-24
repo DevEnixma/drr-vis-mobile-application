@@ -285,15 +285,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                     if (state.dashboardCCTVStatus ==
                         DashboardCCTVStatus.success) {
-                      if (state.cctv_list != null &&
-                          state.cctv_list!.isNotEmpty) {
+                      if (state.cctvList != null &&
+                          state.cctvList!.isNotEmpty) {
                         return ListView.builder(
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: state.cctv_list!.length,
+                          itemCount: state.cctvList!.length,
                           itemBuilder: (BuildContext context, int index) {
-                            final cctv = state.cctv_list![index];
+                            final cctv = state.cctvList![index];
 
                             if (cctv.rtspHls == null || cctv.rtspHls!.isEmpty) {
                               return const SizedBox.shrink();

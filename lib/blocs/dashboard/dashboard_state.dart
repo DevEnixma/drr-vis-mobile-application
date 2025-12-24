@@ -51,17 +51,18 @@ enum RoadCodeCarStatus {
 
 class DashboardState extends Equatable {
   final DashboardCCTVStatus dashboardCCTVStatus;
-  final List<CCTVResModel>? cctv_list;
+  final List<CCTVResModel>? cctvList;
   final String dashboardCCTVError;
 
   final DashboardSumVehicleStatus dashboardSumVehicleStatus;
-  final DailyWeighedVehiclesSum? daily_weighed_vehicles_sum;
+  final DailyWeighedVehiclesSum? dailyWeighedVehiclesSum;
   final String dashboardSumVehicleError;
 
-  final DashboardVehicleWeightInspectionStatus dashboardVehicleWeightInspectionStatus;
-  final List<VehicleWeightInspectionModel>? vehicle_weight_inspection_list;
+  final DashboardVehicleWeightInspectionStatus
+      dashboardVehicleWeightInspectionStatus;
+  final List<VehicleWeightInspectionModel>? vehicleWeightInspectionList;
   final BarChartVehicleWeight? vehicleWeightInspectionBarChart;
-  final List<BarChartGroupData>? total_chart_list;
+  final List<BarChartGroupData>? totalChartList;
   final String dashboardVehicleWeightInspectionError;
 
   final DashboardViewSumPlanChart dashboardViewSumPlanChartStatus;
@@ -73,137 +74,114 @@ class DashboardState extends Equatable {
   final List<TopFiveRoadModelRes>? topFiveRoad;
   final String topFiveRoadError;
 
-  // roadCodeDetail
   final RoadCodeDetailStatus roadCodeDetailStatus;
   final RoadCodeDetailModel? roadCodeDetail;
   final double? positionRadiant;
   final PositionMiddleModel? positionMiddle;
   final String roadCodeDetailError;
 
-  // roadCode car
   final RoadCodeCarStatus roadCodeCarStatus;
   final List<RoadCodeCarModelRes>? roadCodeCar;
   final String roadCodeCarError;
   final bool roadCodeCarLoadMore;
 
   const DashboardState({
-    // cctv
     this.dashboardCCTVStatus = DashboardCCTVStatus.initial,
-    this.cctv_list,
+    this.cctvList,
     this.dashboardCCTVError = '',
-
-    // daily sum weighed vehicles
     this.dashboardSumVehicleStatus = DashboardSumVehicleStatus.initial,
-    this.daily_weighed_vehicles_sum,
+    this.dailyWeighedVehiclesSum,
     this.dashboardSumVehicleError = '',
-
-    // vehicle weight inspection
-    this.dashboardVehicleWeightInspectionStatus = DashboardVehicleWeightInspectionStatus.initial,
-    this.vehicle_weight_inspection_list,
+    this.dashboardVehicleWeightInspectionStatus =
+        DashboardVehicleWeightInspectionStatus.initial,
+    this.vehicleWeightInspectionList,
     this.vehicleWeightInspectionBarChart,
-    this.total_chart_list,
+    this.totalChartList,
     this.dashboardVehicleWeightInspectionError = '',
-
-    // vehicle weight inspection
     this.dashboardViewSumPlanChartStatus = DashboardViewSumPlanChart.initial,
     this.dashboardViewSumPlanChart,
     this.planChartYear = '',
     this.dashboardViewSumPlanChartError = '',
-
-    // top five road
     this.topFiveRoadStatus = TopFiveRoadStatus.initial,
     this.topFiveRoad = const [],
     this.topFiveRoadError = '',
-
-    // roadCodeDetail
     this.roadCodeDetailStatus = RoadCodeDetailStatus.initial,
     this.roadCodeDetail,
     this.positionRadiant,
     this.positionMiddle,
     this.roadCodeDetailError = '',
-
-    // roadCode car
     this.roadCodeCarStatus = RoadCodeCarStatus.initial,
     this.roadCodeCar = const [],
     this.roadCodeCarError = '',
     this.roadCodeCarLoadMore = false,
   });
+
   DashboardState copyWith({
-    // cctv
     DashboardCCTVStatus? dashboardCCTVStatus,
-    List<CCTVResModel>? cctv_list,
+    List<CCTVResModel>? cctvList,
     String? dashboardCCTVError,
-    // daily sum weighed vehicles
     DashboardSumVehicleStatus? dashboardSumVehicleStatus,
-    DailyWeighedVehiclesSum? daily_weighed_vehicles_sum,
+    DailyWeighedVehiclesSum? dailyWeighedVehiclesSum,
     String? dashboardSumVehicleError,
-
-    // vehicle weight inspection
-    DashboardVehicleWeightInspectionStatus? dashboardVehicleWeightInspectionStatus,
-    List<VehicleWeightInspectionModel>? vehicle_weight_inspection_list,
+    DashboardVehicleWeightInspectionStatus?
+        dashboardVehicleWeightInspectionStatus,
+    List<VehicleWeightInspectionModel>? vehicleWeightInspectionList,
     BarChartVehicleWeight? vehicleWeightInspectionBarChart,
-    List<BarChartGroupData>? total_chart_list,
+    List<BarChartGroupData>? totalChartList,
     String? dashboardVehicleWeightInspectionError,
-
-    // daily sum weighed vehicles
     DashboardViewSumPlanChart? dashboardViewSumPlanChartStatus,
     List<DashboardSumPlaneRes>? dashboardViewSumPlanChart,
     String? dashboardViewSumPlanChartError,
     String? planChartYear,
-
-    // top five road
     TopFiveRoadStatus? topFiveRoadStatus,
     List<TopFiveRoadModelRes>? topFiveRoad,
     String? topFiveRoadError,
-
-    // roadCodeDetail
     RoadCodeDetailStatus? roadCodeDetailStatus,
     RoadCodeDetailModel? roadCodeDetail,
     double? positionRadiant,
     PositionMiddleModel? positionMiddle,
     String? roadCodeDetailError,
-
-    // roadCode car
     RoadCodeCarStatus? roadCodeCarStatus,
     List<RoadCodeCarModelRes>? roadCodeCar,
     String? roadCodeCarError,
     bool? roadCodeCarLoadMore,
   }) {
     return DashboardState(
-      // cctv
       dashboardCCTVStatus: dashboardCCTVStatus ?? this.dashboardCCTVStatus,
-      cctv_list: cctv_list ?? this.cctv_list,
+      cctvList: cctvList ?? this.cctvList,
       dashboardCCTVError: dashboardCCTVError ?? this.dashboardCCTVError,
-      // daily sum weighed vehicles
-      dashboardSumVehicleStatus: dashboardSumVehicleStatus ?? this.dashboardSumVehicleStatus,
-      daily_weighed_vehicles_sum: daily_weighed_vehicles_sum ?? this.daily_weighed_vehicles_sum,
-      dashboardSumVehicleError: dashboardSumVehicleError ?? this.dashboardSumVehicleError,
-      // vehicle weight inspection
-      dashboardVehicleWeightInspectionStatus: dashboardVehicleWeightInspectionStatus ?? this.dashboardVehicleWeightInspectionStatus,
-      vehicle_weight_inspection_list: vehicle_weight_inspection_list ?? this.vehicle_weight_inspection_list,
-      vehicleWeightInspectionBarChart: vehicleWeightInspectionBarChart ?? this.vehicleWeightInspectionBarChart,
-      total_chart_list: total_chart_list ?? this.total_chart_list,
-      dashboardVehicleWeightInspectionError: dashboardVehicleWeightInspectionError ?? this.dashboardVehicleWeightInspectionError,
-
-      // daily sum weighed vehicles
-      dashboardViewSumPlanChartStatus: dashboardViewSumPlanChartStatus ?? this.dashboardViewSumPlanChartStatus,
-      dashboardViewSumPlanChart: dashboardViewSumPlanChart ?? this.dashboardViewSumPlanChart,
+      dashboardSumVehicleStatus:
+          dashboardSumVehicleStatus ?? this.dashboardSumVehicleStatus,
+      dailyWeighedVehiclesSum:
+          dailyWeighedVehiclesSum ?? this.dailyWeighedVehiclesSum,
+      dashboardSumVehicleError:
+          dashboardSumVehicleError ?? this.dashboardSumVehicleError,
+      dashboardVehicleWeightInspectionStatus:
+          dashboardVehicleWeightInspectionStatus ??
+              this.dashboardVehicleWeightInspectionStatus,
+      vehicleWeightInspectionList:
+          vehicleWeightInspectionList ?? this.vehicleWeightInspectionList,
+      vehicleWeightInspectionBarChart: vehicleWeightInspectionBarChart ??
+          this.vehicleWeightInspectionBarChart,
+      totalChartList: totalChartList ?? this.totalChartList,
+      dashboardVehicleWeightInspectionError:
+          dashboardVehicleWeightInspectionError ??
+              this.dashboardVehicleWeightInspectionError,
+      dashboardViewSumPlanChartStatus: dashboardViewSumPlanChartStatus ??
+          this.dashboardViewSumPlanChartStatus,
+      dashboardViewSumPlanChart:
+          dashboardViewSumPlanChart ?? this.dashboardViewSumPlanChart,
       planChartYear: planChartYear ?? this.planChartYear,
-      dashboardViewSumPlanChartError: dashboardViewSumPlanChartError ?? this.dashboardViewSumPlanChartError,
-
-      // top five road
+      dashboardViewSumPlanChartError:
+          dashboardViewSumPlanChartError ?? this.dashboardViewSumPlanChartError,
       topFiveRoadStatus: topFiveRoadStatus ?? this.topFiveRoadStatus,
       topFiveRoad: topFiveRoad ?? this.topFiveRoad,
       topFiveRoadError: topFiveRoadError ?? this.topFiveRoadError,
-
-      // roadCodeDetail
       roadCodeDetailStatus: roadCodeDetailStatus ?? this.roadCodeDetailStatus,
       roadCodeDetail: roadCodeDetail ?? this.roadCodeDetail,
       positionRadiant: positionRadiant ?? this.positionRadiant,
       positionMiddle: positionMiddle ?? this.positionMiddle,
       roadCodeDetailError: roadCodeDetailError ?? this.roadCodeDetailError,
-
-      // roadCode car
       roadCodeCarStatus: roadCodeCarStatus ?? this.roadCodeCarStatus,
       roadCodeCar: roadCodeCar ?? this.roadCodeCar,
       roadCodeCarError: roadCodeCarError ?? this.roadCodeCarError,
@@ -213,39 +191,29 @@ class DashboardState extends Equatable {
 
   @override
   List<Object?> get props => [
-        // cctv
         dashboardCCTVStatus,
-        cctv_list,
+        cctvList,
         dashboardCCTVError,
-        // daily sum weighed vehicles
         dashboardSumVehicleStatus,
-        daily_weighed_vehicles_sum,
+        dailyWeighedVehiclesSum,
         dashboardSumVehicleError,
-        // vehicle weight inspection
         dashboardVehicleWeightInspectionStatus,
-        vehicle_weight_inspection_list,
+        vehicleWeightInspectionList,
         vehicleWeightInspectionBarChart,
-        total_chart_list,
+        totalChartList,
         dashboardVehicleWeightInspectionError,
-
         dashboardViewSumPlanChartStatus,
         dashboardViewSumPlanChart,
         planChartYear,
         dashboardViewSumPlanChartError,
-
-        // top five road
         topFiveRoadStatus,
         topFiveRoad,
         topFiveRoadError,
-
-        // roadCodeDetail
         roadCodeDetailStatus,
         roadCodeDetail,
         positionRadiant,
         positionMiddle,
         roadCodeDetailError,
-
-        // roadCode car
         roadCodeCarStatus,
         roadCodeCar,
         roadCodeCarError,
