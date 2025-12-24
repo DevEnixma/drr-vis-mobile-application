@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void postLogin(LoginModelReq loginBody) {
-    context.read<LoginBloc>().add(PostLoginEvent(loginBody, context));
+    context.read<LoginBloc>().add(PostLoginEvent(loginBody));
   }
 
   void loginSuccessGotoDashboardScreen() async {

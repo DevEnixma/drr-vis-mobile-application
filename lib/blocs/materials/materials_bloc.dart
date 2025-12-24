@@ -10,59 +10,91 @@ part 'materials_state.dart';
 
 class MaterialsBloc extends Bloc<MaterialsEvent, MaterialsState> {
   MaterialsBloc() : super(const MaterialsState()) {
-    on<GetMaterialsEvent>((event, emit) async {
-      try {
-        if (event.payload.page == 1) {
-          emit(state.copyWith(materialStatus: MaterialsStatus.loading));
-        } else {
-          emit(state.copyWith(loadMore: true));
-        }
+    on<GetMaterialsEvent>(_onGetMaterials);
+    on<SelectMaterialsEvent>(_onSelectMaterial);
+    on<ClearSelectMaterialsEvent>(_onClearSelectMaterial);
+    on<SearchMaterialsEvent>(_onSearchMaterials);
+  }
 
-        final response = await masterDataRepo.getMaterial(event.payload.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List items = response.data['data'];
-          var result = items.map((e) => MaterialModelRes.fromJson(e)).toList();
+  Future<void> _onGetMaterials(
+    GetMaterialsEvent event,
+    Emitter<MaterialsState> emit,
+  ) async {
+    if (event.payload.page == 1) {
+      emit(state.copyWith(materialStatus: MaterialsStatus.loading));
+    } else {
+      emit(state.copyWith(loadMore: true));
+    }
 
-          if (event.payload.page != 1) {
-            state.materials.addAll(result);
-            emit(state.copyWith(loadMore: false));
-            emit(state.copyWith(materialStatus: MaterialsStatus.success, materials: state.materials));
-          } else {
-            emit(state.copyWith(materialStatus: MaterialsStatus.success, materials: result));
-          }
+    try {
+      final response = await masterDataRepo.getMaterial(event.payload.toJson());
 
-          return;
-        }
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data'];
+        final result = items.map((e) => MaterialModelRes.fromJson(e)).toList();
 
-        emit(state.copyWith(materialStatus: MaterialsStatus.error, materialError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(materialStatus: MaterialsStatus.error, materialError: e.toString()));
+        final updatedList =
+            event.payload.page == 1 ? result : [...state.materials, ...result];
+
+        emit(state.copyWith(
+          materialStatus: MaterialsStatus.success,
+          materials: updatedList,
+          originalMaterials: updatedList,
+          loadMore: false,
+        ));
+      } else {
+        emit(state.copyWith(
+          materialStatus: MaterialsStatus.error,
+          materialError: response.error ?? 'Unknown error',
+          loadMore: false,
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        materialStatus: MaterialsStatus.error,
+        materialError: e.toString(),
+        loadMore: false,
+      ));
+    }
+  }
+
+  void _onSelectMaterial(
+    SelectMaterialsEvent event,
+    Emitter<MaterialsState> emit,
+  ) {
+    emit(state.copyWith(material: event.payload));
+  }
+
+  void _onClearSelectMaterial(
+    ClearSelectMaterialsEvent event,
+    Emitter<MaterialsState> emit,
+  ) {
+    emit(state.copyWith(material: MaterialModelRes.empty()));
+  }
+
+  void _onSearchMaterials(
+    SearchMaterialsEvent event,
+    Emitter<MaterialsState> emit,
+  ) {
+    try {
+      final query = event.payload.toLowerCase().trim();
+
+      if (query.isEmpty) {
+        emit(state.copyWith(materials: state.originalMaterials));
         return;
       }
-    });
 
-    on<SelectMaterialsEvent>((event, emit) async {
-      emit(state.copyWith(material: event.payload));
-    });
+      final filteredList = state.originalMaterials
+          .where(
+              (item) => item.goodsName?.toLowerCase().contains(query) ?? false)
+          .toList();
 
-    on<ClearSelectMaterialsEvent>((event, emit) async {
-      emit(state.copyWith(material: MaterialModelRes.empty()));
-    });
-
-    on<SearchMaterialsEvent>((event, emit) async {
-      try {
-        List<MaterialModelRes>? newProvince = [];
-
-        state.materials.map((item) {
-          if (item.goodsName!.contains(event.payload)) {
-            newProvince.add(item);
-          }
-          return item;
-        }).toList();
-
-        emit(state.copyWith(materials: newProvince));
-      } catch (e) {}
-    });
+      emit(state.copyWith(materials: filteredList));
+    } catch (e) {
+      emit(state.copyWith(
+        materialStatus: MaterialsStatus.error,
+        materialError: 'Search error: ${e.toString()}',
+      ));
+    }
   }
 }

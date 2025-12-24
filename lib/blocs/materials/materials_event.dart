@@ -7,24 +7,33 @@ sealed class MaterialsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetMaterialsEvent extends MaterialsEvent {
+final class GetMaterialsEvent extends MaterialsEvent {
   final MaterialModelReq payload;
 
   const GetMaterialsEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class SelectMaterialsEvent extends MaterialsEvent {
+final class SelectMaterialsEvent extends MaterialsEvent {
   final MaterialModelRes payload;
 
   const SelectMaterialsEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class ClearSelectMaterialsEvent extends MaterialsEvent {
+final class ClearSelectMaterialsEvent extends MaterialsEvent {
   const ClearSelectMaterialsEvent();
 }
 
-class SearchMaterialsEvent extends MaterialsEvent {
+final class SearchMaterialsEvent extends MaterialsEvent {
   final String payload;
 
   const SearchMaterialsEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
