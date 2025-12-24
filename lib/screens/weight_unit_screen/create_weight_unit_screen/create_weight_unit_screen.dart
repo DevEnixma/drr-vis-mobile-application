@@ -9,6 +9,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../../app/routes/routes.dart';
 import '../../../blocs/collaborative/collaborative_bloc.dart';
@@ -26,7 +29,7 @@ import '../../../utils/constants/key_localstorage.dart';
 import '../../../utils/constants/text_formatter.dart';
 import '../../../utils/constants/text_style.dart';
 import '../../../utils/libs/convert_date.dart';
-import '../../../utils/permission_device/location_device.dart'; // เพิ่ม import สำหรับ location utils
+import '../../../utils/permission_device/location_device.dart';
 import '../../../utils/widgets/buttom_sheet_widget/buttom_sheet_alert_widger.dart';
 import '../../../utils/widgets/custom_button.dart';
 import '../../../utils/widgets/custom_loading.dart';
@@ -48,24 +51,24 @@ class CreateWeightUnitScreen extends StatefulWidget {
 
 class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   // TODO: new Code
-  final newFormKey = GlobalKey<FormState>(); // Key สำหรับ Form
-  final TextEditingController nameRouterController = TextEditingController(); // Controller สำหรับ Text Field
-  final FocusNode nameRouterFocusNode = FocusNode(); // FocusNode สำหรับ Text Field
+  final newFormKey = GlobalKey<FormState>();
+  final TextEditingController nameRouterController = TextEditingController();
+  final FocusNode nameRouterFocusNode = FocusNode();
 
-  final TextEditingController addressController = TextEditingController(); // Controller สำหรับ Text Field 2 (ใหม่)
-  final FocusNode addressFocusNode = FocusNode(); // FocusNode สำหรับ Text Field 2 (ใหม่)
+  final TextEditingController addressController = TextEditingController();
+  final FocusNode addressFocusNode = FocusNode();
 
-  final TextEditingController routerCodeController = TextEditingController(); // Controller สำหรับ Text Field 2 (ใหม่)
-  final FocusNode routerCodeFocusNode = FocusNode(); // FocusNode สำหรับ Dropdown
+  final TextEditingController routerCodeController = TextEditingController();
+  final FocusNode routerCodeFocusNode = FocusNode();
 
-  final TextEditingController collaborativeController = TextEditingController(); // Controller สำหรับ Text Field 2 (ใหม่)
-  final FocusNode collaborativeFocusNode = FocusNode(); // FocusNode สำหรับ Dropdown
+  final TextEditingController collaborativeController = TextEditingController();
+  final FocusNode collaborativeFocusNode = FocusNode();
 
-  final TextEditingController routeStartController = TextEditingController(); // Controller สำหรับ Text Field 2 (ใหม่)
-  final FocusNode routeStartFocusNode = FocusNode(); // FocusNode สำหรับ Dropdown
+  final TextEditingController routeStartController = TextEditingController();
+  final FocusNode routeStartFocusNode = FocusNode();
 
-  final TextEditingController routeEndController = TextEditingController(); // Controller สำหรับ Text Field 2 (ใหม่)
-  final FocusNode routeEndFocusNode = FocusNode(); // FocusNode สำหรับ Dropdown
+  final TextEditingController routeEndController = TextEditingController();
+  final FocusNode routeEndFocusNode = FocusNode();
 
   String routerCode = 'รหัสสายทาง';
   String collaborative = 'ผู้ร่วมบูรณาการ';
@@ -82,7 +85,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   List<CollaborativeRes>? collaborativeList = [];
   List<WaysRes>? ways = [];
 
-  // เพิ่มตัวแปรสำหรับเก็บตำแหน่งปัจจุบัน
   double? currentLatitude;
   double? currentLongitude;
   bool isLoadingLocation = false;
@@ -98,15 +100,12 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   File? _imageOfficer;
   final ImagePicker _picker = ImagePicker();
 
-  // key
   final GlobalKey _routeCodeKey = GlobalKey();
 
-  // FocusNode
   final FocusNode _routeCodeFocusNode = FocusNode();
   final FocusNode _startKMFocusNode = FocusNode();
   final FocusNode _toKMFocusNode = FocusNode();
 
-  // TextController
   TextEditingController _routeCodeControl = TextEditingController();
   TextEditingController collaburativeText = TextEditingController();
   TextEditingController _nameRouteCodeControl = TextEditingController();
@@ -122,15 +121,14 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   void initState() {
     super.initState();
     initScreen();
-    _loadExistingLocation(); // โหลดตำแหน่งเก่าก่อน (ถ้ามี)
-    _getCurrentLocation(); // ดึงตำแหน่งปัจจุบัน
+    _loadExistingLocation();
+    _getCurrentLocation();
   }
 
   void initScreen() async {
     getCollaborativeBloc();
   }
 
-  // ฟังก์ชันโหลดตำแหน่งที่เก็บไว้ใน LocalStorage
   Future<void> _loadExistingLocation() async {
     try {
       double? lat = await storage.getValueDouble(KeyLocalStorage.lat);
@@ -141,14 +139,14 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
           currentLatitude = lat;
           currentLongitude = lng;
         });
-        logger.i('Loaded existing location: $currentLatitude, $currentLongitude');
+        logger
+            .i('Loaded existing location: $currentLatitude, $currentLongitude');
       }
     } catch (e) {
       logger.e('Error loading existing location: $e');
     }
   }
 
-  // ฟังก์ชันสำหรับดึงตำแหน่งปัจจุบัน
   Future<void> _getCurrentLocation() async {
     setState(() {
       isLoadingLocation = true;
@@ -156,10 +154,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
     });
 
     try {
-      // ใช้ฟังก์ชันที่มีอยู่แล้ว
       await getCurrentLocation();
 
-      // ดึงค่าจาก LocalStorage
       double? lat = await storage.getValueDouble(KeyLocalStorage.lat);
       double? lng = await storage.getValueDouble(KeyLocalStorage.lng);
 
@@ -169,7 +165,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
         isLoadingLocation = false;
       });
 
-      logger.i('Retrieved location from storage: $currentLatitude, $currentLongitude');
+      logger.i(
+          'Retrieved location from storage: $currentLatitude, $currentLongitude');
     } catch (e) {
       setState(() {
         isLoadingLocation = false;
@@ -177,14 +174,13 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
       });
       logger.e('Error getting location: $e');
 
-      // แสดง snackbar หรือ dialog แจ้งเตือนผู้ใช้
       if (mounted) {
-        showSnackbarBottom(context, 'ไม่สามารถดึงตำแหน่งปัจจุบันได้: ${e.toString()}');
+        showSnackbarBottom(
+            context, 'ไม่สามารถดึงตำแหน่งปัจจุบันได้: ${e.toString()}');
       }
     }
   }
 
-  // ฟังก์ชันสำหรับรีเฟรชตำแหน่ง
   Future<void> _refreshLocation() async {
     await _getCurrentLocation();
   }
@@ -205,15 +201,14 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
       kmTo: routeEndController.text,
       file1: _imageTraffic?.path,
       file2: _imageOfficer?.path,
-      latitude: currentLatitude, // เพิ่ม latitude
-      longitude: currentLongitude, // เพิ่ม longitude
+      latitude: currentLatitude,
+      longitude: currentLongitude,
     );
     logger.i(payload.toJson());
 
     context.read<EstablishBloc>().add(CreateUnitWeight(payload));
   }
 
-  //TODO: ฟังก์ชันสำหรับ validate ฟอร์มทั้งหมด
   void newValidateForm() {
     if (_imageTraffic == null || _imageOfficer == null) {
       showSnackbarBottom(context, 'กรุณาเพิ่มรูปภาพให้ครบ');
@@ -221,7 +216,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
     }
 
     if (currentLatitude == null || currentLongitude == null) {
-      showSnackbarBottom(context, 'กรุณารอการดึงตำแหน่งปัจจุบัน หรือลองดึงใหม่อีกครั้ง');
+      showSnackbarBottom(
+          context, 'กรุณารอการดึงตำแหน่งปัจจุบัน หรือลองดึงใหม่อีกครั้ง');
       return;
     }
 
@@ -238,28 +234,36 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
 
   void leaveJoinWeightUnit() async {
     String? username = await storage.getValueString(KeyLocalStorage.username);
-    String? weightUnitId = await storage.getValueString(KeyLocalStorage.weightUnitId);
+    String? weightUnitId =
+        await storage.getValueString(KeyLocalStorage.weightUnitId);
 
-    context.read<EstablishBloc>().add(DeleteWeightUnitLeaveEvent(weightUnitId!, username ?? ''));
+    context
+        .read<EstablishBloc>()
+        .add(DeleteWeightUnitLeaveEvent(weightUnitId!, username ?? ''));
     joinWeightUnit();
   }
 
   void joinWeightUnit() async {
     String? username = await storage.getValueString(KeyLocalStorage.username);
-    String? weightUnitId = await storage.getValueString(KeyLocalStorage.weightUnitId);
+    String? weightUnitId =
+        await storage.getValueString(KeyLocalStorage.weightUnitId);
 
     var payload = JoinWeightUnitReq(
       tId: int.parse(weightUnitId!),
       username: username ?? '',
     );
-    context.read<EstablishBloc>().add(PostJoinWeightUnit(payload, 'success_screen'));
+    context
+        .read<EstablishBloc>()
+        .add(PostJoinWeightUnit(payload, 'success_screen'));
   }
 
   void GetWeightUnitsIsJoinEventBloc() {
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearAdd(endDate, 1)),
+            start_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearSubstract(startDate, 1)),
+            end_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,
           ),
@@ -269,15 +273,16 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   void getWeightUnitAll() {
     context.read<EstablishBloc>().add(
           MobileMasterFetchEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearAdd(endDate, 1)),
+            start_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearSubstract(startDate, 1)),
+            end_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,
           ),
         );
   }
 
-  // Widget แสดงสถานะตำแหน่งปัจจุบันด้วยแผนที่
   Widget buildLocationStatus() {
     return Container(
       padding: EdgeInsets.all(12.h),
@@ -290,15 +295,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header section
           Row(
             children: [
-              // Icon(
-              //   Icons.location_on,
-              //   color: currentLatitude != null && currentLongitude != null ? Colors.green : Theme.of(context).colorScheme.error,
-              //   size: 20.h,
-              // ),
-              // SizedBox(width: 8.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,7 +312,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       )
-                    else if (currentLatitude != null && currentLongitude != null)
+                    else if (currentLatitude != null &&
+                        currentLongitude != null)
                       Text(
                         'Lat: ${currentLatitude!.toStringAsFixed(6)}, Lon: ${currentLongitude!.toStringAsFixed(6)}',
                         style: AppTextStyle.label12normal(
@@ -331,7 +330,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                   ],
                 ),
               ),
-              if (!isLoadingLocation && (currentLatitude == null || currentLongitude == null))
+              if (!isLoadingLocation &&
+                  (currentLatitude == null || currentLongitude == null))
                 IconButton(
                   onPressed: _refreshLocation,
                   icon: Icon(
@@ -343,8 +343,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             ],
           ),
           SizedBox(height: 12.h),
-
-          // Map section
           Container(
             height: 200.h,
             width: double.infinity,
@@ -373,20 +371,17 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                   : currentLatitude != null && currentLongitude != null
                       ? FlutterMap(
                           options: MapOptions(
-                            initialCenter: LatLng(currentLatitude!, currentLongitude!),
+                            initialCenter:
+                                LatLng(currentLatitude!, currentLongitude!),
                             initialZoom: 15.0,
                             interactionOptions: InteractionOptions(
                               flags: InteractiveFlag.none,
                             ),
                           ),
                           children: [
-                            // TileLayer(
-                            //   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            //   userAgentPackageName: 'com.example.app',
-                            //   maxZoom: 19,
-                            // ),
                             TileLayer(
-                              urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                              urlTemplate:
+                                  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
                               subdomains: ['a', 'b', 'c'],
                               userAgentPackageName: 'com.example.app',
                               maxZoom: 19,
@@ -394,7 +389,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                             MarkerLayer(
                               markers: [
                                 Marker(
-                                  point: LatLng(currentLatitude!, currentLongitude!),
+                                  point: LatLng(
+                                      currentLatitude!, currentLongitude!),
                                   width: 30.w,
                                   height: 30.h,
                                   child: Icon(
@@ -438,7 +434,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                   child: Text(
                                     'ลองใหม่',
                                     style: AppTextStyle.label12bold(
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -479,7 +476,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
 
     return GestureDetector(
       onTap: () {
@@ -511,7 +509,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
           title: Text(
             'จัดตั้งหน่วย',
             textAlign: TextAlign.center,
-            style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+            style: AppTextStyle.title18bold(
+                color: Theme.of(context).colorScheme.surface),
           ),
         ),
         body: Stack(
@@ -530,12 +529,11 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         icon: Icons.location_on,
                       ),
                       SizedBox(height: 12.w),
-                      buildLocationStatus(), // เพิ่ม Widget แสดงสถานะตำแหน่ง
+                      buildLocationStatus(),
                       LabelInputWidget(
                         title: routerCode,
                         isRequired: true,
                       ),
-                      // TODO: Input Dropdown routerCode
                       BlocListener<WaysBloc, WaysState>(
                         listener: (context, state) {
                           if (state.waysStatus == WaysStatus.success) {
@@ -546,7 +544,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                             }
                           }
                           if (state.selectedWay!.id != null) {
-                            routerCodeController.text = state.selectedWay!.wayCode ?? '';
+                            routerCodeController.text =
+                                state.selectedWay!.wayCode ?? '';
                           }
                         },
                         child: DropdownInputCustomWidget(
@@ -554,10 +553,10 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                           hint: routerCode,
                           controller: routerCodeController,
                           focusNode: routerCodeFocusNode,
-                          // onTap: () => DropdownOption(context, routerCode),
                           onTap: () => {
                             showModalBottomSheet(
-                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
                               context: context,
                               isScrollControlled: true,
                               constraints: BoxConstraints(
@@ -569,7 +568,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                   minChildSize: 0.6,
                                   maxChildSize: 0.8,
                                   expand: false,
-                                  builder: (BuildContext context, ScrollController scrollController) {
+                                  builder: (BuildContext context,
+                                      ScrollController scrollController) {
                                     return CustomRouteBottomSheet(
                                       scrollController: scrollController,
                                       title: routerCode,
@@ -584,23 +584,24 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                           },
                         ),
                       ),
-                      // TODO: Input Dropdown collaborative
                       SizedBox(height: 12.w),
-
                       LabelInputWidget(
                         title: collaborative,
                       ),
                       BlocListener<CollaborativeBloc, CollaborativeState>(
                         listener: (context, state) {
-                          if (state.collaborativeStatus == CollaborativeStatus.success) {
-                            if (state.collaborative != null && state.collaborative!.isNotEmpty) {
+                          if (state.collaborativeStatus ==
+                              CollaborativeStatus.success) {
+                            if (state.collaborative != null &&
+                                state.collaborative!.isNotEmpty) {
                               collaborativeList = state.collaborative!;
                             } else {
                               collaborativeList = [];
                             }
                           }
                           if (state.isSelectedCollaborativeText != null) {
-                            collaborativeController.text = state.isSelectedCollaborativeText!;
+                            collaborativeController.text =
+                                state.isSelectedCollaborativeText!;
                           }
                         },
                         child: DropdownInputCustomWidget(
@@ -609,21 +610,25 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                           controller: collaborativeController,
                           onTap: () => {
                             showModalBottomSheet(
-                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
                               context: context,
                               isScrollControlled: true,
                               constraints: BoxConstraints(
                                 minWidth: MediaQuery.of(context).size.width,
                               ),
                               builder: (BuildContext context) {
-                                double initialChildSize = 0.7; // Default initial size
-                                return StatefulBuilder(builder: (BuildContext context, StateSetter setModalState) {
+                                double initialChildSize = 0.7;
+                                return StatefulBuilder(builder:
+                                    (BuildContext context,
+                                        StateSetter setModalState) {
                                   return DraggableScrollableSheet(
                                     initialChildSize: initialChildSize,
                                     minChildSize: 0.7,
                                     maxChildSize: 0.9,
                                     expand: false,
-                                    builder: (BuildContext context, ScrollController scrollController) {
+                                    builder: (BuildContext context,
+                                        ScrollController scrollController) {
                                       return CollaborativeListWidget(
                                         data_list: collaborativeList!,
                                         scrollController: scrollController,
@@ -631,31 +636,25 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                         onClose: (result) {
                                           Navigator.pop(context, result);
                                         },
-                                        onSearchFocused: (isFocused) {
-                                          // setModalState(() {
-                                          //   initialChildSize = isFocused ? 0.79 : 0.6;
-                                          // });
-                                        },
+                                        onSearchFocused: (isFocused) {},
                                       );
                                     },
                                   );
                                 });
                               },
-                            ).then((onValue) {
-                              // getCollaborativeBloc();
-                            })
+                            ).then((onValue) {})
                           },
                         ),
                       ),
-
                       SizedBox(height: 12.w),
-
-                      // TODO: Input แรก: TextInput สำหรับกรอกข้อมูล
                       BlocListener<WaysBloc, WaysState>(
                         listener: (context, state) {
-                          if (state.wayDetailStatus == WayDetailStatus.success) {
-                            nameRouterController.text = state.waysDetailRes!.subdistrict ?? '';
-                            addressController.text = state.waysDetailRes!.district ?? '';
+                          if (state.wayDetailStatus ==
+                              WayDetailStatus.success) {
+                            nameRouterController.text =
+                                state.waysDetailRes!.subdistrict ?? '';
+                            addressController.text =
+                                state.waysDetailRes!.district ?? '';
                           }
                         },
                         child: SizedBox.shrink(),
@@ -682,7 +681,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         isDisable: true,
                       ),
                       SizedBox(height: 12.w),
-                      // TODO: km
                       Row(
                         children: [
                           Expanded(
@@ -727,7 +725,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         ],
                       ),
                       SizedBox(height: 18.w),
-
                       TitleWidget(
                         title: 'รูปการจัดตั้งหน่วยชั่ง',
                         icon: Icons.photo_size_select_actual_outlined,
@@ -758,7 +755,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                   },
                                   icon: Icon(
                                     Icons.add_photo_alternate,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     size: 22.h,
                                   ),
                                 )
@@ -769,7 +767,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10.r),
                             border: Border.all(
-                              color: isValidateImageTraffic == false ? ColorApps.grayBorder : Theme.of(context).colorScheme.error,
+                              color: isValidateImageTraffic == false
+                                  ? ColorApps.grayBorder
+                                  : Theme.of(context).colorScheme.error,
                               width: 1,
                             )),
                         height: 130.h,
@@ -777,7 +777,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         child: _imageTraffic == null
                             ? InkWell(
                                 onTap: () {
-                                  // _pickImageTraffic(ImageSource.gallery);
                                   select_photo_bottom_sheet(
                                     context,
                                     () {
@@ -821,7 +820,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
                                 'กรุณา อัปโหลดรูป',
-                                style: AppTextStyle.label12bold(color: Theme.of(context).colorScheme.error),
+                                style: AppTextStyle.label12bold(
+                                    color: Theme.of(context).colorScheme.error),
                               ),
                             ),
                       SizedBox(height: 12.w),
@@ -850,7 +850,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                   },
                                   icon: Icon(
                                     Icons.add_photo_alternate,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     size: 22.h,
                                   ),
                                 ),
@@ -861,7 +862,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10.r),
                             border: Border.all(
-                              color: isValidateImageOfficer == false ? ColorApps.grayBorder : Theme.of(context).colorScheme.error,
+                              color: isValidateImageOfficer == false
+                                  ? ColorApps.grayBorder
+                                  : Theme.of(context).colorScheme.error,
                               width: 1,
                             )),
                         height: 130.h,
@@ -869,8 +872,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         child: _imageOfficer == null
                             ? InkWell(
                                 onTap: () {
-                                  // _pickImageOfficer(ImageSource.camera);
-
                                   select_photo_bottom_sheet(
                                     context,
                                     () {
@@ -914,50 +915,65 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
                                 'กรุณา อัปโหลดรูป',
-                                style: AppTextStyle.label12bold(color: Theme.of(context).colorScheme.error),
+                                style: AppTextStyle.label12bold(
+                                    color: Theme.of(context).colorScheme.error),
                               ),
                             ),
                       SizedBox(height: 22.w),
-                      // ปุ่มสำหรับ Submit Form
                       CustomeButton(
                         text: 'จัดตั้งหน่วย',
                         onPressed: newValidateForm,
                       ),
                       BlocListener<EstablishBloc, EstablishState>(
                         listener: (context, state) {
-                          if (state.createEstablishStatus == CreateEstablishStatus.loading) {
+                          if (state.createEstablishStatus ==
+                              CreateEstablishStatus.loading) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                              CustomLoading.showLoadingDialog(context, Theme.of(context).colorScheme.primary);
+                              CustomLoading.showLoadingDialog(context,
+                                  Theme.of(context).colorScheme.primary);
                             });
                           }
-                          if (state.createEstablishStatus == CreateEstablishStatus.success) {
+                          if (state.createEstablishStatus ==
+                              CreateEstablishStatus.success) {
                             createUnitSuccess();
 
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => SuccessScreen(
-                                  icon: 'assets/svg/ant-design_check-circle-filled.svg',
+                                  icon:
+                                      'assets/svg/ant-design_check-circle-filled.svg',
                                   titleBT: 'ไปยังหน่วย',
                                   title: 'ตั้งหน่วยสำเร็จ',
                                   message: 'สามารถเริ่มการเข้าชั่งน้ำหนัก',
                                   onConfirm: () {
                                     GetWeightUnitsIsJoinEventBloc();
                                     getWeightUnitAll();
-                                    Routes.gotoWeightUnitDetailsScreen(context, context.read<EstablishBloc>().state.createEstablishUnit!.tId.toString());
+                                    Routes.gotoWeightUnitDetailsScreen(
+                                        context,
+                                        context
+                                            .read<EstablishBloc>()
+                                            .state
+                                            .createEstablishUnit!
+                                            .tId
+                                            .toString());
                                   },
                                   onCancel: () {
                                     GetWeightUnitsIsJoinEventBloc();
                                     getWeightUnitAll();
-                                    Navigator.popUntil(context, (route) => route.isFirst);
+                                    Navigator.popUntil(
+                                        context, (route) => route.isFirst);
                                   },
                                 ),
                               ),
                             );
                           }
-                          if (state.createEstablishStatus == CreateEstablishStatus.error && state.createEstablishError != '') {
+                          if (state.createEstablishStatus ==
+                                  CreateEstablishStatus.error &&
+                              state.createEstablishError != '') {
                             Navigator.pop(context);
-                            showSnackbarBottom(context, state.createEstablishError.toString());
+                            showSnackbarBottom(
+                                context, state.createEstablishError.toString());
                           }
                         },
                         child: SizedBox(height: 22.w),
@@ -982,8 +998,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             backgroundColor: const Color.fromARGB(0, 255, 255, 255),
             elevation: 0,
             content: Container(
-              // width: 250,
-              // height: 250,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: Image.file(
@@ -996,7 +1010,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
         });
   }
 
-  Future<dynamic> select_photo_bottom_sheet(BuildContext context, Function() tab_camera, Function() tab_gallery) {
+  Future<dynamic> select_photo_bottom_sheet(
+      BuildContext context, Function() tab_camera, Function() tab_gallery) {
     _routeCodeFocusNode.unfocus();
     _startKMFocusNode.unfocus();
     _toKMFocusNode.unfocus();
@@ -1016,7 +1031,7 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Wraps content height
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Container(
                 width: 40,
@@ -1034,7 +1049,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                     Container(
                         height: 32.h,
                         width: 32.h,
-                        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(90.r)),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(90.r)),
                         child: Icon(
                           Icons.camera_alt_outlined,
                           color: Theme.of(context).colorScheme.surface,
@@ -1044,7 +1061,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                     Text(
                       'เปิดกล้องถ่ายรูป',
                       textAlign: TextAlign.center,
-                      style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
+                      style: AppTextStyle.title18bold(
+                          color: Theme.of(context).colorScheme.primary),
                     )
                   ],
                 ),
@@ -1057,7 +1075,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                     Container(
                         height: 32.h,
                         width: 32.h,
-                        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(90.r)),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(90.r)),
                         child: Icon(
                           Icons.photo_size_select_actual_outlined,
                           color: Theme.of(context).colorScheme.surface,
@@ -1067,7 +1087,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                     Text(
                       'เลือกรูปจากคลังภาพ',
                       textAlign: TextAlign.center,
-                      style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
+                      style: AppTextStyle.title18bold(
+                          color: Theme.of(context).colorScheme.primary),
                     )
                   ],
                 ),
@@ -1097,7 +1118,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
         isDense: true,
         filled: true,
         fillColor: Theme.of(context).colorScheme.surface,
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: ColorApps.grayBorder)),
+        disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.r),
+            borderSide: const BorderSide(color: ColorApps.grayBorder)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
         ),
@@ -1113,7 +1136,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
               color: ColorApps.grayBorder,
               width: 1,
             )),
-        errorStyle: AppTextStyle.label12bold(color: Theme.of(context).colorScheme.error),
+        errorStyle: AppTextStyle.label12bold(
+            color: Theme.of(context).colorScheme.error),
       ),
       validator: (value) {
         if (value!.isEmpty || value == '') {
@@ -1140,16 +1164,55 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
 
   Future<void> _pickImageTraffic(ImageSource source) async {
     try {
-      final pickedFile = await _picker.pickImage(source: source);
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
 
       if (pickedFile != null) {
+        File originalFile = File(pickedFile.path);
+
+        final fileSize = await originalFile.length();
+
+        File finalFile = originalFile;
+
+        if (fileSize > 500 * 1024) {
+          logger.i(
+              'Traffic image size: ${(fileSize / 1024).toStringAsFixed(2)} KB, compressing...');
+
+          final dir = await getTemporaryDirectory();
+          final targetPath = path.join(
+            dir.path,
+            'traffic_${DateTime.now().millisecondsSinceEpoch}_compressed.jpg',
+          );
+
+          var result = await FlutterImageCompress.compressAndGetFile(
+            originalFile.absolute.path,
+            targetPath,
+            quality: 70,
+            minWidth: 1024,
+            minHeight: 1024,
+            format: CompressFormat.jpeg,
+          );
+
+          if (result != null) {
+            finalFile = File(result.path);
+            final compressedSize = await finalFile.length();
+            logger.i(
+                'Compressed to: ${(compressedSize / 1024).toStringAsFixed(2)} KB');
+            logger.i(
+                'Saved: ${((fileSize - compressedSize) / fileSize * 100).toStringAsFixed(1)}%');
+          }
+        }
+
         setState(() {
-          _imageTraffic = File(pickedFile.path);
+          _imageTraffic = finalFile;
           isValidateImageTraffic = false;
         });
       }
     } on PlatformException catch (e) {
-      // แยกจัดการกรณี specific platform exception
       if (e.code == 'camera_access_denied') {
         showModalBottomSheet<void>(
           context: context,
@@ -1157,7 +1220,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงกล้อง',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -1167,16 +1231,15 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             );
           },
         );
-        // _showErrorDialog('การเข้าถึงกล้องถูกปฏิเสธ');
       } else if (e.code == 'photo_access_denied') {
-        // _showErrorDialog('การเข้าถึงคลังรูปภาพถูกปฏิเสธ');
         showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงรูปภาพ',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -1186,27 +1249,63 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             );
           },
         );
-      } else {
-        // _showErrorDialog('เกิดข้อผิดพลาด: ${e.message}');
       }
     } catch (e) {
-      // จัดการ error อื่นๆ ที่ไม่ใช่ PlatformException
-      // _showErrorDialog('เกิดข้อผิดพลาดที่ไม่คาดคิด: ${e.toString()}');
+      logger.e('Error picking traffic image: $e');
     }
   }
 
   Future<void> _pickImageOfficer(ImageSource source) async {
     try {
-      final pickedFile = await _picker.pickImage(source: source);
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
 
       if (pickedFile != null) {
+        File originalFile = File(pickedFile.path);
+
+        final fileSize = await originalFile.length();
+
+        File finalFile = originalFile;
+
+        if (fileSize > 500 * 1024) {
+          logger.i(
+              'Officer image size: ${(fileSize / 1024).toStringAsFixed(2)} KB, compressing...');
+
+          final dir = await getTemporaryDirectory();
+          final targetPath = path.join(
+            dir.path,
+            'officer_${DateTime.now().millisecondsSinceEpoch}_compressed.jpg',
+          );
+
+          var result = await FlutterImageCompress.compressAndGetFile(
+            originalFile.absolute.path,
+            targetPath,
+            quality: 70,
+            minWidth: 1024,
+            minHeight: 1024,
+            format: CompressFormat.jpeg,
+          );
+
+          if (result != null) {
+            finalFile = File(result.path);
+            final compressedSize = await finalFile.length();
+            logger.i(
+                'Compressed to: ${(compressedSize / 1024).toStringAsFixed(2)} KB');
+            logger.i(
+                'Saved: ${((fileSize - compressedSize) / fileSize * 100).toStringAsFixed(1)}%');
+          }
+        }
+
         setState(() {
-          _imageOfficer = File(pickedFile.path);
+          _imageOfficer = finalFile;
           isValidateImageOfficer = false;
         });
       }
     } on PlatformException catch (e) {
-      // แยกจัดการกรณี specific platform exception
       if (e.code == 'camera_access_denied') {
         showModalBottomSheet<void>(
           context: context,
@@ -1214,7 +1313,8 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงกล้อง',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงกล้องเพื่อถ่ายภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -1224,16 +1324,15 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             );
           },
         );
-        // _showErrorDialog('การเข้าถึงกล้องถูกปฏิเสธ');
       } else if (e.code == 'photo_access_denied') {
-        // _showErrorDialog('การเข้าถึงคลังรูปภาพถูกปฏิเสธ');
         showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
           builder: (BuildContext context) {
             return ButtomSheetAlertWidger(
               titleText: 'กรุณาเปิดการเข้าถึงรูปภาพ',
-              descText: 'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
+              descText:
+                  'เพื่ออนุญาตให้ VIS เข้าถึงรูปภาพ\nกรุณาไปที่การตั้งค่ามือถือ',
               btnText: 'ไปยังหน้าตั้งค่า',
               iconName: Icons.refresh,
               iconRolate: 90,
@@ -1243,12 +1342,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
             );
           },
         );
-      } else {
-        // _showErrorDialog('เกิดข้อผิดพลาด: ${e.message}');
       }
     } catch (e) {
-      // จัดการ error อื่นๆ ที่ไม่ใช่ PlatformException
-      // _showErrorDialog('เกิดข้อผิดพลาดที่ไม่คาดคิด: ${e.toString()}');
+      logger.e('Error picking officer image: $e');
     }
   }
 }

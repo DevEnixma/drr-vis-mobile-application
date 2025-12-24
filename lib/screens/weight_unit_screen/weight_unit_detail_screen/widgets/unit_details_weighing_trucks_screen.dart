@@ -12,6 +12,9 @@ import 'package:wts_bloc/blocs/weight_car/weight_car_bloc.dart';
 import 'package:wts_bloc/data/models/master_data/material/material_model_req.dart';
 import 'package:wts_bloc/data/models/master_data/material/material_model_res.dart';
 import 'package:wts_bloc/data/models/weight_add_car/weight_add_car_model_req.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../../../blocs/materials/materials_bloc.dart';
 import '../../../../blocs/profile/profile_bloc.dart';
@@ -597,6 +600,52 @@ class _UnitDetailsWeighingTrucksScreenState
       setState(() {
         isSave = true;
       });
+
+      // แสดง loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.r),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 60.w,
+                  height: 60.w,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 6,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                Text(
+                  'กำลังบันทึกข้อมูล',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  'กรุณารอสักครู่...',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
       var payload = WeightAddCarModelReq(
         tId: widget.tid,
         lpHeadNo: carLicenseController.text.trim(),
@@ -620,8 +669,12 @@ class _UnitDetailsWeighingTrucksScreenState
         licenseImage: _license?.path ?? '',
         tdId: widget.tdId,
       );
+
       logger.e('=======[submitForm]========');
       logger.e(payload.toJson());
+
+      // ปิด loading dialog
+      Navigator.of(context).pop();
 
       if (widget.tdId.isNotEmpty) {
         context.read<WeightCarBloc>().add(PutWeightCarEvent(payload));
@@ -629,7 +682,23 @@ class _UnitDetailsWeighingTrucksScreenState
         context.read<WeightCarBloc>().add(PostWeightCarEvent(payload));
       }
     } catch (e) {
+      // ปิด loading dialog ถ้ามี error
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      setState(() {
+        isSave = false;
+      });
+
       logger.e('=======[submitForm]======> $e');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('เกิดข้อผิดพลาดในการบันทึกข้อมูล'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -704,27 +773,71 @@ class _UnitDetailsWeighingTrucksScreenState
 
   Future<void> _pickImage(String type, ImageSource source) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      // เลือกรูปพร้อม optimize ตั้งแต่ต้น
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
       if (image != null) {
+        File originalFile = File(image.path);
+
+        // ตรวจสอบขนาดไฟล์
+        final fileSize = await originalFile.length();
+
+        File finalFile = originalFile;
+
+        // ถ้าไฟล์ใหญ่กว่า 500 KB ให้ compress เพิ่ม
+        if (fileSize > 500 * 1024) {
+          logger.i(
+              'File size: ${(fileSize / 1024).toStringAsFixed(2)} KB, compressing...');
+
+          final dir = await getTemporaryDirectory();
+          final targetPath = path.join(
+            dir.path,
+            '${DateTime.now().millisecondsSinceEpoch}_compressed.jpg',
+          );
+
+          var result = await FlutterImageCompress.compressAndGetFile(
+            originalFile.absolute.path,
+            targetPath,
+            quality: 70,
+            minWidth: 1024,
+            minHeight: 1024,
+            format: CompressFormat.jpeg,
+          );
+
+          if (result != null) {
+            finalFile = File(result.path);
+            final compressedSize = await finalFile.length();
+            logger.i(
+                'Compressed to: ${(compressedSize / 1024).toStringAsFixed(2)} KB');
+            logger.i(
+                'Saved: ${((fileSize - compressedSize) / fileSize * 100).toStringAsFixed(1)}%');
+          }
+        }
+
         setState(() {
           switch (type) {
             case 'front':
-              _imageFront = File(image.path);
+              _imageFront = finalFile;
               break;
             case 'back':
-              _imageBack = File(image.path);
+              _imageBack = finalFile;
               break;
             case 'left':
-              _imageLeft = File(image.path);
+              _imageLeft = finalFile;
               break;
             case 'right':
-              _imageRight = File(image.path);
+              _imageRight = finalFile;
               break;
             case 'weight':
-              _weightSlip = File(image.path);
+              _weightSlip = finalFile;
               break;
             case 'license':
-              _license = File(image.path);
+              _license = finalFile;
               break;
           }
         });
@@ -775,25 +888,62 @@ class _UnitDetailsWeighingTrucksScreenState
   Future<void> _pickImage2(String type, String? source) async {
     try {
       if (source != null) {
+        File originalFile = File(source);
+
+        // ตรวจสอบขนาดไฟล์
+        final fileSize = await originalFile.length();
+
+        File finalFile = originalFile;
+
+        // ถ้าไฟล์ใหญ่กว่า 500 KB ให้ compress เพิ่ม
+        if (fileSize > 500 * 1024) {
+          logger.i(
+              'Update image size: ${(fileSize / 1024).toStringAsFixed(2)} KB, compressing...');
+
+          final dir = await getTemporaryDirectory();
+          final targetPath = path.join(
+            dir.path,
+            'update_${DateTime.now().millisecondsSinceEpoch}_compressed.jpg',
+          );
+
+          var result = await FlutterImageCompress.compressAndGetFile(
+            originalFile.absolute.path,
+            targetPath,
+            quality: 70,
+            minWidth: 1024,
+            minHeight: 1024,
+            format: CompressFormat.jpeg,
+          );
+
+          if (result != null) {
+            finalFile = File(result.path);
+            final compressedSize = await finalFile.length();
+            logger.i(
+                'Compressed to: ${(compressedSize / 1024).toStringAsFixed(2)} KB');
+            logger.i(
+                'Saved: ${((fileSize - compressedSize) / fileSize * 100).toStringAsFixed(1)}%');
+          }
+        }
+
         setState(() {
           switch (type) {
             case 'front':
-              _imageFront = File(source);
+              _imageFront = finalFile;
               break;
             case 'back':
-              _imageBack = File(source);
+              _imageBack = finalFile;
               break;
             case 'left':
-              _imageLeft = File(source);
+              _imageLeft = finalFile;
               break;
             case 'right':
-              _imageRight = File(source);
+              _imageRight = finalFile;
               break;
             case 'weight':
-              _weightSlip = File(source);
+              _weightSlip = finalFile;
               break;
             case 'license':
-              _license = File(source);
+              _license = finalFile;
               break;
           }
         });
@@ -837,7 +987,7 @@ class _UnitDetailsWeighingTrucksScreenState
         );
       }
     } catch (e) {
-      logger.e('Error picking image: $e');
+      logger.e('Error updating image: $e');
     }
   }
 
@@ -1667,7 +1817,7 @@ class _UnitDetailsWeighingTrucksScreenState
 
                       // อัพเดทสถานะ pagination
                       if (state.materials != null &&
-                          state.materials.length < materialPageSize) {
+                          state.materials!.length < materialPageSize) {
                         hasMoreData = false;
                       }
                     }
