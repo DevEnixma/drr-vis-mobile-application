@@ -12,48 +12,79 @@ part 'weight_car_state.dart';
 
 class WeightCarBloc extends Bloc<WeightCarEvent, WeightCarState> {
   WeightCarBloc() : super(const WeightCarState()) {
-    on<PostWeightCarEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(weightCarStatus: WeightCarStatus.loading));
+    on<PostWeightCarEvent>(_onPostWeightCar);
+    on<PutWeightCarEvent>(_onPutWeightCar);
+  }
 
-        var body = json.encode(event.payload.toJson());
-        final response = await establishRepo.postAddCarUnitWeight(body);
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          var result = WeightAddCarModelRes.fromJson(response.data['data']);
+  Future<void> _onPostWeightCar(
+    PostWeightCarEvent event,
+    Emitter<WeightCarState> emit,
+  ) async {
+    await _submitWeightCar(
+      event.payload,
+      emit,
+      (body) => establishRepo.postAddCarUnitWeight(body),
+    );
+  }
 
-          await establishRepo.postAddCarUnitWeigntImage(event.payload.tId.toString(), result.tdId.toString(), event.payload.frontImage, event.payload.backImage, event.payload.leftImage, event.payload.rightImage, event.payload.slipImage, event.payload.licenseImage);
-          emit(state.copyWith(weightCarStatus: WeightCarStatus.success));
-          return;
-        }
+  Future<void> _onPutWeightCar(
+    PutWeightCarEvent event,
+    Emitter<WeightCarState> emit,
+  ) async {
+    await _submitWeightCar(
+      event.payload,
+      emit,
+      (body) => establishRepo.putAddCarUnitWeight(body),
+    );
+  }
 
-        emit(state.copyWith(weightCarStatus: WeightCarStatus.error, weightCarError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(weightCarStatus: WeightCarStatus.error, weightCarError: e.toString()));
-        return;
+  Future<void> _submitWeightCar(
+    WeightAddCarModelReq payload,
+    Emitter<WeightCarState> emit,
+    Future<dynamic> Function(String body) apiCall,
+  ) async {
+    emit(state.copyWith(weightCarStatus: WeightCarStatus.loading));
+
+    try {
+      final body = json.encode(payload.toJson());
+      final response = await apiCall(body);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final result = WeightAddCarModelRes.fromJson(response.data['data']);
+
+        await _uploadCarImages(payload, result.tdId.toString());
+
+        emit(state.copyWith(
+          weightCarStatus: WeightCarStatus.success,
+          weightCar: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          weightCarStatus: WeightCarStatus.error,
+          weightCarError: response.error ?? 'Unknown error',
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        weightCarStatus: WeightCarStatus.error,
+        weightCarError: e.toString(),
+      ));
+    }
+  }
 
-    on<PutWeightCarEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(weightCarStatus: WeightCarStatus.loading));
-
-        var body = json.encode(event.payload.toJson());
-        final response = await establishRepo.putAddCarUnitWeight(body);
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          var result = WeightAddCarModelRes.fromJson(response.data['data']);
-
-          await establishRepo.postAddCarUnitWeigntImage(event.payload.tId.toString(), result.tdId.toString(), event.payload.frontImage, event.payload.backImage, event.payload.leftImage, event.payload.rightImage, event.payload.slipImage, event.payload.licenseImage);
-          emit(state.copyWith(weightCarStatus: WeightCarStatus.success));
-          return;
-        }
-
-        emit(state.copyWith(weightCarStatus: WeightCarStatus.error, weightCarError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(weightCarStatus: WeightCarStatus.error, weightCarError: e.toString()));
-        return;
-      }
-    });
+  Future<void> _uploadCarImages(
+    WeightAddCarModelReq payload,
+    String tdId,
+  ) async {
+    await establishRepo.postAddCarUnitWeigntImage(
+      payload.tId.toString(),
+      tdId,
+      payload.frontImage,
+      payload.backImage,
+      payload.leftImage,
+      payload.rightImage,
+      payload.slipImage,
+      payload.licenseImage,
+    );
   }
 }

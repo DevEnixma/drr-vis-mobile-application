@@ -7,14 +7,20 @@ sealed class WeightCarEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class PostWeightCarEvent extends WeightCarEvent {
+final class PostWeightCarEvent extends WeightCarEvent {
   final WeightAddCarModelReq payload;
 
   const PostWeightCarEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class PutWeightCarEvent extends WeightCarEvent {
+final class PutWeightCarEvent extends WeightCarEvent {
   final WeightAddCarModelReq payload;
 
   const PutWeightCarEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
