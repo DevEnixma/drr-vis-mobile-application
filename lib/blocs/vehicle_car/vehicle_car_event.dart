@@ -7,18 +7,24 @@ sealed class VehicleCarEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetVehicleCarEvent extends VehicleCarEvent {
+final class GetVehicleCarEvent extends VehicleCarEvent {
   final VehicleReq payload;
 
   const GetVehicleCarEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class SelectVehicleCarEvent extends VehicleCarEvent {
+final class SelectVehicleCarEvent extends VehicleCarEvent {
   final VehicleRes payload;
 
   const SelectVehicleCarEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class ClearSelectVehicleCarEvent extends VehicleCarEvent {
+final class ClearSelectVehicleCarEvent extends VehicleCarEvent {
   const ClearSelectVehicleCarEvent();
 }

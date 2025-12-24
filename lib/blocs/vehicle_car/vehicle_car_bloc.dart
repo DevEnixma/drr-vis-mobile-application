@@ -9,32 +9,55 @@ part 'vehicle_car_state.dart';
 
 class VehicleCarBloc extends Bloc<VehicleCarEvent, VehicleCarState> {
   VehicleCarBloc() : super(const VehicleCarState()) {
-    on<GetVehicleCarEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(vehicleCarStatus: VehicleCarStatus.loading));
-        final response = await masterDataRepo.getMasterVehicleClass(event.payload.toJson());
+    on<GetVehicleCarEvent>(_onGetVehicleCar);
+    on<SelectVehicleCarEvent>(_onSelectVehicleCar);
+    on<ClearSelectVehicleCarEvent>(_onClearSelectVehicleCar);
+  }
 
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List items = response.data['data']['data'];
-          var result = items.map((e) => VehicleRes.fromJson(e)).toList();
+  Future<void> _onGetVehicleCar(
+    GetVehicleCarEvent event,
+    Emitter<VehicleCarState> emit,
+  ) async {
+    emit(state.copyWith(vehicleCarStatus: VehicleCarStatus.loading));
 
-          emit(state.copyWith(vehicleCarStatus: VehicleCarStatus.success, vehicleCar: result));
-          return;
-        }
-        emit(state.copyWith(vehicleCarStatus: VehicleCarStatus.error, vehicleCarError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(vehicleCarStatus: VehicleCarStatus.error, vehicleCarError: e.toString()));
-        return;
+    try {
+      final response = await masterDataRepo.getMasterVehicleClass(
+        event.payload.toJson(),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data']['data'];
+        final result = items.map((e) => VehicleRes.fromJson(e)).toList();
+
+        emit(state.copyWith(
+          vehicleCarStatus: VehicleCarStatus.success,
+          vehicleCar: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          vehicleCarStatus: VehicleCarStatus.error,
+          vehicleCarError: response.error ?? 'Unknown error',
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        vehicleCarStatus: VehicleCarStatus.error,
+        vehicleCarError: e.toString(),
+      ));
+    }
+  }
 
-    on<SelectVehicleCarEvent>((event, emit) async {
-      emit(state.copyWith(selectVehicle: event.payload));
-    });
+  void _onSelectVehicleCar(
+    SelectVehicleCarEvent event,
+    Emitter<VehicleCarState> emit,
+  ) {
+    emit(state.copyWith(selectVehicle: event.payload));
+  }
 
-    on<ClearSelectVehicleCarEvent>((event, emit) async {
-      emit(state.copyWith(selectVehicle: VehicleRes.empty()));
-    });
+  void _onClearSelectVehicleCar(
+    ClearSelectVehicleCarEvent event,
+    Emitter<VehicleCarState> emit,
+  ) {
+    emit(state.copyWith(selectVehicle: VehicleRes.empty()));
   }
 }
