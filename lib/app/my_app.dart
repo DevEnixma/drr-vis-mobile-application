@@ -25,75 +25,58 @@ import 'routes/routes_constant.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final productBloc = BlocProvider(create: (context) => ProductBloc());
-    final loginBloc = BlocProvider(create: (context) => LoginBloc());
-    final dashboardBloc = BlocProvider(create: (context) => DashboardBloc());
-    final establishBloc = BlocProvider(create: (context) => EstablishBloc());
-    final profile = BlocProvider(create: (context) => ProfileBloc());
-    final collaborative = BlocProvider(create: (context) => CollaborativeBloc());
-    final waysBloc = BlocProvider(create: (context) => WaysBloc());
-    final vehicleBloc = BlocProvider(create: (context) => VehicleCarBloc());
-    final provinceBloc = BlocProvider(create: (context) => ProvinceBloc());
-    final materialBloc = BlocProvider(create: (context) => MaterialsBloc());
-    final weightCarBloc = BlocProvider(create: (context) => WeightCarBloc());
-    final newsBloc = BlocProvider(create: (context) => NewsBloc());
-    final arrestBloc = BlocProvider(create: (context) => ArrestBloc());
-    final provinceMasterBloc = BlocProvider(create: (context) => ProvinceMasterBloc());
-    final weightUnitBloc = BlocProvider(create: (context) => WeightUnitBloc());
-
     return MultiBlocProvider(
       providers: [
-        productBloc,
-        loginBloc,
-        dashboardBloc,
-        establishBloc,
-        profile,
-        collaborative,
-        waysBloc,
-        vehicleBloc,
-        provinceBloc,
-        materialBloc,
-        weightCarBloc,
-        newsBloc,
-        arrestBloc,
-        provinceMasterBloc,
-        weightUnitBloc,
+        BlocProvider(create: (_) => ProductBloc(), lazy: true),
+        BlocProvider(create: (_) => LoginBloc(), lazy: true),
+        BlocProvider(create: (_) => DashboardBloc(), lazy: true),
+        BlocProvider(create: (_) => EstablishBloc(), lazy: true),
+        BlocProvider(create: (_) => ProfileBloc(), lazy: true),
+        BlocProvider(create: (_) => CollaborativeBloc(), lazy: true),
+        BlocProvider(create: (_) => WaysBloc(), lazy: true),
+        BlocProvider(create: (_) => VehicleCarBloc(), lazy: true),
+        BlocProvider(create: (_) => ProvinceBloc(), lazy: true),
+        BlocProvider(create: (_) => MaterialsBloc(), lazy: true),
+        BlocProvider(create: (_) => WeightCarBloc(), lazy: true),
+        BlocProvider(create: (_) => NewsBloc(), lazy: true),
+        BlocProvider(create: (_) => ArrestBloc(), lazy: true),
+        BlocProvider(create: (_) => ProvinceMasterBloc(), lazy: true),
+        BlocProvider(create: (_) => WeightUnitBloc(), lazy: true),
       ],
       child: ScreenUtilInit(
-          designSize: const Size(360, 690),
-          minTextAdapt: false,
-          splitScreenMode: false,
-          builder: (_, child) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'Flutter Demo',
-              theme: ThemeConfig.getThemeData(context),
-              locale: const Locale('th', 'TH'),
-              initialRoute: RoutesName.splashScreen,
-              onGenerateRoute: Routes.generateRoute,
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                DefaultCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('en', 'US'),
-                Locale('th', 'TH'),
-              ],
-              builder: (BuildContext context, Widget? child) {
-                final MediaQueryData data = MediaQuery.of(context);
-                return MediaQuery(
-                  data: data.copyWith(
-                    textScaler: const TextScaler.linear(1.05),
-                  ),
-                  child: child!,
-                );
-              },
+        designSize: const Size(360, 690),
+        minTextAdapt: false,
+        splitScreenMode: false,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'DRR VIS',
+          theme: ThemeConfig.getThemeData(context),
+          locale: const Locale('th', 'TH'),
+          initialRoute: RoutesName.splashScreen,
+          onGenerateRoute: Routes.generateRoute,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            DefaultCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', 'US'),
+            Locale('th', 'TH'),
+          ],
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(1.05),
+              ),
+              child: child!,
             );
-          }),
+          },
+        ),
+      ),
     );
   }
 }
