@@ -7,8 +7,11 @@ sealed class NewsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetNewses extends NewsEvent {
+final class GetNewses extends NewsEvent {
   final NewsModelReq payload;
 
   const GetNewses(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }

@@ -9,38 +9,50 @@ part 'news_state.dart';
 
 class NewsBloc extends Bloc<NewsEvent, NewsState> {
   NewsBloc() : super(const NewsState()) {
-    on<GetNewses>((event, emit) async {
-      try {
-        if (event.payload.page == 1) {
-          emit(state.copyWith(newsesStatus: NewsStatus.loading));
-        } else {
-          emit(state.copyWith(newsesLoadMore: true));
-        }
+    on<GetNewses>(_onGetNewses);
+  }
 
-        final response = await newsRepo.getNews(event.payload.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          // var pagination = PaginationModel.fromJson(response.data['meta']);
-          emit(state.copyWith(newsTotal: response.data['meta']['total']));
-          final List items = response.data['data'];
-          var result = items.map((e) => NewsModelRes.fromJson(e)).toList();
+  Future<void> _onGetNewses(
+    GetNewses event,
+    Emitter<NewsState> emit,
+  ) async {
+    if (event.payload.page == 1) {
+      emit(state.copyWith(newsesStatus: NewsStatus.loading));
+    } else {
+      emit(state.copyWith(newsesLoadMore: true));
+    }
 
-          if (event.payload.page != 1) {
-            state.newses!.addAll(result);
-            emit(state.copyWith(newses: state.newses));
-            emit(state.copyWith(newsesLoadMore: false));
-          } else {
-            emit(state.copyWith(newses: result));
-          }
-          emit(state.copyWith(newsesStatus: NewsStatus.success));
-          return;
-        }
+    try {
+      final response = await newsRepo.getNews(event.payload.toJson());
 
-        emit(state.copyWith(newsesStatus: NewsStatus.error, newsesError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(newsesStatus: NewsStatus.error, newsesError: e.toString()));
-        return;
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data'];
+        final result = items.map((e) => NewsModelRes.fromJson(e)).toList();
+
+        final updatedList =
+            event.payload.page == 1 ? result : [...?state.newses, ...result];
+
+        final total = response.data['meta']['total'] as int?;
+
+        emit(state.copyWith(
+          newsesStatus: NewsStatus.success,
+          newses: updatedList,
+          newsTotal: total,
+          newsesLoadMore: false,
+        ));
+      } else {
+        emit(state.copyWith(
+          newsesStatus: NewsStatus.error,
+          newsesError: response.error ?? 'Unknown error',
+          newsesLoadMore: false,
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        newsesStatus: NewsStatus.error,
+        newsesError: e.toString(),
+        newsesLoadMore: false,
+      ));
+    }
   }
 }
