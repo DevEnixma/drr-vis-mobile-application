@@ -7,24 +7,33 @@ sealed class WaysEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetWaysEvent extends WaysEvent {
+final class GetWaysEvent extends WaysEvent {
   final WaysReq payload;
 
   const GetWaysEvent(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class SelectedWay extends WaysEvent {
+final class SelectedWay extends WaysEvent {
   final WaysRes payload;
 
   const SelectedWay(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class ClearSelectedWay extends WaysEvent {
+final class ClearSelectedWay extends WaysEvent {
   const ClearSelectedWay();
 }
 
-class GetWayDetail extends WaysEvent {
+final class GetWayDetail extends WaysEvent {
   final String wayID;
 
   const GetWayDetail(this.wayID);
+
+  @override
+  List<Object> get props => [wayID];
 }
