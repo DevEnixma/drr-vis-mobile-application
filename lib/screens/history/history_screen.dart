@@ -76,9 +76,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void getWeightUnits() {
     context.read<WeightUnitBloc>().add(
           GetWeightUnitsEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(
+            startDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeSubstract(startDate, 7)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(
+            endDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeSubstract(endDate, 1)),
             page: page,
             pageSize: pageSize,

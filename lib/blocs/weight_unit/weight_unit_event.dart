@@ -1,45 +1,58 @@
 part of 'weight_unit_bloc.dart';
 
-class WeightUnitEvent extends Equatable {
+sealed class WeightUnitEvent extends Equatable {
   const WeightUnitEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class GetWeightUnitsEvent extends WeightUnitEvent {
-  final String start_date;
-  final String end_date;
+final class GetWeightUnitsEvent extends WeightUnitEvent {
+  final String startDate;
+  final String endDate;
   final String branch;
   final String search;
   final int page;
   final int pageSize;
 
   const GetWeightUnitsEvent({
-    required this.start_date,
-    required this.end_date,
+    required this.startDate,
+    required this.endDate,
     required this.branch,
     required this.page,
     required this.pageSize,
     required this.search,
   });
+
+  @override
+  List<Object> get props =>
+      [startDate, endDate, branch, search, page, pageSize];
 }
 
-class GetWeightUnitDetail extends WeightUnitEvent {
+final class GetWeightUnitDetail extends WeightUnitEvent {
   final String tId;
 
   const GetWeightUnitDetail(this.tId);
+
+  @override
+  List<Object> get props => [tId];
 }
 
-class GetWeightUnitCars extends WeightUnitEvent {
+final class GetWeightUnitCars extends WeightUnitEvent {
   final EstablishWeightCarRes payload;
 
   const GetWeightUnitCars(this.payload);
+
+  @override
+  List<Object> get props => [payload];
 }
 
-class UpdateIsArrestUnitsEvent extends WeightUnitEvent {
+final class UpdateIsArrestUnitsEvent extends WeightUnitEvent {
   final String tDId;
   final String arrestFormPostId;
 
   const UpdateIsArrestUnitsEvent(this.tDId, this.arrestFormPostId);
+
+  @override
+  List<Object> get props => [tDId, arrestFormPostId];
 }
