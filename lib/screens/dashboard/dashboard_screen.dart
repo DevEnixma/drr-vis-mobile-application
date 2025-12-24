@@ -223,8 +223,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 SizedBox(
                     height:
                         constraints.maxWidth > 400 && constraints.maxWidth < 600
-                            ? 15.h
-                            : 35.h),
+                            ? 5.h
+                            : 10.h),
 
                 // Chart
                 ChartWetghtWidget(constraints: constraints),
