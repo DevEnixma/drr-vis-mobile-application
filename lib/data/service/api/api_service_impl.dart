@@ -10,101 +10,91 @@ import 'api_service.dart';
 
 class ApiServiceImpl extends ApiService {
   late Dio _dio;
+  late Dio _dioImage;
+  final LocalStorage _storage = LocalStorage();
 
   @override
   void init({required String baseUrl}) {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
       ),
     );
-    _dio.interceptors.add(
+
+    _dioImage = Dio(
+      BaseOptions(
+        baseUrl: ServerConfig.baseUrlImage,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+
+    _setupInterceptors();
+  }
+
+  void _setupInterceptors() {
+    _dio.interceptors.addAll([
       TalkerDioLogger(
         settings: const TalkerDioLoggerSettings(
           printRequestHeaders: true,
           printRequestData: true,
           printResponseData: false,
-          printResponseHeaders: true,
-          printResponseMessage: true,
+          printResponseHeaders: false,
+          printResponseMessage: false,
         ),
       ),
-    );
-    _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          options.baseUrl = baseUrl;
-          try {
-            final LocalStorage storage = LocalStorage();
-
-            String? accessToken = await storage.getValueString(KeyLocalStorage.accessToken);
-            logger.i('======[dio]=====${DateTime.now()}==accessToken: >>> $accessToken <<<');
-
-            if (accessToken != null && accessToken != '') {
-              options.headers['Authorization'] = 'Bearer $accessToken';
-            }
-          } catch (e) {
-            (e);
-          }
-
-          logger.i('======[dio]=======REQUEST[${options.method}] => PATH: ${options.path}');
-          logger.i('======[dio]=======Headers: ${options.headers}');
-          logger.i('======[dio]=======Query Parameters: ${options.queryParameters}');
-          logger.i('======[dio]=======Data: ${options.data}');
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          logger.i("======[dio]=======RESPONSE[${response.statusCode}] => DATA: ${response.data}");
-          return handler.next(response);
-        },
-        onError: (e, handler) async {
-          logger.e("======[dio]=======ERROR[${e.response?.statusCode}] => MESSAGE: ${e.message}");
-          final LocalStorage storage = LocalStorage();
-
-          if (e.response?.statusCode == 401) {
-            logger.e('===========[refresh token]===========');
-            String? refreshToken = await storage.getValueString(KeyLocalStorage.refreshToken);
-            String? accessToken = await storage.getValueString(KeyLocalStorage.accessToken);
-            logger.e('===========[refresh accessToken]===========> $accessToken');
-            logger.e('===========[refresh refreshToken]===========> $refreshToken');
-            if (refreshToken != null && refreshToken != '' && accessToken != null && accessToken != '') {
-              logger.e('===========[refresh in process]===========');
-            } else {}
-
-            // await storage.removeStorageLogout();
-            // if (refreshToken != null && !e.requestOptions.extra.containsKey('retry')) {
-            //   e.requestOptions.extra['retry'] = true;
-
-            //   e.requestOptions.headers['Authorization'] = 'Bearer $accessToken';
-            //   e.requestOptions.headers['Refresh_token'] = refreshToken;
-
-            //   logger.e('====showErrorSnackbar==type==[postRefreshToken]>');
-            //   final response = await loginRepo.postRefreshToken();
-
-            //   if (response.statusCode >= 200 && response.statusCode < 400) {
-            //     logger.e('====showErrorSnackbar==type==[statusCode]> ${response.statusCode}');
-            //     logger.e('====showErrorSnackbar==type==[data]> ${response.data}');
-            //     logger.e('====showErrorSnackbar==type==[new access_token]> ${response.data['response']['access_token']}');
-            //     logger.e('====showErrorSnackbar==type==[old accessToken]> $accessToken');
-
-            //     final result = LoginModelRes.fromJson(response.data?["response"]);
-            //     logger.e('===showErrorSnackbar==result newToken111>  ${result.toJson()}');
-            //     logger.e('===showErrorSnackbar==result newToken222>  ${result.accessToken}');
-
-            //     await storage.setValueString(KeyLocalStorage.accessToken, result.accessToken.toString());
-            //     await storage.setValueString(KeyLocalStorage.refreshToken, result.refreshToken.toString());
-            //     String? accessToken2 = await storage.getValueString(KeyLocalStorage.accessToken);
-            //     logger.e('===299=showErrorSnackbar==type==[old accessToken] 111> $accessToken2');
-
-            //     // return handler.resolve(await _dio.fetch(e.requestOptions));
-            //   }
-            // }
-          }
-          return handler.next(e);
-        },
+        onRequest: _onRequest,
+        onResponse: _onResponse,
+        onError: _onError,
       ),
-    );
+    ]);
+  }
+
+  Future<void> _onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    try {
+      final accessToken =
+          await _storage.getValueString(KeyLocalStorage.accessToken);
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $accessToken';
+      }
+
+      logger.i('REQUEST[${options.method}] => ${options.path}');
+    } catch (e) {
+      logger.e('Error adding auth token: $e');
+    }
+
+    handler.next(options);
+  }
+
+  void _onResponse(
+    Response response,
+    ResponseInterceptorHandler handler,
+  ) {
+    logger.i(
+        'RESPONSE[${response.statusCode}] => ${response.requestOptions.path}');
+    handler.next(response);
+  }
+
+  Future<void> _onError(
+    DioException e,
+    ErrorInterceptorHandler handler,
+  ) async {
+    logger.e('ERROR[${e.response?.statusCode}] => ${e.requestOptions.path}');
+
+    if (e.response?.statusCode == 401) {
+      logger.e('401 Unauthorized - Token expired');
+      // Token refresh logic can be added here if needed
+    }
+
+    handler.next(e);
   }
 
   @override
@@ -114,13 +104,9 @@ class ApiServiceImpl extends ApiService {
   }) async {
     try {
       final response = await _dio.get(path, queryParameters: query);
-
-      return ApiResponse.fromDioResponse(
-        response,
-      );
+      return ApiResponse.fromDioResponse(response);
     } on DioException catch (e) {
-      // return ApiResponse.error(e.toString());
-      return handleDioError(e);
+      return _handleDioError(e);
     } catch (e) {
       return ApiResponse.error(e.toString());
     }
@@ -133,11 +119,11 @@ class ApiServiceImpl extends ApiService {
     Map<String, dynamic>? query,
   }) async {
     try {
-      final response = await _dio.post(path, data: body, queryParameters: query);
+      final response =
+          await _dio.post(path, data: body, queryParameters: query);
       return ApiResponse.fromDioResponse(response);
     } on DioException catch (e) {
-      // return ApiResponse.error(e.toString());
-      return handleDioError(e);
+      return _handleDioError(e);
     } catch (e) {
       return ApiResponse.error(e.toString());
     }
@@ -153,7 +139,21 @@ class ApiServiceImpl extends ApiService {
       final response = await _dio.put(path, data: body, queryParameters: query);
       return ApiResponse.fromDioResponse(response);
     } on DioException catch (e) {
-      return handleDioError(e);
+      return _handleDioError(e);
+    } catch (e) {
+      return ApiResponse.error(e.toString());
+    }
+  }
+
+  @override
+  Future<ApiResponse> delete({
+    required String path,
+  }) async {
+    try {
+      final response = await _dio.delete(path);
+      return ApiResponse.fromDioResponse(response);
+    } on DioException catch (e) {
+      return _handleDioError(e);
     } catch (e) {
       return ApiResponse.error(e.toString());
     }
@@ -167,18 +167,16 @@ class ApiServiceImpl extends ApiService {
     Map<String, dynamic>? query,
   }) async {
     try {
-      List<String> parts1 = filePath1.split("/");
-      String fileName1 = parts1.last;
-
-      List<String> parts2 = filePath1.split("/");
-      String fileName2 = parts2.last;
-
-      FormData formData = FormData.fromMap({
-        'file1': await MultipartFile.fromFile(filePath1, filename: fileName1),
-        'file2': await MultipartFile.fromFile(filePath2, filename: fileName2),
+      final formData = FormData.fromMap({
+        'file1': await MultipartFile.fromFile(
+          filePath1,
+          filename: _getFileName(filePath1),
+        ),
+        'file2': await MultipartFile.fromFile(
+          filePath2,
+          filename: _getFileName(filePath2),
+        ),
       });
-
-      formData.fields.map((field) {});
 
       final response = await _dio.post(
         path,
@@ -188,64 +186,33 @@ class ApiServiceImpl extends ApiService {
 
       return ApiResponse.fromDioResponse(response);
     } on DioException catch (e) {
-      // return ApiResponse.error(e.toString());
-      return handleDioError(e);
+      return _handleDioError(e);
     } catch (e) {
       return ApiResponse.error(e.toString());
     }
   }
 
   @override
-  Future<ApiResponse> createCarImage({required String path, image_path1, image_path2, image_path3, image_path4, image_path5, image_path6}) async {
+  Future<ApiResponse> createCarImage({
+    required String path,
+    String? image_path1,
+    String? image_path2,
+    String? image_path3,
+    String? image_path4,
+    String? image_path5,
+    String? image_path6,
+  }) async {
     try {
-      String fileName1 = '';
-      if (image_path1 != '') {
-        List<String> parts1 = image_path1.split("/");
-        fileName1 = parts1.last;
-      }
+      final Map<String, dynamic> formDataMap = {};
 
-      String fileName2 = '';
-      if (image_path2 != '') {
-        List<String> parts2 = image_path2.split("/");
-        fileName2 = parts2.last;
-      }
+      await _addImageToFormData(formDataMap, 'image_path1', image_path1);
+      await _addImageToFormData(formDataMap, 'image_path2', image_path2);
+      await _addImageToFormData(formDataMap, 'image_path3', image_path3);
+      await _addImageToFormData(formDataMap, 'image_path4', image_path4);
+      await _addImageToFormData(formDataMap, 'image_path5', image_path5);
+      await _addImageToFormData(formDataMap, 'image_path6', image_path6);
 
-      String fileName3 = '';
-      if (image_path3 != '') {
-        List<String> parts3 = image_path3.split("/");
-        fileName3 = parts3.last;
-      }
-
-      String fileName4 = '';
-      if (image_path4 != '') {
-        List<String> parts4 = image_path4.split("/");
-        fileName4 = parts4.last;
-      }
-
-      String fileName5 = '';
-      if (image_path5 != '') {
-        List<String> parts5 = image_path5.split("/");
-        fileName5 = parts5.last;
-      }
-      String fileName6 = '';
-      if (image_path6 != '') {
-        List<String> parts6 = image_path6.split("/");
-        fileName6 = parts6.last;
-      }
-
-      FormData formData = FormData.fromMap({
-        'image_path1': image_path1 != '' ? await MultipartFile.fromFile(image_path1, filename: fileName1) : '',
-        'image_path2': image_path2 != '' ? await MultipartFile.fromFile(image_path2, filename: fileName2) : '',
-        'image_path3': image_path3 != '' ? await MultipartFile.fromFile(image_path3, filename: fileName3) : '',
-        'image_path4': image_path4 != '' ? await MultipartFile.fromFile(image_path4, filename: fileName4) : '',
-        'image_path5': image_path5 != '' ? await MultipartFile.fromFile(image_path5, filename: fileName5) : '',
-        'image_path6': image_path6 != '' ? await MultipartFile.fromFile(image_path6, filename: fileName6) : '',
-      });
-
-// ตรวจสอบ fields
-      formData.fields.forEach((field) {
-        logger.i('Field: ${field.key}, Value: ${field.value}');
-      });
+      final formData = FormData.fromMap(formDataMap);
 
       final response = await _dio.post(
         path,
@@ -255,11 +222,8 @@ class ApiServiceImpl extends ApiService {
 
       return ApiResponse.fromDioResponse(response);
     } on DioException catch (e) {
-      logger.e('==========PutWeightCarEvent====6====> $e');
-      // return ApiResponse.error(e.toString());
-      return handleDioError(e);
+      return _handleDioError(e);
     } catch (e) {
-      logger.e('==========PutWeightCarEvent====7====> $e');
       return ApiResponse.error(e.toString());
     }
   }
@@ -267,115 +231,93 @@ class ApiServiceImpl extends ApiService {
   @override
   Future<ApiResponse> getImageUrl({required String path}) async {
     try {
-      final Dio _dioImage = Dio();
-      final response = await _dioImage.get('${ServerConfig.baseUrlImage}${path}');
-
-      return ApiResponse.fromDioResponse(
-        response,
-      );
+      final response = await _dioImage.get(path);
+      return ApiResponse.fromDioResponse(response);
     } on DioException catch (e) {
-      return handleDioError(e);
+      return _handleDioError(e);
     } catch (e) {
       return ApiResponse.error(e.toString());
     }
   }
 
-  @override
-  Future<ApiResponse> delete({
-    required String path,
-  }) async {
-    try {
-      final response = await _dio.delete(path);
-
-      return ApiResponse.fromDioResponse(
-        response,
+  Future<void> _addImageToFormData(
+    Map<String, dynamic> formDataMap,
+    String key,
+    String? imagePath,
+  ) async {
+    if (imagePath != null && imagePath.isNotEmpty) {
+      formDataMap[key] = await MultipartFile.fromFile(
+        imagePath,
+        filename: _getFileName(imagePath),
       );
-    } on DioException catch (e) {
-      return handleDioError(e);
-    } catch (e) {
-      return ApiResponse.error(e.toString());
+    } else {
+      formDataMap[key] = '';
     }
   }
 
-  Future<ApiResponse> handleDioError(DioException e) async {
-    logger.e('=======[error response]==1======> ${e.response}');
-    logger.e('=======[error type]==2======> ${e.type}');
+  String _getFileName(String path) {
+    return path.split('/').last;
+  }
 
+  Future<ApiResponse> _handleDioError(DioException e) async {
+    logger.e('DioException: ${e.type}');
+
+    final statusCode = e.response?.statusCode ?? 0;
     String errorMessage = 'An error occurred';
-    int errorCode = int.parse(e.response!.statusCode!.toString());
 
     final data = e.response?.data;
-
     if (data is Map<String, dynamic>) {
-      // Assuming the model has a field named 'message' instead of 'error'
-      ErrorMessageModel message = ErrorMessageModel.fromJson(data);
-      errorMessage = message.message.toString(); // Change this to whatever the actual field is
-
-      String resultMessage = 'code: ${e.response?.statusCode}\nmessage: ${errorMessage}';
-      logger.e('=======[error type]===resultMessage=0====> ${message}');
-      logger.e('=======[error type]===resultMessage=1====> ${errorMessage}');
-      logger.e('=======[error type]===resultMessage=2====> ${resultMessage}');
-      // logger.e('=======[error type]===resultMessage=3====> ${resultMessage}');
-      // logger.e('=======[error type]===resultMessage=4====> ${resultMessage}');
-      return ApiResponse.error(resultMessage, statusCode: errorCode);
+      final errorModel = ErrorMessageModel.fromJson(data);
+      errorMessage = errorModel.message ?? errorMessage;
     } else {
-      switch (e.type) {
-        case DioExceptionType.connectionTimeout:
-          errorMessage = 'Connection Timeout';
-          // errorCode = 1;
-          break;
-        case DioExceptionType.sendTimeout:
-          errorMessage = 'Send Timeout';
-          // errorCode = 2;
-          break;
-        case DioExceptionType.receiveTimeout:
-          errorMessage = 'Receive Timeout';
-          // errorCode = 3;
-          break;
-        case DioExceptionType.badResponse:
-          errorMessage = 'Received invalid status';
-          // errorCode = e.response?.statusCode ?? 10;
-          break;
-        case DioExceptionType.cancel:
-          errorMessage = 'Request to API server was cancelled';
-          // errorCode = 4;
-          break;
-        case DioExceptionType.unknown:
-          errorMessage = 'Network error';
-          // errorCode = 5;
-          break;
-        case DioExceptionType.connectionError:
-          errorMessage = 'Network error';
-          // errorCode = 5;
-          break;
-        default:
-          errorMessage = e.message ?? 'Unknown error';
-        // errorCode = 6;
-      }
+      errorMessage = _getErrorMessageByType(e.type);
+    }
 
-      String resultMessage = 'code: ${e.response?.statusCode}\nmessage: ${errorMessage}';
-      logger.e('=======[error type]===resultMessage==2===> ${resultMessage}');
+    final resultMessage = 'code: $statusCode\nmessage: $errorMessage';
+    logger.e('Error: $resultMessage');
 
-      return ApiResponse.error(resultMessage, statusCode: errorCode);
+    return ApiResponse.error(resultMessage, statusCode: statusCode);
+  }
+
+  String _getErrorMessageByType(DioExceptionType type) {
+    switch (type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection timeout';
+      case DioExceptionType.sendTimeout:
+        return 'Send timeout';
+      case DioExceptionType.receiveTimeout:
+        return 'Receive timeout';
+      case DioExceptionType.badResponse:
+        return 'Invalid response from server';
+      case DioExceptionType.cancel:
+        return 'Request cancelled';
+      case DioExceptionType.connectionError:
+        return 'Network connection error';
+      case DioExceptionType.unknown:
+        return 'Unknown network error';
+      default:
+        return 'Unknown error occurred';
     }
   }
 }
 
 class ErrorMessageModel {
-  int? statusCode;
-  String? message;
+  final int? statusCode;
+  final String? message;
 
   ErrorMessageModel({this.statusCode, this.message});
 
-  ErrorMessageModel.fromJson(Map<String, dynamic> json) {
-    statusCode = json['statusCode'];
-    message = json['message'];
+  factory ErrorMessageModel.fromJson(Map<String, dynamic> json) {
+    return ErrorMessageModel(
+      statusCode: json['statusCode'] as int?,
+      message: json['message'] as String?,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['statusCode'] = this.statusCode;
-    data['message'] = this.message;
-    return data;
+    return {
+      'statusCode': statusCode,
+      'message': message,
+    };
   }
 }

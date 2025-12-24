@@ -6,7 +6,9 @@ import 'api/api_service_impl.dart';
 final getIt = GetIt.instance;
 
 void initService() {
-  getIt.registerLazySingleton<ApiService>(() => ApiServiceImpl());
+  if (!getIt.isRegistered<ApiService>()) {
+    getIt.registerLazySingleton<ApiService>(() => ApiServiceImpl());
+  }
 }
 
-ApiService get apiService => getIt.get<ApiService>();
+ApiService get apiService => getIt<ApiService>();
