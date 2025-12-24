@@ -12,86 +12,152 @@ import '../../../data/repo/repo.dart';
 part 'province_master_event.dart';
 part 'province_master_state.dart';
 
-class ProvinceMasterBloc extends Bloc<ProvinceMasterEvent, ProvinceMasterState> {
+class ProvinceMasterBloc
+    extends Bloc<ProvinceMasterEvent, ProvinceMasterState> {
+  static const int _defaultPage = 1;
+  static const int _defaultPageSize = 999;
+
   ProvinceMasterBloc() : super(const ProvinceMasterState()) {
-    on<GetProvinceMaster>((event, emit) async {
-      try {
-        emit(state.copyWith(provinceMasterStatus: ProvinceMasterStatus.loading));
+    on<GetProvinceMaster>(_onGetProvinceMaster);
+    on<GetDistrictMaster>(_onGetDistrictMaster);
+    on<GetSubDistrictMaster>(_onGetSubDistrictMaster);
+  }
 
-        var body = ProvinceModelReq(
-          page: 1,
-          pageSize: 999,
-          textSearch: event.payload,
-        );
+  Future<void> _onGetProvinceMaster(
+    GetProvinceMaster event,
+    Emitter<ProvinceMasterState> emit,
+  ) async {
+    emit(state.copyWith(provinceMasterStatus: ProvinceMasterStatus.loading));
 
-        final response = await masterDataRepo.getProvinceMasterData(body.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List items = response.data['data'];
-          var result = items.map((e) => ProvinceMasterDataModel.fromJson(e)).toList();
+    try {
+      final body = ProvinceModelReq(
+        page: _defaultPage,
+        pageSize: _defaultPageSize,
+        textSearch: event.payload,
+      );
 
-          emit(state.copyWith(provinceMasterStatus: ProvinceMasterStatus.success, provinceMaster: result));
-          return;
-        }
-        emit(state.copyWith(provinceMasterStatus: ProvinceMasterStatus.error, provinceMasterError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(provinceMasterStatus: ProvinceMasterStatus.error, provinceMasterError: e.toString()));
+      final response =
+          await masterDataRepo.getProvinceMasterData(body.toJson());
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data'];
+        final result =
+            items.map((e) => ProvinceMasterDataModel.fromJson(e)).toList();
+
+        emit(state.copyWith(
+          provinceMasterStatus: ProvinceMasterStatus.success,
+          provinceMaster: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          provinceMasterStatus: ProvinceMasterStatus.error,
+          provinceMasterError: response.error ?? 'Unknown error',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        provinceMasterStatus: ProvinceMasterStatus.error,
+        provinceMasterError: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onGetDistrictMaster(
+    GetDistrictMaster event,
+    Emitter<ProvinceMasterState> emit,
+  ) async {
+    emit(state.copyWith(districtsMasterStatus: DistrictsMasterStatus.loading));
+
+    try {
+      final provinceId = int.tryParse(event.provinceId);
+      if (provinceId == null) {
+        emit(state.copyWith(
+          districtsMasterStatus: DistrictsMasterStatus.error,
+          districtsMasterError: 'Invalid province ID',
+        ));
         return;
       }
-    });
 
-    on<GetDistrictMaster>((event, emit) async {
-      try {
-        emit(state.copyWith(districtsMasterStatus: DistrictsMasterStatus.loading));
+      final body = DistrictsReq(
+        page: _defaultPage,
+        pageSize: _defaultPageSize,
+        textSearch: event.payload,
+        provinceId: provinceId,
+      );
 
-        var body = DistrictsReq(
-          page: 1,
-          pageSize: 999,
-          textSearch: event.payload,
-          provinceId: int.parse(event.provinceId),
-        );
+      final response =
+          await masterDataRepo.getDistrctsMasterData(body.toJson());
 
-        final response = await masterDataRepo.getDistrctsMasterData(body.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List items = response.data['data'];
-          var result = items.map((e) => DistrictsMasterDataModel.fromJson(e)).toList();
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data'];
+        final result =
+            items.map((e) => DistrictsMasterDataModel.fromJson(e)).toList();
 
-          emit(state.copyWith(districtsMasterStatus: DistrictsMasterStatus.success, districtsMaster: result));
-          return;
-        }
-        emit(state.copyWith(districtsMasterStatus: DistrictsMasterStatus.error, districtsMasterError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(districtsMasterStatus: DistrictsMasterStatus.error, districtsMasterError: e.toString()));
+        emit(state.copyWith(
+          districtsMasterStatus: DistrictsMasterStatus.success,
+          districtsMaster: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          districtsMasterStatus: DistrictsMasterStatus.error,
+          districtsMasterError: response.error ?? 'Unknown error',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        districtsMasterStatus: DistrictsMasterStatus.error,
+        districtsMasterError: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onGetSubDistrictMaster(
+    GetSubDistrictMaster event,
+    Emitter<ProvinceMasterState> emit,
+  ) async {
+    emit(state.copyWith(
+        subDistrictsMasterStatus: SubDistrictsMasterStatus.loading));
+
+    try {
+      final districtId = int.tryParse(event.districtId);
+      if (districtId == null) {
+        emit(state.copyWith(
+          subDistrictsMasterStatus: SubDistrictsMasterStatus.error,
+          subDistrictsMasterError: 'Invalid district ID',
+        ));
         return;
       }
-    });
 
-    on<GetSubDistrictMaster>((event, emit) async {
-      try {
-        emit(state.copyWith(subDistrictsMasterStatus: SubDistrictsMasterStatus.loading));
+      final body = SubDistrictsReq(
+        page: _defaultPage,
+        pageSize: _defaultPageSize,
+        textSearch: event.payload,
+        districtId: districtId,
+      );
 
-        var body = SubDistrictsReq(
-          page: 1,
-          pageSize: 999,
-          textSearch: event.payload,
-          districtId: int.parse(event.districtId),
-        );
+      final response =
+          await masterDataRepo.getSubDistrctsMasterData(body.toJson());
 
-        final response = await masterDataRepo.getSubDistrctsMasterData(body.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List items = response.data['data'];
-          var result = items.map((e) => SubDistrictsMasterDataModel.fromJson(e)).toList();
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List items = response.data['data'];
+        final result =
+            items.map((e) => SubDistrictsMasterDataModel.fromJson(e)).toList();
 
-          emit(state.copyWith(subDistrictsMasterStatus: SubDistrictsMasterStatus.success, subDistrictsMaster: result));
-          return;
-        }
-        emit(state.copyWith(subDistrictsMasterStatus: SubDistrictsMasterStatus.error, subDistrictsMasterError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(subDistrictsMasterStatus: SubDistrictsMasterStatus.error, subDistrictsMasterError: e.toString()));
-        return;
+        emit(state.copyWith(
+          subDistrictsMasterStatus: SubDistrictsMasterStatus.success,
+          subDistrictsMaster: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          subDistrictsMasterStatus: SubDistrictsMasterStatus.error,
+          subDistrictsMasterError: response.error ?? 'Unknown error',
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        subDistrictsMasterStatus: SubDistrictsMasterStatus.error,
+        subDistrictsMasterError: e.toString(),
+      ));
+    }
   }
 }
