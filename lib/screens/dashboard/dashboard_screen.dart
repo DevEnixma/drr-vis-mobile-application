@@ -38,12 +38,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   ScrollController? _scrollController;
 
-  double sliderValue = 20;
-
   bool showAppBar = true;
-  bool isLoading = true;
-  bool isLogged = false;
-
   String? accessToken;
 
   @override
@@ -189,10 +184,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       constraints.maxWidth < 600
                                   ? const SizedBox.shrink()
                                   : SizedBox(height: 10.h),
-                              TitleDashboardWidget(),
+                              const TitleDashboardWidget(),
                               FadeInDown(
-                                duration: Duration(milliseconds: 100),
-                                child: TitleCardWidget(),
+                                duration: const Duration(milliseconds: 100),
+                                child: const TitleCardWidget(),
                               ),
                             ],
                           ),
@@ -201,7 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     )
                   : Container(
                       color: Theme.of(context).colorScheme.primary,
-                      padding: EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.only(bottom: 10),
                       child: Stack(
                         children: [
                           Container(
@@ -215,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                TitleDashboardWidget(),
+                                const TitleDashboardWidget(),
                               ],
                             ),
                           ),
@@ -240,9 +235,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   height: 1.h,
                 ),
                 SizedBox(height: 15.h),
-                TopRouteWidget(),
+                const TopRouteWidget(),
                 SizedBox(height: 10.h),
-                TopRouterBar(),
+                const TopRouterBar(),
 
                 BlocListener<ProfileBloc, ProfileState>(
                   listener: (context, state) {
@@ -251,7 +246,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       showSnackbarBottom(context, state.profileError!);
                     }
                   },
-                  child: SizedBox.shrink(),
+                  child: const SizedBox.shrink(),
                 ),
 
                 SizedBox(height: 10.h),
@@ -262,7 +257,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       previous.dashboardCCTVStatus !=
                       current.dashboardCCTVStatus,
                   listener: (context, state) {
-                    // แสดง Snackbar เมื่อเกิด error
                     if (state.dashboardCCTVStatus ==
                             DashboardCCTVStatus.error &&
                         state.dashboardCCTVError != null &&
@@ -271,7 +265,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     }
                   },
                   builder: (context, state) {
-                    // Loading state
                     if (state.dashboardCCTVStatus ==
                         DashboardCCTVStatus.loading) {
                       return Column(
@@ -290,7 +283,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       );
                     }
 
-                    // Success state
                     if (state.dashboardCCTVStatus ==
                         DashboardCCTVStatus.success) {
                       if (state.cctv_list != null &&
@@ -298,14 +290,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         return ListView.builder(
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: state.cctv_list!.length,
                           itemBuilder: (BuildContext context, int index) {
                             final cctv = state.cctv_list![index];
 
-                            // ข้าม CCTV ที่ไม่มี URL
                             if (cctv.rtspHls == null || cctv.rtspHls!.isEmpty) {
-                              return SizedBox.shrink();
+                              return const SizedBox.shrink();
                             }
 
                             return VideoPlayerScreen(
@@ -315,10 +306,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           },
                         );
                       } else {
-                        // Empty state
                         return Padding(
                           padding: EdgeInsets.symmetric(vertical: 40.h),
-                          child: EmptyWidget(
+                          child: const EmptyWidget(
                             title: 'ไม่พบข้อมูลกล้อง CCTV',
                             label: '',
                           ),
@@ -365,8 +355,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     .read<DashboardBloc>()
                                     .add(CCTVFetchEvent());
                               },
-                              icon: Icon(Icons.refresh),
-                              label: Text('ลองอีกครั้ง'),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('ลองอีกครั้ง'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
                                     Theme.of(context).colorScheme.primary,
@@ -383,7 +373,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       );
                     }
 
-                    // Initial/unknown state - แสดง skeleton
                     return Column(
                       children: List.generate(
                         4,
