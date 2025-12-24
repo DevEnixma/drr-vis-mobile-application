@@ -50,7 +50,6 @@ class CreateWeightUnitScreen extends StatefulWidget {
 }
 
 class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
-  // TODO: new Code
   final newFormKey = GlobalKey<FormState>();
   final TextEditingController nameRouterController = TextEditingController();
   final FocusNode nameRouterFocusNode = FocusNode();
@@ -90,7 +89,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   bool isLoadingLocation = false;
   String? locationError;
 
-  // TODO: old code
   bool disableButton = false;
   final GlobalKey<FormState> formKey = GlobalKey();
 
@@ -229,18 +227,14 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   void createUnitSuccess() async {
     context.read<EstablishBloc>().add(ResetCreateUnitWeight());
 
-    leaveJoinWeightUnit();
-  }
+    final newUnitId =
+        context.read<EstablishBloc>().state.createEstablishUnit?.tId;
 
-  void leaveJoinWeightUnit() async {
-    String? username = await storage.getValueString(KeyLocalStorage.username);
-    String? weightUnitId =
-        await storage.getValueString(KeyLocalStorage.weightUnitId);
-
-    context
-        .read<EstablishBloc>()
-        .add(DeleteWeightUnitLeaveEvent(weightUnitId!, username ?? ''));
-    joinWeightUnit();
+    if (newUnitId != null) {
+      await storage.setValueString(
+          KeyLocalStorage.weightUnitId, newUnitId.toString());
+      joinWeightUnit();
+    }
   }
 
   void joinWeightUnit() async {
@@ -1185,9 +1179,7 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
 
       if (pickedFile != null) {
         File originalFile = File(pickedFile.path);
-
         final fileSize = await originalFile.length();
-
         File finalFile = originalFile;
 
         if (fileSize > 500 * 1024) {
@@ -1278,9 +1270,7 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
 
       if (pickedFile != null) {
         File originalFile = File(pickedFile.path);
-
         final fileSize = await originalFile.length();
-
         File finalFile = originalFile;
 
         if (fileSize > 500 * 1024) {

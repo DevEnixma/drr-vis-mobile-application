@@ -29,7 +29,8 @@ class EstablishSuccessScreen extends StatelessWidget {
                     SizedBox(height: 20),
                     Text(
                       'ตั้งหน่วยสำเร็จ',
-                      style: AppTextStyle.title20bold(color: Theme.of(context).colorScheme.secondary),
+                      style: AppTextStyle.title20bold(
+                          color: Theme.of(context).colorScheme.secondary),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 10),
@@ -56,7 +57,8 @@ class EstablishSuccessScreen extends StatelessWidget {
                       },
                       child: Text(
                         'กลับหน้าจัดตั้งหน่วย',
-                        style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
+                        style: AppTextStyle.title18bold(
+                            color: Theme.of(context).colorScheme.primary),
                         textAlign: TextAlign.center,
                       ),
                     ),
