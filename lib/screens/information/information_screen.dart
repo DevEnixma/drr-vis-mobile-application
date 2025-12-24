@@ -44,7 +44,8 @@ class _InformationScreenState extends State<InformationScreen> {
     scrollController = ScrollController();
 
     scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
         loadMore();
       }
     });
@@ -87,8 +88,8 @@ class _InformationScreenState extends State<InformationScreen> {
     await Future.delayed(const Duration(seconds: 1));
     setState(() {
       page = 1;
-      getNewsesBloc();
     });
+    getNewsesBloc();
   }
 
   @override
@@ -107,7 +108,8 @@ class _InformationScreenState extends State<InformationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -115,17 +117,22 @@ class _InformationScreenState extends State<InformationScreen> {
         centerTitle: true,
         title: Text(
           widget.title,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.surface),
         ),
         actions: [
           GestureDetector(
             onTap: () {
-              accessToken != null && accessToken != '' ? Routes.gotoProfile(context) : Navigator.pushNamed(context, RoutesName.loginScreen);
+              accessToken != null && accessToken != ''
+                  ? Routes.gotoProfile(context)
+                  : Navigator.pushNamed(context, RoutesName.loginScreen);
             },
             child: Row(
               children: [
                 SvgPicture.asset(
-                  accessToken != null && accessToken != '' ? 'assets/svg/ph_sign-out-bold.svg' : 'assets/svg/iconamoon_profile-fill.svg',
+                  accessToken != null && accessToken != ''
+                      ? 'assets/svg/ph_sign-out-bold.svg'
+                      : 'assets/svg/iconamoon_profile-fill.svg',
                   color: Theme.of(context).colorScheme.surface,
                   width: 22.h,
                 ),
@@ -143,7 +150,8 @@ class _InformationScreenState extends State<InformationScreen> {
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.onTertiaryContainer,
                       borderRadius: BorderRadius.circular(30.r),
@@ -160,7 +168,8 @@ class _InformationScreenState extends State<InformationScreen> {
                             decoration: InputDecoration(
                               isDense: true,
                               hintText: 'ค้นหาข่าวสาร',
-                              hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
+                              hintStyle: AppTextStyle.title16normal(
+                                  color: ColorApps.colorGray),
                               border: InputBorder.none,
                             ),
                             style: AppTextStyle.title16normal(),
@@ -180,11 +189,25 @@ class _InformationScreenState extends State<InformationScreen> {
                   Text('ข่าวสารทั้งหมด', style: AppTextStyle.title16bold()),
                   BlocBuilder<NewsBloc, NewsState>(
                     builder: (context, state) {
-                      return Text('${state.newsTotal} รายการ', style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.onTertiary));
+                      return Text('${state.newsTotal} รายการ',
+                          style: AppTextStyle.title16bold(
+                              color: Theme.of(context).colorScheme.onTertiary));
                     },
                   ),
                 ],
               ),
+            ),
+            BlocListener<NewsBloc, NewsState>(
+              listenWhen: (previous, current) =>
+                  previous.newsesStatus != current.newsesStatus,
+              listener: (context, state) {
+                if (state.newsesStatus == NewsStatus.error &&
+                    state.newsesError != null &&
+                    state.newsesError!.isNotEmpty) {
+                  showSnackbarBottom(context, state.newsesError!);
+                }
+              },
+              child: const SizedBox.shrink(),
             ),
             Expanded(
               child: BlocBuilder<NewsBloc, NewsState>(
@@ -193,8 +216,8 @@ class _InformationScreenState extends State<InformationScreen> {
                     return const Center(child: CustomLoadingPagination());
                   }
                   if (state.newsesStatus == NewsStatus.success) {
+                    // กรณีไม่มีข่าวสารเลย
                     if (state.newsTotal == 0) {
-                      // แสดงข้อความเมื่อไม่มีข่าวสาร
                       return RefreshIndicator(
                         onRefresh: refreshData,
                         color: Theme.of(context).colorScheme.primary,
@@ -214,14 +237,18 @@ class _InformationScreenState extends State<InformationScreen> {
                                   ),
                                   SizedBox(height: 10.h),
                                   Text(
-                                    searchNews.isEmpty ? 'ไม่มีข่าวสาร' : 'ไม่พบข่าวสารที่ค้นหา',
+                                    searchNews.isEmpty
+                                        ? 'ไม่มีข่าวสาร'
+                                        : 'ไม่พบข่าวสารที่ค้นหา',
                                     style: AppTextStyle.title18bold(
                                       color: ColorApps.colorGray,
                                     ),
                                   ),
                                   SizedBox(height: 5.h),
                                   Text(
-                                    searchNews.isEmpty ? 'ยังไม่มีข่าวสารในขณะนี้' : 'ลองค้นหาด้วยคำอื่น',
+                                    searchNews.isEmpty
+                                        ? 'ยังไม่มีข่าวสารในขณะนี้'
+                                        : 'ลองค้นหาด้วยคำอื่น',
                                     textAlign: TextAlign.center,
                                     style: AppTextStyle.title14normal(
                                       color: ColorApps.colorGray,
@@ -234,7 +261,9 @@ class _InformationScreenState extends State<InformationScreen> {
                         ),
                       );
                     }
-                    if (state.newses!.isNotEmpty) {
+
+                    // กรณีมีข่าวสาร
+                    if (state.newses != null && state.newses!.isNotEmpty) {
                       return RefreshIndicator(
                         onRefresh: refreshData,
                         color: Theme.of(context).colorScheme.primary,
@@ -243,7 +272,8 @@ class _InformationScreenState extends State<InformationScreen> {
                           controller: scrollController,
                           padding: EdgeInsets.zero,
                           separatorBuilder: (context, index) => Divider(
-                            color: Theme.of(context).colorScheme.tertiaryContainer,
+                            color:
+                                Theme.of(context).colorScheme.tertiaryContainer,
                             height: 0,
                             indent: 20,
                             endIndent: 20,
@@ -258,19 +288,77 @@ class _InformationScreenState extends State<InformationScreen> {
                       );
                     }
                   }
-                  if (state.newsesStatus == NewsStatus.error && state.newsesError != '') {
-                    showSnackbarBottom(context, state.newsesError!);
+                  if (state.newsesStatus == NewsStatus.error) {
+                    return RefreshIndicator(
+                      onRefresh: refreshData,
+                      color: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 24.h),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: 64,
+                                    color: Colors.red[300],
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'เกิดข้อผิดพลาด',
+                                    style: AppTextStyle.title16bold(),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    state.newsesError ?? 'Unknown error',
+                                    style: AppTextStyle.title14normal(
+                                      color: Colors.grey[600],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height: 24),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        page = 1;
+                                      });
+                                      getNewsesBloc();
+                                    },
+                                    icon: Icon(Icons.refresh),
+                                    label: Text('ลองอีกครั้ง'),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   }
+
                   return const SizedBox.shrink();
                 },
               ),
             ),
-            BlocBuilder<NewsBloc, NewsState>(builder: (context, state) {
-              if (state.newsesLoadMore == true) {
-                return const Center(child: CustomLoadingPagination());
-              }
-              return const SizedBox.shrink();
-            })
+            BlocBuilder<NewsBloc, NewsState>(
+              builder: (context, state) {
+                if (state.newsesLoadMore == true) {
+                  return const Center(child: CustomLoadingPagination());
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ),

@@ -925,6 +925,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                         onPressed: newValidateForm,
                       ),
                       BlocListener<EstablishBloc, EstablishState>(
+                        listenWhen: (previous, current) =>
+                            previous.createEstablishStatus !=
+                            current.createEstablishStatus,
                         listener: (context, state) {
                           if (state.createEstablishStatus ==
                               CreateEstablishStatus.loading) {
@@ -933,6 +936,7 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                   Theme.of(context).colorScheme.primary);
                             });
                           }
+
                           if (state.createEstablishStatus ==
                               CreateEstablishStatus.success) {
                             createUnitSuccess();
@@ -968,12 +972,20 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                               ),
                             );
                           }
+
                           if (state.createEstablishStatus ==
-                                  CreateEstablishStatus.error &&
-                              state.createEstablishError != '') {
-                            Navigator.pop(context);
-                            showSnackbarBottom(
-                                context, state.createEstablishError.toString());
+                              CreateEstablishStatus.error) {
+                            if (mounted && Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                            if (mounted &&
+                                state.createEstablishError != null &&
+                                state.createEstablishError!.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                showSnackbarBottom(
+                                    context, state.createEstablishError!);
+                              });
+                            }
                           }
                         },
                         child: SizedBox(height: 22.w),

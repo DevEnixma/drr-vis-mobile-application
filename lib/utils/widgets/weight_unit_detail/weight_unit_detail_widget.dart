@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,7 +32,8 @@ class WeightUnitDetailWidget extends StatefulWidget {
   State<WeightUnitDetailWidget> createState() => _WeightUnitDetailWidgetState();
 }
 
-class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with SingleTickerProviderStateMixin {
+class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget>
+    with SingleTickerProviderStateMixin {
   ScrollController? _scrollController;
   late TabController _tabController;
 
@@ -45,6 +47,10 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
   late ScrollController scrollList;
 
   bool showAppBar = true;
+  bool hasMoreData = true;
+  bool isLoadingMore = false;
+  Timer? _debounce;
+
   @override
   void initState() {
     super.initState();
@@ -57,8 +63,11 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
     scrollList = ScrollController();
 
     scrollList.addListener(() {
-      if (scrollList.position.pixels == scrollList.position.maxScrollExtent) {
-        loadMore();
+      if (scrollList.position.pixels >=
+          scrollList.position.maxScrollExtent - 200) {
+        if (hasMoreData && !isLoadingMore) {
+          loadMore();
+        }
       }
     });
 
@@ -71,7 +80,9 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
   }
 
   void getDetailWeightUnit() {
-    context.read<WeightUnitBloc>().add(GetWeightUnitDetail(widget.tid.toString()));
+    context
+        .read<WeightUnitBloc>()
+        .add(GetWeightUnitDetail(widget.tid.toString()));
   }
 
   void getMobileCarList() {
@@ -89,6 +100,9 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
     if (_tabController.index != _tabController.previousIndex) {
       setState(() {
         isOverWeight = _tabController.index.toString();
+        page = 1;
+        hasMoreData = true;
+        isLoadingMore = false;
       });
       getMobileCarList();
     }
@@ -100,6 +114,7 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
     _scrollController?.dispose();
     _tabController.dispose();
     scrollList.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -107,12 +122,10 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
     if (_scrollController!.offset > 50 && showAppBar) {
       setState(() {
         showAppBar = false;
-        print(_scrollController);
       });
     } else if (_scrollController!.offset <= 50 && !showAppBar) {
       setState(() {
         showAppBar = true;
-        print(_scrollController);
       });
     }
   }
@@ -120,14 +133,17 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
   void loadMore() async {
     setState(() {
       page = page + 1;
-      getMobileCarList();
+      isLoadingMore = true;
     });
+    getMobileCarList();
   }
 
   Future<void> refreshData() async {
     await Future.delayed(const Duration(seconds: 1));
     setState(() {
       page = 1;
+      hasMoreData = true;
+      isLoadingMore = false;
     });
     getMobileCarList();
   }
@@ -156,13 +172,16 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                   ? SizedBox.shrink()
                   : BlocBuilder<WeightUnitBloc, WeightUnitState>(
                       builder: (context, state) {
-                        if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                        if (state.weightUnitDetailStatus ==
+                                WeightUnitDetailStatus.success &&
+                            state.weightUnitDetail != null) {
                           return Container(
                             width: double.infinity,
                             alignment: Alignment.centerLeft,
                             child: Text(
                               state.weightUnitDetail?.wayId ?? '',
-                              style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.surface),
+                              style: AppTextStyle.title16bold(
+                                  color: Theme.of(context).colorScheme.surface),
                             ),
                           );
                         }
@@ -180,7 +199,10 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                 ),
               ],
               backgroundColor: Theme.of(context).colorScheme.onPrimary,
-              expandedHeight: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 200.h : 260.h,
+              expandedHeight:
+                  constraints.maxWidth > 400 && constraints.maxWidth < 600
+                      ? 200.h
+                      : 260.h,
               toolbarHeight: constraints.maxWidth > 600 ? 70.h : 52.h,
               floating: false,
               pinned: true,
@@ -196,8 +218,6 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                 labelStyle: AppTextStyle.title16bold(),
                 controller: _tabController,
                 onTap: (value) {
-                  print('value $value');
-                  print('value ${_tabController.index}');
                   setState(() {});
                 },
                 tabs: [
@@ -206,24 +226,21 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                       children: [
                         SvgPicture.asset(
                           'assets/svg/iconamoon_news-fill.svg',
-                          color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+                          color: _tabController.index == 0
+                              ? Theme.of(context).colorScheme.surface
+                              : Theme.of(context).colorScheme.onSurface,
                           width: 20.h,
                         ),
                         SizedBox(width: 5.h),
                         BlocBuilder<WeightUnitBloc, WeightUnitState>(
                           builder: (context, state) {
-                            if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
-                              return Text(
-                                'รถเข้าชั่ง ()',
-                                style: TextStyle(
-                                  color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
-                                ),
-                              );
-                            }
+                            final count = state.weightUnitsCars?.length ?? 0;
                             return Text(
-                              'รถเข้าชั่ง ()',
+                              'รถเข้าชั่ง ($count)',
                               style: TextStyle(
-                                color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                                color: _tabController.index == 0
+                                    ? Theme.of(context).colorScheme.surface
+                                    : Theme.of(context).colorScheme.onSurface,
                               ),
                             );
                           },
@@ -236,14 +253,18 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                       children: [
                         SvgPicture.asset(
                           'assets/svg/truck_icon.svg',
-                          color: _tabController.index == 1 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                          color: _tabController.index == 1
+                              ? Theme.of(context).colorScheme.surface
+                              : Theme.of(context).colorScheme.onSurface,
                           width: 22.h,
                         ),
                         SizedBox(width: 5.h),
                         Text(
                           'รถน้ำหนักเกิน (0)',
                           style: TextStyle(
-                            color: _tabController.index == 1 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                            color: _tabController.index == 1
+                                ? Theme.of(context).colorScheme.surface
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -254,7 +275,9 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
               flexibleSpace: showAppBar
                   ? BlocBuilder<WeightUnitBloc, WeightUnitState>(
                       builder: (context, state) {
-                        if (state.weightUnitDetailStatus == WeightUnitDetailStatus.success && state.weightUnitDetail != null) {
+                        if (state.weightUnitDetailStatus ==
+                                WeightUnitDetailStatus.success &&
+                            state.weightUnitDetail != null) {
                           return TitleWeightUnitWidget(
                             item: state.weightUnitDetail!,
                             constraints: constraints,
@@ -294,7 +317,8 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
           borderRadius: BorderRadius.circular(90.0),
         ),
         onPressed: () {
-          Routes.gotoUnitDetailsWeighingTrucks(context, widget.tid.toString(), '', true);
+          Routes.gotoUnitDetailsWeighingTrucks(
+              context, widget.tid.toString(), '', true);
         },
         child: Icon(Icons.add),
       ),
@@ -317,8 +341,6 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
               children: [
                 SvgPicture.asset(
                   'assets/svg/ri_search-line.svg',
-
-                  // width: 20.h,
                 ),
                 SizedBox(width: 10),
                 Expanded(
@@ -326,7 +348,8 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                     decoration: InputDecoration(
                       isDense: true,
                       hintText: 'ค้นหา...',
-                      hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
+                      hintStyle: AppTextStyle.title16normal(
+                          color: ColorApps.colorGray),
                       border: InputBorder.none,
                     ),
                     style: AppTextStyle.title16normal(),
@@ -335,60 +358,124 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
               ],
             ),
           ),
-          EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง')
+          Expanded(
+            child: EmptyWidget(
+              title: 'ไม่พบรายการรถเข้าชั่ง',
+              label: 'กรุณาเพิ่มรายการรถเข้าชั่ง',
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Container FirstTabContent() {
+  Widget FirstTabContent() {
     return Container(
       color: Theme.of(context).colorScheme.surface,
-      child: Center(
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
-              margin: EdgeInsets.all(8.h),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onTertiaryContainer,
-                borderRadius: BorderRadius.circular(30.r),
-              ),
-              child: Row(
-                children: [
-                  SvgPicture.asset(
-                    'assets/svg/ri_search-line.svg',
+      child: Column(
+        children: [
+          BlocListener<WeightUnitBloc, WeightUnitState>(
+            listenWhen: (previous, current) {
+              // Listen เมื่อ status เปลี่ยน
+              return previous.weightUnitCarsStatus !=
+                  current.weightUnitCarsStatus;
+            },
+            listener: (context, state) {
+              // อัปเดต loading flag
+              if (mounted) {
+                setState(() {
+                  isLoadingMore = false;
+                });
+              }
 
-                    // width: 20.h,
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        isDense: true,
-                        hintText: 'ค้นหา..',
-                        border: InputBorder.none,
-                        hintStyle: AppTextStyle.title16normal(color: ColorApps.colorGray),
-                      ),
-                      style: AppTextStyle.title16normal(),
-                    ),
-                  ),
-                ],
-              ),
+              // เช็คว่ามีข้อมูลเพิ่มหรือไม่
+              if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
+                if (mounted) {
+                  setState(() {
+                    if (state.weightUnitsCars == null ||
+                        state.weightUnitsCars!.length < pageSize) {
+                      hasMoreData = false;
+                    }
+                  });
+                }
+              }
+
+              // แสดง Snackbar เมื่อเกิด error
+              if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error &&
+                  state.weightUnitsError != null &&
+                  state.weightUnitsError!.isNotEmpty) {
+                showSnackbarBottom(context, state.weightUnitsError!);
+              }
+            },
+            child: const SizedBox.shrink(),
+          ),
+
+          // Search bar
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.h),
+            margin: EdgeInsets.all(8.h),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onTertiaryContainer,
+              borderRadius: BorderRadius.circular(30.r),
             ),
-            Expanded(
-              child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
-                builder: (context, state) {
-                  if (state.weightUnitCarsStatus == WeightUnitCarsStatus.loading) {
-                    return const Center(child: CustomLoadingPagination());
-                  }
-                  if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
-                    if (state.weightUnitsCars!.isNotEmpty) {
-                      return ListView.separated(
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  'assets/svg/ri_search-line.svg',
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'ค้นหา..',
+                      border: InputBorder.none,
+                      hintStyle: AppTextStyle.title16normal(
+                          color: ColorApps.colorGray),
+                    ),
+                    style: AppTextStyle.title16normal(),
+                    onChanged: (value) {
+                      if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+                      _debounce = Timer(const Duration(milliseconds: 500), () {
+                        setState(() {
+                          search = value;
+                          page = 1;
+                          hasMoreData = true;
+                        });
+                        getMobileCarList();
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // List content
+          Expanded(
+            child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
+              builder: (context, state) {
+                // Loading state
+                if (state.weightUnitCarsStatus ==
+                    WeightUnitCarsStatus.loading) {
+                  return const Center(child: CustomLoadingPagination());
+                }
+
+                // Success state
+                if (state.weightUnitCarsStatus ==
+                    WeightUnitCarsStatus.success) {
+                  if (state.weightUnitsCars != null &&
+                      state.weightUnitsCars!.isNotEmpty) {
+                    return RefreshIndicator(
+                      onRefresh: refreshData,
+                      child: ListView.separated(
+                        controller: scrollList,
                         padding: EdgeInsets.zero,
                         separatorBuilder: (context, index) => Divider(
-                          color: Theme.of(context).colorScheme.tertiaryContainer, // You can change the color or thickness of the divider here
-                          height: 1, // Height between items
+                          color:
+                              Theme.of(context).colorScheme.tertiaryContainer,
+                          height: 1,
                           indent: 20,
                           endIndent: 20,
                         ),
@@ -397,37 +484,130 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
                           final carItem = state.weightUnitsCars![index];
                           return GestureDetector(
                             onTap: () {
-                              Routes.gotoHistoryDetailsView(context, carItem.tId!.toString(), carItem.tdId!);
+                              Routes.gotoHistoryDetailsView(
+                                context,
+                                carItem.tId!.toString(),
+                                carItem.tdId!,
+                              );
                             },
                             child: CarItemWidget(
-                              item: state.weightUnitsCars![index],
+                              item: carItem,
                             ),
                           );
                         },
-                      );
-                    } else {
-                      return EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
-                    }
+                      ),
+                    );
+                  } else {
+                    // Empty state
+                    return EmptyWidget(
+                      title: 'ไม่พบรายการรถเข้าชั่ง',
+                      label: 'กรุณาเพิ่มรายการรถเข้าชั่ง',
+                    );
                   }
-
-                  if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error && state.weightUnitsError != '') {
-                    showSnackbarBottom(context, state.weightUnitsError!);
-                  }
-
-                  return SizedBox.shrink();
-                },
-              ),
-            ),
-            BlocBuilder<WeightUnitBloc, WeightUnitState>(
-              builder: (context, state) {
-                if (state.weightUnitsCarsLoadMore == true) {
-                  return const Center(child: CustomLoadingPagination());
                 }
+
+                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.h),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64.h,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'เกิดข้อผิดพลาด',
+                            style: AppTextStyle.title18bold(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            state.weightUnitsError ?? 'ไม่สามารถโหลดข้อมูลได้',
+                            style: AppTextStyle.title14normal(
+                              color: ColorApps.colorGray,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 24.h),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                page = 1;
+                                hasMoreData = true;
+                                isLoadingMore = false;
+                              });
+                              getMobileCarList();
+                            },
+                            icon: Icon(Icons.refresh),
+                            label: Text('ลองอีกครั้ง'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.surface,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 return const SizedBox.shrink();
               },
             ),
-          ],
-        ),
+          ),
+
+          BlocBuilder<WeightUnitBloc, WeightUnitState>(
+            builder: (context, state) {
+              // แสดง loading เมื่อกำลัง load more
+              if (state.weightUnitsCarsLoadMore == true && isLoadingMore) {
+                return Padding(
+                  padding: EdgeInsets.all(16.h),
+                  child: Column(
+                    children: [
+                      const CustomLoadingPagination(),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'กำลังโหลดข้อมูลเพิ่มเติม...',
+                        style: AppTextStyle.title14normal(
+                          color: ColorApps.colorGray,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // แสดงข้อความเมื่อไม่มีข้อมูลเพิ่ม
+              if (!hasMoreData &&
+                  state.weightUnitsCars != null &&
+                  state.weightUnitsCars!.isNotEmpty) {
+                return Padding(
+                  padding: EdgeInsets.all(16.h),
+                  child: Text(
+                    'แสดงข้อมูลครบแล้ว',
+                    style: AppTextStyle.title14normal(
+                      color: ColorApps.colorGray,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
       ),
     );
   }
@@ -448,21 +628,19 @@ class _WeightUnitDetailWidgetState extends State<WeightUnitDetailWidget> with Si
           onConfirm: () {
             Navigator.pop(context);
 
-            //  แบบ Dialog
-            // showConfirmationDialog(context);
-            //  แบบ เปลี่ยนหน้า
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => SuccessScreen(
-                        icon: 'assets/svg/ant-design_check-circle-filled.svg',
-                        titleBT: 'กลับหน้าแรก',
-                        title: 'สิ้นสุดการจัดหน่วยสำเร็จ',
-                        message: 'สามารถเริ่มการจัดตั้งหน่วยใหม่ได้',
-                        onConfirm: () {
-                          Navigator.popUntil(context, (route) => route.isFirst);
-                        },
-                      )),
+                builder: (context) => SuccessScreen(
+                  icon: 'assets/svg/ant-design_check-circle-filled.svg',
+                  titleBT: 'กลับหน้าแรก',
+                  title: 'สิ้นสุดการจัดหน่วยสำเร็จ',
+                  message: 'สามารถเริ่มการจัดตั้งหน่วยใหม่ได้',
+                  onConfirm: () {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  },
+                ),
+              ),
             );
           },
           onCancel: () {

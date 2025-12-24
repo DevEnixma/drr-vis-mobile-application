@@ -84,8 +84,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void GetWeightUnitsIsJoinEventBloc() {
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearSubstract(DateTime.now(), 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearAdd(DateTime.now(), 1)),
+            start_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearSubstract(DateTime.now(), 1)),
+            end_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearAdd(DateTime.now(), 1)),
             page: 1,
             pageSize: 1,
           ),
@@ -95,22 +97,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void call_api() {
     DateTime today = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd').format(today);
-    logger.i('====[formattedDate]======> $formattedDate'); // Output: 2023-03-25
+    logger.i('====[formattedDate]======> $formattedDate');
     context.read<DashboardBloc>().add(CCTVFetchEvent());
-    // number_day ส่ง 7 ได้ 8 วัน
   }
 
   void getDailyWeighedSumFunc() {
-    DailyWeighedSumVehicleReq payload = DailyWeighedSumVehicleReq(date: ConvertDate.convertDateToYYYYDDMM(DateTime.now()));
-    // TODO: issue
-    context.read<DashboardBloc>().add(DailyWeighedSumVehicleFetchEvent(payload));
+    DailyWeighedSumVehicleReq payload = DailyWeighedSumVehicleReq(
+        date: ConvertDate.convertDateToYYYYDDMM(DateTime.now()));
+    context
+        .read<DashboardBloc>()
+        .add(DailyWeighedSumVehicleFetchEvent(payload));
   }
 
   void getVehichleWeightInspectionFunc() {
-    VehicleWeightInspectionReq payload = VehicleWeightInspectionReq(date: ConvertDate.convertDateToYYYYDDMM(DateTime.now()), numberDay: '6', stationTypeId: '');
-//
-    // TODO: issue
-    context.read<DashboardBloc>().add(VehicleWeightInspectionFetchEvent(payload));
+    VehicleWeightInspectionReq payload = VehicleWeightInspectionReq(
+        date: ConvertDate.convertDateToYYYYDDMM(DateTime.now()),
+        numberDay: '6',
+        stationTypeId: '');
+
+    context
+        .read<DashboardBloc>()
+        .add(VehicleWeightInspectionFetchEvent(payload));
   }
 
   void getTopFiveRoadEventBloc() {
@@ -137,19 +144,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_scrollController!.offset > 50 && showAppBar) {
       setState(() {
         showAppBar = false;
-        print(_scrollController);
       });
     } else if (_scrollController!.offset <= 50 && !showAppBar) {
       setState(() {
         showAppBar = true;
-        print(_scrollController);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return Scaffold(
       body: LayoutBuilder(builder: (context, constraints) {
         return CustomScrollView(
@@ -158,7 +164,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SliverAppBar(
               automaticallyImplyLeading: false,
               backgroundColor: Theme.of(context).colorScheme.surface,
-              expandedHeight: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 140.h : 160.h,
+              expandedHeight:
+                  constraints.maxWidth > 400 && constraints.maxWidth < 600
+                      ? 140.h
+                      : 160.h,
               toolbarHeight: constraints.maxWidth > 600 ? 70.h : 62.h,
               floating: false,
               pinned: true,
@@ -176,7 +185,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              constraints.maxWidth > 400 && constraints.maxWidth < 600 ? const SizedBox.shrink() : SizedBox(height: 10.h),
+                              constraints.maxWidth > 400 &&
+                                      constraints.maxWidth < 600
+                                  ? const SizedBox.shrink()
+                                  : SizedBox(height: 10.h),
                               TitleDashboardWidget(),
                               FadeInDown(
                                 duration: Duration(milliseconds: 100),
@@ -213,9 +225,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             SliverList(
               delegate: SliverChildListDelegate([
-                SizedBox(height: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 15.h : 35.h),
+                SizedBox(
+                    height:
+                        constraints.maxWidth > 400 && constraints.maxWidth < 600
+                            ? 15.h
+                            : 35.h),
 
-                // Chart ยังไม่ได้ login
+                // Chart
                 ChartWetghtWidget(constraints: constraints),
 
                 Divider(
@@ -230,71 +246,161 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 BlocListener<ProfileBloc, ProfileState>(
                   listener: (context, state) {
-                    if (state.profileStatus == ProfileStatus.error && !(state.profileError?.contains("code: 401") ?? false)) {
+                    if (state.profileStatus == ProfileStatus.error &&
+                        !(state.profileError?.contains("code: 401") ?? false)) {
                       showSnackbarBottom(context, state.profileError!);
                     }
                   },
                   child: SizedBox.shrink(),
                 ),
-                SizedBox(height: 10.h),
-                BlocBuilder<DashboardBloc, DashboardState>(
-                  builder: (context, state) {
-                    if (state.dashboardCCTVStatus == DashboardCCTVStatus.success) {
-                      if (state.cctv_list != null && state.cctv_list!.isNotEmpty) {
-                        return SizedBox(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            padding: EdgeInsets.zero,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: state.cctv_list!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              if (state.cctv_list![index].rtspHls == null) {
-                                return SizedBox.shrink(); // Return an empty widget
-                              }
-                              // return null;
 
-                              return VideoPlayerScreen(
-                                title: state.cctv_list![index].cameraDesc ?? "",
-                                vdoUrl: state.cctv_list![index].rtspHls ?? 'https://67mst-pyoipc025-015.enixma.net/live/10.172.24.6.stream/playlist.m3u8',
-                              );
-                            },
+                SizedBox(height: 10.h),
+
+                // CCTV List with Error Handling
+                BlocConsumer<DashboardBloc, DashboardState>(
+                  listenWhen: (previous, current) =>
+                      previous.dashboardCCTVStatus !=
+                      current.dashboardCCTVStatus,
+                  listener: (context, state) {
+                    // แสดง Snackbar เมื่อเกิด error
+                    if (state.dashboardCCTVStatus ==
+                            DashboardCCTVStatus.error &&
+                        state.dashboardCCTVError != null &&
+                        state.dashboardCCTVError!.isNotEmpty) {
+                      showSnackbarBottom(context, state.dashboardCCTVError!);
+                    }
+                  },
+                  builder: (context, state) {
+                    // Loading state
+                    if (state.dashboardCCTVStatus ==
+                        DashboardCCTVStatus.loading) {
+                      return Column(
+                        children: List.generate(
+                          4,
+                          (index) => Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15.w, vertical: 8.h),
+                            child: SkeletionContainerWidget(
+                              height: 180.h,
+                              width: double.infinity,
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
                           ),
+                        ),
+                      );
+                    }
+
+                    // Success state
+                    if (state.dashboardCCTVStatus ==
+                        DashboardCCTVStatus.success) {
+                      if (state.cctv_list != null &&
+                          state.cctv_list!.isNotEmpty) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: state.cctv_list!.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final cctv = state.cctv_list![index];
+
+                            // ข้าม CCTV ที่ไม่มี URL
+                            if (cctv.rtspHls == null || cctv.rtspHls!.isEmpty) {
+                              return SizedBox.shrink();
+                            }
+
+                            return VideoPlayerScreen(
+                              title: cctv.cameraDesc ?? "กล้อง CCTV",
+                              vdoUrl: cctv.rtspHls!,
+                            );
+                          },
                         );
                       } else {
-                        return EmptyWidget(
-                          title: 'ไม่พบข้อมูล',
-                          label: '',
+                        // Empty state
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40.h),
+                          child: EmptyWidget(
+                            title: 'ไม่พบข้อมูลกล้อง CCTV',
+                            label: '',
+                          ),
                         );
                       }
                     }
 
-                    if (state.dashboardCCTVStatus == DashboardCCTVStatus.error) {}
+                    if (state.dashboardCCTVStatus ==
+                        DashboardCCTVStatus.error) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 24.w, vertical: 40.h),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.videocam_off_outlined,
+                              size: 64.h,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'ไม่สามารถโหลดกล้อง CCTV',
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              state.dashboardCCTVError ??
+                                  'กรุณาลองใหม่อีกครั้ง',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 24.h),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                context
+                                    .read<DashboardBloc>()
+                                    .add(CCTVFetchEvent());
+                              },
+                              icon: Icon(Icons.refresh),
+                              label: Text('ลองอีกครั้ง'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.surface,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24.w,
+                                  vertical: 12.h,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // Initial/unknown state - แสดง skeleton
                     return Column(
-                      children: [
-                        SkeletionContainerWidget(
-                          height: 180.h,
-                          width: 300.w,
-                          color: Theme.of(context).colorScheme.surface,
+                      children: List.generate(
+                        4,
+                        (index) => Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 15.w, vertical: 8.h),
+                          child: SkeletionContainerWidget(
+                            height: 180.h,
+                            width: double.infinity,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
                         ),
-                        SkeletionContainerWidget(
-                          height: 180.h,
-                          width: 300.w,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                        SkeletionContainerWidget(
-                          height: 180.h,
-                          width: 300.w,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                        SkeletionContainerWidget(
-                          height: 180.h,
-                          width: 300.w,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                      ],
+                      ),
                     );
                   },
                 ),
+
                 SizedBox(height: 80.h),
               ]),
             ),

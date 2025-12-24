@@ -75,7 +75,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent) {
       _loadMore();
     }
   }
@@ -137,10 +138,14 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
       _showLoadingDialog();
       await _getLocationPermission();
       _hideLoadingDialog();
-      Routes.gotoCreateWeightUnit(context);
+      if (mounted) {
+        Routes.gotoCreateWeightUnit(context);
+      }
     } catch (e) {
-      _hideLoadingDialog();
-      _showLocationPermissionError(e.toString());
+      if (mounted) {
+        _hideLoadingDialog();
+        _showLocationPermissionError(e.toString());
+      }
     }
   }
 
@@ -152,7 +157,9 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   void _hideLoadingDialog() {
-    Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   Future<Position> _getLocationPermission() async {
@@ -170,7 +177,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
       isScrollControlled: true,
       builder: (context) => ButtomSheetAlertWidger(
         titleText: 'กรุณาเปิดการเข้าถึงตำแหน่ง',
-        descText: 'เพื่ออนุญาตให้ VIS เข้าถึงข้อมูลตำแหน่งของคุณ\nกรุณาไปที่การตั้งค่ามือถือ',
+        descText:
+            'เพื่ออนุญาตให้ VIS เข้าถึงข้อมูลตำแหน่งของคุณ\nกรุณาไปที่การตั้งค่ามือถือ',
         btnText: 'ไปยังหน้าตั้งค่า',
         iconName: Icons.refresh,
         iconRolate: 90,
@@ -204,7 +212,9 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
       );
       context.read<EstablishBloc>().add(PostJoinWeightUnit(payload, 'main'));
     } else {
-      context.read<EstablishBloc>().add(DeleteWeightUnitLeaveEvent(weightUnitId, username));
+      context
+          .read<EstablishBloc>()
+          .add(DeleteWeightUnitLeaveEvent(weightUnitId, username));
     }
   }
 
@@ -241,8 +251,6 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   bool get _hasViewerRole {
-    // final profile = context.read<ProfileBloc>().state.profile;
-    // return profile != null && RolePermission.checkRoleViewer(profile.deptType);
     return _accessToken != null && _accessToken!.isNotEmpty;
   }
 
@@ -266,7 +274,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   @override
   Widget build(BuildContext context) {
     // Start token refresh timer
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
 
     return Scaffold(
       body: LayoutBuilder(
@@ -299,7 +308,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   Widget _buildHeader(BoxConstraints constraints) {
-    final shouldAddSpacing = constraints.maxWidth <= 400 || constraints.maxWidth >= 600;
+    final shouldAddSpacing =
+        constraints.maxWidth <= 400 || constraints.maxWidth >= 600;
 
     return Column(
       children: [
@@ -353,7 +363,9 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
       child: Row(
         children: [
           SvgPicture.asset(
-            isLoggedIn ? 'assets/svg/ph_sign-out-bold.svg' : 'assets/svg/iconamoon_profile-fill.svg',
+            isLoggedIn
+                ? 'assets/svg/ph_sign-out-bold.svg'
+                : 'assets/svg/iconamoon_profile-fill.svg',
             color: Theme.of(context).colorScheme.surface,
             width: 22.h,
           ),
@@ -364,10 +376,54 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   Widget _buildBody() {
-    return BlocListener<EstablishBloc, EstablishState>(
-      listener: (context, state) {
-        // Handle establish mobile master status changes if needed
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<EstablishBloc, EstablishState>(
+          listenWhen: (previous, current) =>
+              previous.establishMobileMasterStatus !=
+              current.establishMobileMasterStatus,
+          listener: (context, state) {
+            if (state.establishMobileMasterStatus ==
+                    EstablishMobileMasterStatus.error &&
+                state.establishMobileMasterError != null &&
+                state.establishMobileMasterError!.isNotEmpty) {
+              showSnackbarBottom(context, state.establishMobileMasterError!);
+            }
+          },
+        ),
+        BlocListener<EstablishBloc, EstablishState>(
+          listenWhen: (previous, current) =>
+              previous.weightUnitIsJoinStatus != current.weightUnitIsJoinStatus,
+          listener: (context, state) {
+            if (state.weightUnitIsJoinStatus == WeightUnitIsJoinStatus.error &&
+                state.weightUnitIsJoinError != null &&
+                state.weightUnitIsJoinError!.isNotEmpty) {
+              showSnackbarBottom(context, state.weightUnitIsJoinError!);
+            }
+          },
+        ),
+        BlocListener<EstablishBloc, EstablishState>(
+          listenWhen: (previous, current) =>
+              previous.weightUnitJoinStatus != current.weightUnitJoinStatus ||
+              previous.weightUnistLeaveJoinStatus !=
+                  current.weightUnistLeaveJoinStatus,
+          listener: (context, state) {
+            // Join error
+            if (state.weightUnitJoinStatus == WeightUnitJoinStatus.error &&
+                state.weightUnitJoinError != null &&
+                state.weightUnitJoinError!.isNotEmpty) {
+              showSnackbarBottom(context, state.weightUnitJoinError!);
+            }
+            // Leave error
+            if (state.weightUnistLeaveJoinStatus ==
+                    WeightUnistLeaveJoinStatus.error &&
+                state.weightUnistLeaveJoinError != null &&
+                state.weightUnistLeaveJoinError!.isNotEmpty) {
+              showSnackbarBottom(context, state.weightUnistLeaveJoinError!);
+            }
+          },
+        ),
+      ],
       child: Expanded(
         child: Column(
           children: [
@@ -387,8 +443,13 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
 
   Widget _buildLeaveJoinListener() {
     return BlocListener<EstablishBloc, EstablishState>(
+      listenWhen: (previous, current) =>
+          previous.weightUnistLeaveJoinStatus !=
+          current.weightUnistLeaveJoinStatus,
       listener: (context, state) {
-        if (state.weightUnistLeaveJoinStatus == WeightUnistLeaveJoinStatus.success && !_isLeaveJoinSuccess) {
+        if (state.weightUnistLeaveJoinStatus ==
+                WeightUnistLeaveJoinStatus.success &&
+            !_isLeaveJoinSuccess) {
           _isLeaveJoinSuccess = true;
           _handleLeaveSuccess();
         }
@@ -399,8 +460,11 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
 
   Widget _buildJoinListener() {
     return BlocListener<EstablishBloc, EstablishState>(
+      listenWhen: (previous, current) =>
+          previous.weightUnitJoinStatus != current.weightUnitJoinStatus,
       listener: (context, state) {
-        if (state.weightUnitJoinStatus == WeightUnitJoinStatus.success && !_isJoinSuccess) {
+        if (state.weightUnitJoinStatus == WeightUnitJoinStatus.success &&
+            !_isJoinSuccess) {
           _isJoinSuccess = true;
           _handleJoinSuccess(state.weightUnitJoinScreen);
         }
@@ -441,7 +505,9 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   Widget _buildEmptyState() {
     return BlocBuilder<EstablishBloc, EstablishState>(
       builder: (context, state) {
-        if (state.establishMobileMasterStatus == EstablishMobileMasterStatus.success && state.establishMobileMasterPagination?.total == 0) {
+        if (state.establishMobileMasterStatus ==
+                EstablishMobileMasterStatus.success &&
+            state.establishMobileMasterPagination?.total == 0) {
           return EstablishEmptyScreen();
         }
         return const SizedBox.shrink();
@@ -453,7 +519,10 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
     return BlocBuilder<EstablishBloc, EstablishState>(
       builder: (context, state) {
         // Show CreateWeightUnitWidget when user has viewer role, not joined, and there are weight units
-        if (_shouldShowCreateWidget && state.establishMobileMasterStatus == EstablishMobileMasterStatus.success && (state.establishMobileMasterPagination?.total ?? 0) > 0) {
+        if (_shouldShowCreateWidget &&
+            state.establishMobileMasterStatus ==
+                EstablishMobileMasterStatus.success &&
+            (state.establishMobileMasterPagination?.total ?? 0) > 0) {
           return CreateWeightUnitWidget(addEstablishItem: _addEstablishItem);
         }
         return const SizedBox.shrink();
@@ -464,7 +533,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   Widget _buildWeightUnitsHeader() {
     return BlocBuilder<EstablishBloc, EstablishState>(
       builder: (context, state) {
-        if (state.establishMobileMasterStatus != EstablishMobileMasterStatus.success) {
+        if (state.establishMobileMasterStatus !=
+            EstablishMobileMasterStatus.success) {
           return const SizedBox.shrink();
         }
 
@@ -497,7 +567,7 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
           case EstablishMobileMasterStatus.success:
             return _buildSuccessState(state);
           case EstablishMobileMasterStatus.error:
-            return _buildErrorState();
+            return _buildErrorState(state);
           default:
             return _buildLoadingState();
         }
@@ -512,16 +582,70 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
       _weightUnits = weightUnits;
       return _buildWeightUnitsListView();
     } else {
-      return _shouldShowCreateWidget ? CreateWeightUnitWidget(addEstablishItem: _addEstablishItem) : const SizedBox.shrink();
+      return _shouldShowCreateWidget
+          ? CreateWeightUnitWidget(addEstablishItem: _addEstablishItem)
+          : const SizedBox.shrink();
     }
   }
 
-  Widget _buildErrorState() {
-    return Column(
-      children: [
-        EstablishEmptyScreen(),
-        if (_shouldShowCreateWidget) CreateWeightUnitWidget(addEstablishItem: _addEstablishItem),
-      ],
+  Widget _buildErrorState(EstablishState state) {
+    return Expanded(
+      child: RefreshIndicator(
+        onRefresh: _refreshData,
+        color: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red[300],
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'เกิดข้อผิดพลาด',
+                      style: AppTextStyle.title16bold(),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      state.establishMobileMasterError ?? 'Unknown error',
+                      style: AppTextStyle.title14normal(
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _currentPage = 1;
+                        });
+                        _getWeightUnitAll();
+                      },
+                      icon: Icon(Icons.refresh),
+                      label: Text('ลองอีกครั้ง'),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -576,7 +700,9 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   Widget _buildLoadMoreIndicator() {
     return BlocBuilder<EstablishBloc, EstablishState>(
       builder: (context, state) {
-        return state.isLoadMore == true ? const Center(child: CustomLoadingPagination()) : const SizedBox.shrink();
+        return state.isLoadMore == true
+            ? const Center(child: CustomLoadingPagination())
+            : const SizedBox.shrink();
       },
     );
   }

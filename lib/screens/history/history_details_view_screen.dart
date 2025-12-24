@@ -17,7 +17,8 @@ class HistoryDetailsViewScreen extends StatefulWidget {
   final String tdId;
 
   @override
-  State<HistoryDetailsViewScreen> createState() => _HistoryDetailsViewScreenState();
+  State<HistoryDetailsViewScreen> createState() =>
+      _HistoryDetailsViewScreenState();
 }
 
 class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
@@ -27,10 +28,16 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
     // Fetch vehicle details
     context.read<EstablishBloc>().add(GetCarDetailEvent(widget.tdId));
     // Fetch vehicle images
-    context.read<EstablishBloc>().add(GetCarDetailImageEvent(widget.tid, widget.tdId));
+    context
+        .read<EstablishBloc>()
+        .add(GetCarDetailImageEvent(widget.tid, widget.tdId));
   }
 
   @override
@@ -52,7 +59,8 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
         title: Text(
           'การเข้าชั่งน้ำหนัก',
           textAlign: TextAlign.center,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.surface),
         ),
       ),
       body: BlocBuilder<EstablishBloc, EstablishState>(
@@ -62,145 +70,199 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // Show error message
           if (state.carDetailStatus == CarInUnitDetailStatus.error) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
-                  SizedBox(height: 16),
-                  Text(
-                    'Error loading data\n${state.carDetailError}',
-                    style: AppTextStyle.title16normal(color: Theme.of(context).colorScheme.error),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Retry loading data
-                      context.read<EstablishBloc>().add(GetCarDetailEvent(widget.tdId));
-                      context.read<EstablishBloc>().add(GetCarDetailImageEvent(widget.tid, widget.tdId));
-                    },
-                    child: Text('Try Again'),
-                  ),
-                ],
+              child: Padding(
+                padding: EdgeInsets.all(24.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64.h,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'เกิดข้อผิดพลาด',
+                      style: AppTextStyle.title18bold(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      state.carDetailError ?? 'ไม่สามารถโหลดข้อมูลได้',
+                      style: AppTextStyle.title14normal(
+                        color: ColorApps.colorGray,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton.icon(
+                      onPressed: _loadData,
+                      icon: Icon(Icons.refresh),
+                      label: Text('ลองอีกครั้ง'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.surface,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           // Show content when data is loaded
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(_defaultSpacing.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Location header section
-                _buildSectionHeader(context, Icons.location_on, 'ที่ตั้งหน่วย'),
-                SizedBox(height: _defaultSpacing.h),
+          return RefreshIndicator(
+            onRefresh: () async {
+              _loadData();
+              // Wait a bit for the data to load
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(_defaultSpacing.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Location header section
+                  _buildSectionHeader(
+                      context, Icons.location_on, 'ที่ตั้งหน่วย'),
+                  SizedBox(height: _defaultSpacing.h),
 
-                // Vehicle information
-                if (state.carDetail != null) ...[
-                  // License plate information
-                  textViewWidget('ทะเบียนรถ', state.carDetail?.lpHeadNo ?? '-'),
-                  textViewWidget('จังหวัด', state.carDetail?.lpHeadProvinceName ?? '-'),
-                  textViewWidget('ทะเบียนรถหางลาก', state.carDetail?.lpTailNo ?? '-'),
-                  textViewWidget('จังหวัดหางลาก', state.carDetail?.lpTailProvinceName ?? '-'),
-                  textViewWidget('ประเภทรถบรรทุก', state.carDetail?.vehicleClassDesc ?? '-'),
+                  // Vehicle information
+                  if (state.carDetail != null) ...[
+                    // License plate information
+                    textViewWidget(
+                        'ทะเบียนรถ', state.carDetail?.lpHeadNo ?? '-'),
+                    textViewWidget(
+                        'จังหวัด', state.carDetail?.lpHeadProvinceName ?? '-'),
+                    textViewWidget(
+                        'ทะเบียนรถหางลาก', state.carDetail?.lpTailNo ?? '-'),
+                    textViewWidget('จังหวัดหางลาก',
+                        state.carDetail?.lpTailProvinceName ?? '-'),
+                    textViewWidget('ประเภทรถบรรทุก',
+                        state.carDetail?.vehicleClassDesc ?? '-'),
 
-                  // Axle count and legal weight
-                  Row(
-                    children: [
-                      Expanded(
-                        child: textViewWidget('จำนวนเพลา', state.carDetail?.vehicleClassLegalDriveShaftRef ?? '-'),
-                      ),
-                      SizedBox(width: _defaultSpacing.w),
-                      Expanded(
-                        child: textViewWidget('น้ำหนักตามกฎหมาย', StringHleper.convertStringToKilo(state.carDetail?.legalWeight ?? '0')),
-                      ),
-                    ],
-                  ),
-
-                  // Cargo information
-                  textViewWidget('บรรทุก', state.carDetail?.masterialName ?? '-'),
-
-                  // Axle weights (grouped by axle count)
-                  _buildAxleWeightsSection(state.carDetail),
-
-                  // Weight status
-                  Row(
-                    children: [
-                      Expanded(
-                        child: textViewWidget(
-                          'น้ำหนักรวม',
-                          StringHleper.numberAddComma(WeightUnit.tonToKilo(StringHleper.stringToDouble(state.carDetail?.grossWeight ?? '0')).toStringAsFixed(0)),
+                    // Axle count and legal weight
+                    Row(
+                      children: [
+                        Expanded(
+                          child: textViewWidget(
+                              'จำนวนเพลา',
+                              state.carDetail?.vehicleClassLegalDriveShaftRef ??
+                                  '-'),
                         ),
-                      ),
-                      SizedBox(width: _defaultSpacing.w),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                text: 'สถานะ',
-                                style: AppTextStyle.title16bold(),
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: '',
-                                    style: AppTextStyle.title18normal(color: Theme.of(context).colorScheme.error),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              height: 40.h,
-                              width: double.infinity,
-                              padding: EdgeInsets.symmetric(horizontal: _defaultSpacing.h),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4.r),
-                                border: Border.all(color: Theme.of(context).colorScheme.onTertiary),
-                                color: Theme.of(context).colorScheme.onTertiaryContainer,
-                              ),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                state.carDetail?.isOverWeightDesc ?? 'Unknown status',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyle.title16bold(
-                                  color: _getStatusColor(state.carDetail?.isOverWeight),
+                        SizedBox(width: _defaultSpacing.w),
+                        Expanded(
+                          child: textViewWidget(
+                              'น้ำหนักตามกฎหมาย',
+                              StringHleper.convertStringToKilo(
+                                  state.carDetail?.legalWeight ?? '0')),
+                        ),
+                      ],
+                    ),
+
+                    // Cargo information
+                    textViewWidget(
+                        'บรรทุก', state.carDetail?.masterialName ?? '-'),
+
+                    // Axle weights (grouped by axle count)
+                    _buildAxleWeightsSection(state.carDetail),
+
+                    // Weight status
+                    Row(
+                      children: [
+                        Expanded(
+                          child: textViewWidget(
+                            'น้ำหนักรวม',
+                            StringHleper.numberAddComma(WeightUnit.tonToKilo(
+                                    StringHleper.stringToDouble(
+                                        state.carDetail?.grossWeight ?? '0'))
+                                .toStringAsFixed(0)),
+                          ),
+                        ),
+                        SizedBox(width: _defaultSpacing.w),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  text: 'สถานะ',
+                                  style: AppTextStyle.title16bold(),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: _defaultSpacing.w),
-                          ],
+                              Container(
+                                height: 40.h,
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: _defaultSpacing.h),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4.r),
+                                  border: Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onTertiary),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onTertiaryContainer,
+                                ),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  state.carDetail?.isOverWeightDesc ??
+                                      'Unknown status',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyle.title16bold(
+                                    color: _getStatusColor(
+                                        state.carDetail?.isOverWeight),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: _defaultSpacing.w),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  ],
+
+                  SizedBox(height: _defaultSpacing.w),
+
+                  // Photos section
+                  _buildSectionHeader(
+                      context,
+                      Icons.photo_size_select_actual_outlined,
+                      'รูปการจัดตั้งหน่วยชั่ง'),
+                  SizedBox(height: _defaultSpacing.w),
+
+                  Wrap(
+                    spacing: 26.w,
+                    runSpacing: _defaultSpacing.w,
+                    children: [
+                      _buildImageTile(
+                          'ด้านหน้า', state.carDatailImage?.imagePath1),
+                      _buildImageTile(
+                          'ด้านหลัง', state.carDatailImage?.imagePath2),
+                      _buildImageTile(
+                          'ด้านซ้าย', state.carDatailImage?.imagePath3),
+                      _buildImageTile(
+                          'ด้านขวา', state.carDatailImage?.imagePath4),
+                      _buildImageTile(
+                          'สลิปน้ำหนัก', state.carDatailImage?.imagePath5),
+                      _buildImageTile(
+                          'ใบขับขี่', state.carDatailImage?.imagePath6),
                     ],
                   ),
+                  SizedBox(height: _defaultSpacing.w),
                 ],
-
-                SizedBox(height: _defaultSpacing.w),
-
-                // Photos section
-                _buildSectionHeader(context, Icons.photo_size_select_actual_outlined, 'รูปการจัดตั้งหน่วยชั่ง'),
-                SizedBox(height: _defaultSpacing.w),
-
-                // Image gallery
-                Wrap(
-                  spacing: 26.w,
-                  runSpacing: _defaultSpacing.w,
-                  children: [
-                    _buildImageTile('ด้านหน้า', state.carDatailImage?.imagePath1),
-                    _buildImageTile('ด้านหลัง', state.carDatailImage?.imagePath2),
-                    _buildImageTile('ด้านซ้าย', state.carDatailImage?.imagePath3),
-                    _buildImageTile('ด้านขวา', state.carDatailImage?.imagePath4),
-                    _buildImageTile('สลิปน้ำหนัก', state.carDatailImage?.imagePath5),
-                    _buildImageTile('ใบขับขี่', state.carDatailImage?.imagePath6),
-                  ],
-                ),
-                SizedBox(height: _defaultSpacing.w),
-              ],
+              ),
             ),
           );
         },
@@ -209,13 +271,16 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
   }
 
   // Build section header with icon and title
-  Widget _buildSectionHeader(BuildContext context, IconData icon, String title) {
+  Widget _buildSectionHeader(
+      BuildContext context, IconData icon, String title) {
     return Row(
       children: [
         Container(
             height: 32.h,
             width: 32.h,
-            decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(90.r)),
+            decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(90.r)),
             child: Icon(
               icon,
               color: Theme.of(context).colorScheme.surface,
@@ -225,7 +290,8 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
         Text(
           title,
           textAlign: TextAlign.center,
-          style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
+          style: AppTextStyle.title18bold(
+              color: Theme.of(context).colorScheme.primary),
         ),
       ],
     );
@@ -236,7 +302,8 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
     if (carDetail == null) return const SizedBox.shrink();
 
     List<Widget> axleRows = [];
-    final int axleCount = int.tryParse(carDetail.vehicleClassLegalDriveShaftRef ?? '0') ?? 0;
+    final int axleCount =
+        int.tryParse(carDetail.vehicleClassLegalDriveShaftRef ?? '0') ?? 0;
 
     // Create rows of axles in pairs
     for (int i = 0; i < axleCount; i += 2) {
@@ -327,7 +394,6 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
     }
   }
 
-  // Build image tile with label and image
   Widget _buildImageTile(String label, String? imageUrl) {
     final bool hasImage = imageUrl != null && imageUrl.isNotEmpty;
 
@@ -337,22 +403,19 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
         maxWidth: MediaQuery.of(context).size.width / 2 - 32,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              SizedBox(width: 10),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: AppTextStyle.title16bold(),
-              ),
-            ],
+          Padding(
+            padding: EdgeInsets.only(left: 10.w, bottom: 8.h),
+            child: Text(
+              label,
+              style: AppTextStyle.title16bold(),
+            ),
           ),
           hasImage
               ? GestureDetector(
                   onTap: () => _showImagePreview(context, imageUrl),
                   child: Container(
-                    margin: EdgeInsets.all(8),
                     height: 150.w,
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -369,13 +432,32 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
                           if (loadingProgress == null) return child;
                           return Center(
                             child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1) : null,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
                             ),
                           );
                         },
                         errorBuilder: (context, error, stackTrace) {
                           return Center(
-                            child: Icon(Icons.broken_image, size: 40),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.broken_image,
+                                  size: 40.h,
+                                  color: ColorApps.colorGray,
+                                ),
+                                SizedBox(height: 8.h),
+                                Text(
+                                  'โหลดรูปไม่สำเร็จ',
+                                  style: AppTextStyle.title14normal(
+                                    color: ColorApps.colorGray,
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),
@@ -383,19 +465,32 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
                   ),
                 )
               : Container(
-                  margin: EdgeInsets.all(8),
                   height: 150.w,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
-                    border: Border.all(color: ColorApps.grayBorder),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'No image',
-                      style: AppTextStyle.title14normal(color: Colors.grey),
+                    border: Border.all(
+                      color: ColorApps.grayBorder,
+                      style: BorderStyle.solid,
                     ),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 40.h,
+                        color: ColorApps.colorGray,
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'ไม่มีรูปภาพ',
+                        style: AppTextStyle.title14normal(
+                          color: ColorApps.colorGray,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
         ],
@@ -409,23 +504,63 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
-          elevation: 0,
-          content: ClipRRect(
-            borderRadius: BorderRadius.circular(8.r),
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1) : null,
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.all(10.h),
+          child: Stack(
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  (loadingProgress.expectedTotalBytes ?? 1)
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.broken_image,
+                              size: 64.h,
+                              color: Colors.white,
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'โหลดรูปไม่สำเร็จ',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              Positioned(
+                top: 10.h,
+                right: 10.w,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 30.h,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -438,18 +573,11 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: TextSpan(
-            text: title,
-            style: AppTextStyle.title16bold(),
-            children: <TextSpan>[
-              TextSpan(
-                text: '',
-                style: AppTextStyle.title18normal(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-          ),
+        Text(
+          title,
+          style: AppTextStyle.title16bold(),
         ),
+        SizedBox(height: 4.h),
         Container(
           height: 35.h,
           width: double.infinity,
@@ -462,43 +590,37 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
           alignment: Alignment.centerLeft,
           child: Text(
             value,
-            textAlign: TextAlign.center,
             style: AppTextStyle.title16normal(),
           ),
         ),
-        SizedBox(height: _defaultSpacing.w),
+        SizedBox(height: _defaultSpacing.h),
       ],
     );
   }
 }
 
-// Helper class for string formatting and unit conversion (use if not already in project)
+// Helper class for string formatting and unit conversion
 class StringHleper {
-  // Add comma separators to numbers
   static String numberAddComma(String number) {
     if (number.isEmpty) return '0';
 
     try {
-      // Handle decimal numbers
       List<String> parts = number.split('.');
       String integerPart = parts[0];
 
-      // Handle negative numbers
       bool isNegative = integerPart.startsWith('-');
       if (isNegative) {
         integerPart = integerPart.substring(1);
       }
 
-      // Add commas
       final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-      String result = integerPart.replaceAllMapped(reg, (Match match) => '${match[1]},');
+      String result =
+          integerPart.replaceAllMapped(reg, (Match match) => '${match[1]},');
 
-      // Add back decimal part if exists
       if (parts.length > 1) {
         result = '$result.${parts[1]}';
       }
 
-      // Add back negative sign if needed
       if (isNegative) {
         result = '-$result';
       }
@@ -509,13 +631,11 @@ class StringHleper {
     }
   }
 
-  // Remove commas from formatted number string
   static String numberStringCutComma(String number) {
     if (number.isEmpty) return '0';
     return number.replaceAll(',', '');
   }
 
-  // Convert string to double
   static double stringToDouble(String? value) {
     if (value == null || value.isEmpty) return 0.0;
 
@@ -523,7 +643,6 @@ class StringHleper {
     return double.tryParse(processedValue) ?? 0.0;
   }
 
-  // Format double to comma-separated string
   static String doubleToStringComma(String value) {
     if (value.isEmpty) return '0';
 
@@ -535,7 +654,6 @@ class StringHleper {
     }
   }
 
-  // Convert weight to kilograms format
   static String convertStringToKilo(String? weightValue) {
     if (weightValue == null || weightValue.isEmpty) return '0';
 
@@ -548,14 +666,12 @@ class StringHleper {
   }
 }
 
-// Weight unit conversion helper (use if not already in project)
+// Weight unit conversion helper
 class WeightUnit {
-  // Convert tons to kilograms
   static double tonToKilo(double tonValue) {
     return tonValue * 1000;
   }
 
-  // Convert kilograms to tons
   static double kiloToTon(double kiloValue) {
     return kiloValue / 1000;
   }

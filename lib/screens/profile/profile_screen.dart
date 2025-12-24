@@ -34,7 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     if (profile.deptName != null) {
-      position += ', ${profile.deptName}' ?? '';
+      position += ', ${profile.deptName ?? ''}';
     }
 
     return position;
@@ -45,7 +45,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // constraints.maxWidth > 400 && constraints.maxWidth < 600  ? 140.h : 120.h;
           return Stack(
             children: [
               SizedBox(
@@ -63,9 +62,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        constraints.maxWidth > 400 && constraints.maxWidth < 600 ? SizedBox(height: 10.h) : SizedBox(height: 20.h),
-                        Text('โปรไฟล์', style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.surface)),
-                        constraints.maxWidth > 400 && constraints.maxWidth < 600 ? SizedBox(height: 10.h) : SizedBox(height: 10.h),
+                        constraints.maxWidth > 400 && constraints.maxWidth < 600
+                            ? SizedBox(height: 10.h)
+                            : SizedBox(height: 20.h),
+                        Text('โปรไฟล์',
+                            style: AppTextStyle.title18bold(
+                                color: Theme.of(context).colorScheme.surface)),
+                        constraints.maxWidth > 400 && constraints.maxWidth < 600
+                            ? SizedBox(height: 10.h)
+                            : SizedBox(height: 10.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -80,21 +85,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           padding: EdgeInsets.only(top: 12.h),
                           child: BlocBuilder<ProfileBloc, ProfileState>(
                             builder: (context, state) {
-                              if (state.profileStatus == ProfileStatus.success && state.profile != null) {
+                              if (state.profileStatus ==
+                                      ProfileStatus.success &&
+                                  state.profile != null) {
                                 return Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text('${state.profile!.firstName} ${state.profile!.lastName}', style: AppTextStyle.title20bold()),
-                                    Text(state.profile!.username ?? '', style: AppTextStyle.title14bold(color: Theme.of(context).colorScheme.onTertiary)),
+                                    Text(
+                                        '${state.profile!.firstName} ${state.profile!.lastName}',
+                                        style: AppTextStyle.title20bold()),
+                                    Text(state.profile!.username ?? '',
+                                        style: AppTextStyle.title14bold(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onTertiary)),
                                     Container(
-                                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(5.r), border: Border.all(color: Theme.of(context).colorScheme.primary)),
-                                      margin: EdgeInsets.symmetric(horizontal: 18.h, vertical: 8.h),
-                                      padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 4.h),
-                                      // child: Text('นายช่างโยธาชำนาญงาน, แขวงทางหลวงชนบทร้อยเอ็ด', style: AppTextStyle.label12bold(color: Theme.of(context).colorScheme.surface)),
+                                      decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          borderRadius:
+                                              BorderRadius.circular(5.r),
+                                          border: Border.all(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary)),
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: 18.h, vertical: 8.h),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12.h, vertical: 4.h),
                                       child: Text(
                                         positionName(state.profile!),
-                                        style: AppTextStyle.label12bold(color: Theme.of(context).colorScheme.surface),
+                                        style: AppTextStyle.label12bold(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surface),
                                       ),
                                     ),
                                   ],
@@ -115,7 +141,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _showCustomBottomSheetHelp(context);
                           },
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 22.h, vertical: 12.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 22.h, vertical: 12.h),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -125,7 +152,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       'assets/svg/bx_support.svg',
                                     ),
                                     SizedBox(width: 12.h),
-                                    Text('ช่วยเหลือ', style: AppTextStyle.title16bold()),
+                                    Text('ช่วยเหลือ',
+                                        style: AppTextStyle.title16bold()),
                                   ],
                                 ),
                                 Icon(Icons.keyboard_arrow_right_sharp),
@@ -133,7 +161,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                         ),
-
                         Divider(
                           height: 1,
                           indent: 12.h,
@@ -144,7 +171,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _showCustomBottomSheetSignOut(context);
                           },
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 22.h, vertical: 12.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 22.h, vertical: 12.h),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -154,7 +182,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       'assets/svg/ph_sign-out-bold.svg',
                                     ),
                                     SizedBox(width: 12.h),
-                                    Text('ออกจากระบบ', style: AppTextStyle.title16bold(color: Theme.of(context).colorScheme.error)),
+                                    Text('ออกจากระบบ',
+                                        style: AppTextStyle.title16bold(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .error)),
                                   ],
                                 ),
                                 Icon(Icons.keyboard_arrow_right_sharp),
@@ -170,7 +202,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 22.h, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 22.h, vertical: 12.h),
                       child: CustomeButton(
                         text: 'กลับหน้าแรก',
                         onPressed: () {
@@ -194,20 +227,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       path: 'itc@drr.go.th',
     );
 
-    final String url = emailLaunchUri.toString();
-
-    if (Platform.isIOS) {
-      if (await canLaunch(url)) {
-        await launch(url);
+    try {
+      if (Platform.isIOS) {
+        if (await canLaunchUrl(emailLaunchUri)) {
+          await launchUrl(emailLaunchUri);
+        } else {
+          if (mounted) {
+            showSnackbarBottom(context, 'ไม่สามารถเปิดแอปอีเมลได้');
+          }
+        }
       } else {
-        showSnackbarBottom(context, 'Could not send email');
+        // Android
+        await launchUrl(emailLaunchUri);
       }
-    } else {
-      try {
-        await launch(url);
-      } catch (e) {
-        print('===== $e =====');
-        showSnackbarBottom(context, 'Could not send email');
+    } catch (e) {
+      print('===== Email launch error: $e =====');
+      if (mounted) {
+        showSnackbarBottom(context, 'ไม่สามารถเปิดแอปอีเมลได้');
       }
     }
   }
@@ -237,9 +273,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: AppTextStyle.title18bold(),
               ),
               InkWell(
-                onTap: () {
-                  launchUrlString("tel://0860847490");
-                  Navigator.pop(context);
+                onTap: () async {
+                  try {
+                    await launchUrlString("tel:0625515000");
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
+                  } catch (e) {
+                    print('===== Phone launch error: $e =====');
+                    if (mounted) {
+                      showSnackbarBottom(context, 'ไม่สามารถโทรออกได้');
+                    }
+                  }
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -304,16 +349,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              // TextButton(
-              //   onPressed: () {
-              //     Navigator.pop(context);
-              //   },
-              //   child: Text(
-              //     'ยกเลิก',
-              //     style: AppTextStyle.title18bold(color: Theme.of(context).colorScheme.primary),
-              //     textAlign: TextAlign.center,
-              //   ),
-              // ),
             ],
           ),
         );

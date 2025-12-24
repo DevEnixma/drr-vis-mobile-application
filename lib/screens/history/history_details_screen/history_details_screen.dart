@@ -115,12 +115,10 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
     if (_scrollController!.offset > 50 && showAppBar) {
       setState(() {
         showAppBar = false;
-        print(_scrollController);
       });
     } else if (_scrollController!.offset <= 50 && !showAppBar) {
       setState(() {
         showAppBar = true;
-        print(_scrollController);
       });
     }
   }
@@ -140,10 +138,6 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: LayoutBuilder(builder: (context, constraints) {
-        print('maxWidth ${constraints.maxWidth}');
-        print('maxHeight ${constraints.maxHeight}');
-        print(
-            'Width is between 400 and 600 ${constraints.maxWidth > 400 && constraints.maxWidth < 600}');
         return CustomScrollView(
           controller: _scrollController,
           slivers: <Widget>[
@@ -201,8 +195,6 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                 labelStyle: AppTextStyle.title16bold(),
                 controller: _tabController,
                 onTap: (value) {
-                  print('value $value');
-                  print('value ${_tabController.index}');
                   setState(() {});
                 },
                 tabs: [
@@ -222,9 +214,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                           style: TextStyle(
                             color: _tabController.index == 0
                                 ? Theme.of(context).colorScheme.surface
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface, // Change color on select
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -237,9 +227,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                           'assets/svg/truck_icon.svg',
                           color: _tabController.index == 1
                               ? Theme.of(context).colorScheme.surface
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurface, // Change color on select
+                              : Theme.of(context).colorScheme.onSurface,
                           width: 22.h,
                         ),
                         SizedBox(width: 5.h),
@@ -248,9 +236,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                           style: TextStyle(
                             color: _tabController.index == 1
                                 ? Theme.of(context).colorScheme.surface
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface, // Change color on select
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -291,8 +277,6 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // constraints.maxWidth > 400 && constraints.maxWidth < 600 ? SizedBox() : SizedBox(),
-
                                   BlocBuilder<WeightUnitBloc, WeightUnitState>(
                                     builder: (context, state) {
                                       if (state.weightUnitDetailStatus ==
@@ -320,9 +304,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                                 .colorScheme
                                                 .surface),
                                       ),
-                                      SizedBox(
-                                        width: 6,
-                                      ),
+                                      SizedBox(width: 6),
                                       BlocBuilder<WeightUnitBloc,
                                           WeightUnitState>(
                                         builder: (context, state) {
@@ -353,11 +335,8 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                                 .colorScheme
                                                 .surface),
                                       ),
-                                      SizedBox(
-                                        width: 6,
-                                      ),
+                                      SizedBox(width: 6),
                                       Container(
-                                        // height: 30,
                                         decoration: BoxDecoration(
                                           color: Theme.of(context)
                                               .colorScheme
@@ -394,9 +373,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                           ),
                                         ),
                                       ),
-                                      SizedBox(
-                                        width: 6,
-                                      ),
+                                      SizedBox(width: 6),
                                       Text(
                                         'ถึง',
                                         style: AppTextStyle.title16normal(
@@ -404,11 +381,8 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                                 .colorScheme
                                                 .surface),
                                       ),
-                                      SizedBox(
-                                        width: 6,
-                                      ),
+                                      SizedBox(width: 6),
                                       Container(
-                                        // height: 30,
                                         decoration: BoxDecoration(
                                           color: Theme.of(context)
                                               .colorScheme
@@ -446,18 +420,14 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
+                                  SizedBox(height: 10),
                                   Divider(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .tertiaryContainer, // You can change the color or thickness of the divider here
-                                    height: 1, // Height between items
+                                        .tertiaryContainer,
+                                    height: 1,
                                   ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
+                                  SizedBox(height: 10),
                                   Row(
                                     children: [
                                       Expanded(
@@ -534,7 +504,6 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                       ),
                                     ],
                                   ),
-
                                   constraints.maxWidth > 400 &&
                                           constraints.maxWidth < 600
                                       ? SizedBox(height: 30.h)
@@ -560,9 +529,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // First Tab Content
                   FirstTabContent(),
-                  // Second Tab Content
                   SecondTabContent(),
                 ],
               ),
@@ -587,25 +554,35 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
             ),
             child: Row(
               children: [
-                SvgPicture.asset(
-                  'assets/svg/ri_search-line.svg',
-
-                  // width: 20.h,
-                ),
+                SvgPicture.asset('assets/svg/ri_search-line.svg'),
                 SizedBox(width: 10),
                 Expanded(
                   child: TextField(
+                    onChanged: onChangedText,
                     decoration: InputDecoration(
                       isDense: true,
-                      hintText: 'ค้นหาสายทางss',
+                      hintText: 'ค้นหาทะเบียนรถบรรทุก',
                       hintStyle: AppTextStyle.title16normal(
                           color: ColorApps.colorGray),
                       border: InputBorder.none,
                     ),
+                    style: AppTextStyle.title16normal(),
                   ),
                 ),
               ],
             ),
+          ),
+          BlocListener<WeightUnitBloc, WeightUnitState>(
+            listenWhen: (previous, current) =>
+                previous.weightUnitCarsStatus != current.weightUnitCarsStatus,
+            listener: (context, state) {
+              if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error &&
+                  state.weightUnitsError != null &&
+                  state.weightUnitsError!.isNotEmpty) {
+                showSnackbarBottom(context, state.weightUnitsError!);
+              }
+            },
+            child: const SizedBox.shrink(),
           ),
           Expanded(
             child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
@@ -616,14 +593,13 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                 }
                 if (state.weightUnitCarsStatus ==
                     WeightUnitCarsStatus.success) {
-                  if (state.weightUnitsCars!.isNotEmpty) {
+                  if (state.weightUnitsCars != null &&
+                      state.weightUnitsCars!.isNotEmpty) {
                     return ListView.separated(
                       padding: EdgeInsets.zero,
                       separatorBuilder: (context, index) => Divider(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .tertiaryContainer, // You can change the color or thickness of the divider here
-                        height: 1, // Height between items
+                        color: Theme.of(context).colorScheme.tertiaryContainer,
+                        height: 1,
                         indent: 20,
                         endIndent: 20,
                       ),
@@ -643,22 +619,64 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                   context, RoutesName.loginScreen);
                             }
                           },
-                          child: CarItemWidget(
-                            item: state.weightUnitsCars![index],
-                          ),
+                          child: CarItemWidget(item: carItem),
                         );
                       },
                     );
                   } else {
                     return EmptyWidget(
-                        title: 'ไม่พบรายการรถเข้าชั่ง',
-                        label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
+                      title: 'ไม่พบรายการรถน้ำหนักเกิน',
+                      label: 'ไม่มีรถน้ำหนักเกินในขณะนี้',
+                    );
                   }
                 }
 
-                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error &&
-                    state.weightUnitsError != '') {
-                  showSnackbarBottom(context, state.weightUnitsError!);
+                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.h),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red[300],
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'เกิดข้อผิดพลาด',
+                            style: AppTextStyle.title16bold(),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            state.weightUnitsError ?? 'Unknown error',
+                            style: AppTextStyle.title14normal(
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                page = 1;
+                              });
+                              getMobileCarList();
+                            },
+                            icon: Icon(Icons.refresh),
+                            label: Text('ลองอีกครั้ง'),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 }
 
                 return SizedBox.shrink();
@@ -693,10 +711,7 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
               ),
               child: Row(
                 children: [
-                  SvgPicture.asset(
-                    'assets/svg/ri_search-line.svg',
-                    // width: 20.h,
-                  ),
+                  SvgPicture.asset('assets/svg/ri_search-line.svg'),
                   SizedBox(width: 10),
                   Expanded(
                     child: TextField(
@@ -715,6 +730,18 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                 ],
               ),
             ),
+            BlocListener<WeightUnitBloc, WeightUnitState>(
+              listenWhen: (previous, current) =>
+                  previous.weightUnitCarsStatus != current.weightUnitCarsStatus,
+              listener: (context, state) {
+                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error &&
+                    state.weightUnitsError != null &&
+                    state.weightUnitsError!.isNotEmpty) {
+                  showSnackbarBottom(context, state.weightUnitsError!);
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
             Expanded(
               child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
                 builder: (context, state) {
@@ -722,9 +749,11 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                       WeightUnitCarsStatus.loading) {
                     return const Center(child: CustomLoadingPagination());
                   }
+
                   if (state.weightUnitCarsStatus ==
                       WeightUnitCarsStatus.success) {
-                    if (state.weightUnitsCars!.isNotEmpty) {
+                    if (state.weightUnitsCars != null &&
+                        state.weightUnitsCars!.isNotEmpty) {
                       return ListView.separated(
                         padding: EdgeInsets.zero,
                         separatorBuilder: (context, index) => Divider(
@@ -743,7 +772,6 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                                   accessToken!.isNotEmpty;
 
                               if (isLoggedIn) {
-                                // Routes.gotoUnitDetailsWeighingTrucks(context, carItem.tId!.toString(), carItem.tdId!, false);
                                 Routes.gotoHistoryDetailsView(context,
                                     carItem.tId!.toString(), carItem.tdId!);
                               } else {
@@ -753,27 +781,63 @@ class _HistoryDetailsScreenState extends State<HistoryDetailsScreen>
                             },
                             child: CarItemWidget(item: carItem),
                           );
-                          // return GestureDetector(
-                          //   onTap: () {
-                          //     Routes.gotoHistoryDetailsView(context);
-                          //   },
-                          //   child: CarItemWidget(
-                          //     item: state.weightUnitsCars![index],
-                          //   ),
-                          // );
                         },
                       );
                     } else {
                       return EmptyWidget(
-                          title: 'ไม่พบรายการรถเข้าชั่ง',
-                          label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
+                        title: 'ไม่พบรายการรถเข้าชั่ง',
+                        label: 'กรุณาเพิ่มรายการรถเข้าชั่ง',
+                      );
                     }
                   }
 
                   if (state.weightUnitCarsStatus ==
-                          WeightUnitCarsStatus.error &&
-                      state.weightUnitsError != '') {
-                    showSnackbarBottom(context, state.weightUnitsError!);
+                      WeightUnitCarsStatus.error) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24.h),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red[300],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'เกิดข้อผิดพลาด',
+                              style: AppTextStyle.title16bold(),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              state.weightUnitsError ?? 'Unknown error',
+                              style: AppTextStyle.title14normal(
+                                color: Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  page = 1;
+                                });
+                                getMobileCarList();
+                              },
+                              icon: Icon(Icons.refresh),
+                              label: Text('ลองอีกครั้ง'),
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   }
 
                   return SizedBox.shrink();

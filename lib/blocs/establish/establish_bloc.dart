@@ -48,7 +48,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
               EstablishWeightPaginationRes.fromJson(response.data["meta"]);
 
           emit(state.copyWith(establishMobileMasterPagination: pagination));
-          print("XXX: ${event.page}");
+
           if (event.page != 1) {
             state.mobile_master_list!.addAll(result);
 
@@ -69,7 +69,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             establishMobileMasterStatus: EstablishMobileMasterStatus.error,
-            establishMobileMasterError: response.error));
+            establishMobileMasterError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             establishMobileMasterStatus: EstablishMobileMasterStatus.error,
@@ -84,7 +84,6 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
           mobileMasterDepartmentData: MobileMasterDepartmentModel.empty()));
 
       try {
-        print("XXXX: ${event.tid}");
         final response =
             await establishRepo.getMobileMasterDepartment(tid: event.tid);
         if (response.statusCode >= 200 && response.statusCode < 400) {
@@ -100,7 +99,8 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
         emit(state.copyWith(
             establishMobileMasterDepartmentStatus:
                 EstablishMobileMasterDepartmentStatus.error,
-            establishMobileMasterDepartmentError: response.error));
+            establishMobileMasterDepartmentError:
+                response.error ?? 'เกิดข้อผิดพลาด'));
         return;
       } catch (e) {
         emit(state.copyWith(
@@ -112,36 +112,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
     });
 
     on<MobileCarFetchEvent>((event, emit) async {
-      // try {
-      //   if (event.payload.page == 1) {
-      //     emit(state.copyWith(establishMobileCarStatus: EstablishMobileCarStatus.loading));
-      //   } else {
-      //     emit(state.copyWith(carLoadMore: true));
-      //   }
-
-      //   final response = await establishRepo.getMobileCar(event.payload.toJson());
-
-      //   if (response.statusCode >= 200 && response.statusCode < 400) {
-      //     final List resultList = response.data["data"]["data"];
-      //     var result = resultList.map((e) => MobileCarModel.fromJson(e)).toList();
-
-      //     if (event.payload.page != 1) {
-      //       state.mobile_car_list!.addAll(result);
-      //       emit(state.copyWith(establishMobileCarStatus: EstablishMobileCarStatus.success, mobile_car_list: state.mobile_car_list, carLoadMore: false));
-      //     } else {
-      //       emit(state.copyWith(establishMobileCarStatus: EstablishMobileCarStatus.success, mobile_car_list: result));
-      //     }
-
-      //     var pagination = WeightCarPaginationRes.fromJson(response.data['data']['meta']);
-
-      //     emit(state.copyWith(weightCarPagination: pagination));
-      //     return;
-      //   }
-
-      //   emit(state.copyWith(establishMobileCarStatus: EstablishMobileCarStatus.error, establishMobileCarError: response.error));
-      // } catch (e) {
-      //   emit(state.copyWith(establishMobileCarStatus: EstablishMobileCarStatus.error, establishMobileCarError: e.toString()));
-      // }
+      // Commented out - not used
     });
 
     on<CreateUnitWeight>((event, emit) async {
@@ -169,7 +140,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             createEstablishStatus: CreateEstablishStatus.error,
-            createEstablishError: response.error));
+            createEstablishError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             createEstablishStatus: CreateEstablishStatus.error,
@@ -190,7 +161,16 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
         final response = await establishRepo.getMobileCarDetail(event.paylaod);
 
         if (response.statusCode >= 200 && response.statusCode < 400) {
-          var result = CarDetailModelRes.fromJson(response.data['data'][0]);
+          final List dataList = response.data['data'];
+
+          if (dataList.isEmpty) {
+            emit(state.copyWith(
+                carDetailStatus: CarInUnitDetailStatus.error,
+                carDetailError: 'ไม่พบข้อมูลรถ'));
+            return;
+          }
+
+          var result = CarDetailModelRes.fromJson(dataList[0]);
 
           emit(state.copyWith(
               carDetailStatus: CarInUnitDetailStatus.success,
@@ -200,7 +180,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             carDetailStatus: CarInUnitDetailStatus.error,
-            carDetailError: response.error));
+            carDetailError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             carDetailStatus: CarInUnitDetailStatus.error,
@@ -217,8 +197,16 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
         final response = await establishRepo.getImageCar(event.tId, event.tdId);
 
         if (response.statusCode >= 200 && response.statusCode < 400) {
-          var result =
-              CarDetailModelImageRes.fromJson(response.data['data'][0]);
+          final List dataList = response.data['data'];
+
+          if (dataList.isEmpty) {
+            emit(state.copyWith(
+                carInUnitDetailImageStatus: CarInUnitDetailImageStatus.success,
+                carDatailImage: null));
+            return;
+          }
+
+          var result = CarDetailModelImageRes.fromJson(dataList[0]);
 
           emit(state.copyWith(
               carInUnitDetailImageStatus: CarInUnitDetailImageStatus.success,
@@ -228,7 +216,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             carInUnitDetailImageStatus: CarInUnitDetailImageStatus.error,
-            carDatailImageError: response.error));
+            carDatailImageError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             carInUnitDetailImageStatus: CarInUnitDetailImageStatus.error,
@@ -255,7 +243,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             weightUnitJoinStatus: WeightUnitJoinStatus.error,
-            weightUnitJoinError: response.error));
+            weightUnitJoinError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             weightUnitJoinStatus: WeightUnitJoinStatus.error,
@@ -279,7 +267,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             weightUnitUnJoinStatus: WeightUnitUnJoinStatus.error,
-            weightUnitUnJoinError: response.error));
+            weightUnitUnJoinError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             weightUnitUnJoinStatus: WeightUnitUnJoinStatus.error,
@@ -322,7 +310,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             weightUnitIsJoinStatus: WeightUnitIsJoinStatus.error,
-            weightUnitsError: response.error));
+            weightUnitsError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             weightUnitIsJoinStatus: WeightUnitIsJoinStatus.error,
@@ -358,7 +346,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.error,
-            weightUnistLeaveJoinError: response.error));
+            weightUnistLeaveJoinError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.error,
@@ -381,7 +369,7 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
 
         emit(state.copyWith(
             weightUnistCloseStatus: WeightUnistCloseStatus.error,
-            weightUnistCloseError: response.error));
+            weightUnistCloseError: response.error ?? 'เกิดข้อผิดพลาด'));
       } catch (e) {
         emit(state.copyWith(
             weightUnistCloseStatus: WeightUnistCloseStatus.error,

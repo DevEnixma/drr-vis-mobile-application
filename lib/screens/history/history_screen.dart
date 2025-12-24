@@ -113,14 +113,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   void unfocusTextField() {
     if (focusNode.hasFocus) {
-      focusNode.unfocus(); // ยกเลิกการโฟกัส TextField
+      focusNode.unfocus();
     }
   }
 
   @override
   void dispose() {
     scrollController.dispose();
-
     focusNode.dispose();
     super.dispose();
   }
@@ -215,14 +214,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ],
               ),
             ),
+            BlocListener<WeightUnitBloc, WeightUnitState>(
+              listenWhen: (previous, current) =>
+                  previous.weightUnitsStatus != current.weightUnitsStatus,
+              listener: (context, state) {
+                if (state.weightUnitsStatus == WeightUnitStatus.error &&
+                    state.weightUnitsError != null &&
+                    state.weightUnitsError!.isNotEmpty) {
+                  showSnackbarBottom(context, state.weightUnitsError!);
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
             Expanded(
               child: BlocBuilder<WeightUnitBloc, WeightUnitState>(
                 builder: (context, state) {
                   if (state.weightUnitsStatus == WeightUnitStatus.loading) {
                     return const Center(child: CustomLoadingPagination());
                   }
+
                   if (state.weightUnitsStatus == WeightUnitStatus.success) {
-                    if (state.weightUnits!.isNotEmpty) {
+                    if (state.weightUnits != null &&
+                        state.weightUnits!.isNotEmpty) {
                       return RefreshIndicator(
                         onRefresh: refreshData,
                         color: Theme.of(context).colorScheme.primary,
@@ -231,15 +244,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           controller: scrollController,
                           padding: EdgeInsets.zero,
                           separatorBuilder: (context, index) => Divider(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .tertiaryContainer, // You can change the color or thickness of the divider here
-                            height: 1, // Height between items
+                            color:
+                                Theme.of(context).colorScheme.tertiaryContainer,
+                            height: 1,
                             indent: 20,
                             endIndent: 20,
                           ),
-                          itemCount: state.weightUnits!
-                              .length, // Number of items in the list
+                          itemCount: state.weightUnits!.length,
                           itemBuilder: (context, index) {
                             return ItemListWidget(
                               item: state.weightUnits![index],
@@ -247,25 +258,89 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           },
                         ),
                       );
+                    } else {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 64,
+                              color: Colors.grey[400],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'ไม่พบข้อมูล',
+                              style: AppTextStyle.title16normal(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
                   }
 
-                  if (state.weightUnitsStatus == WeightUnitStatus.error &&
-                      state.weightUnitsError != '') {
-                    showSnackbarBottom(context, state.weightUnitsError!);
+                  if (state.weightUnitsStatus == WeightUnitStatus.error) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24.h),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red[300],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'เกิดข้อผิดพลาด',
+                              style: AppTextStyle.title16bold(),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              state.weightUnitsError ?? 'Unknown error',
+                              style: AppTextStyle.title14normal(
+                                color: Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  page = 1;
+                                });
+                                getWeightUnits();
+                              },
+                              icon: Icon(Icons.refresh),
+                              label: Text('ลองอีกครั้ง'),
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   }
 
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 },
               ),
             ),
             BlocBuilder<WeightUnitBloc, WeightUnitState>(
-                builder: (context, state) {
-              if (state.weightUnitsLoadmore == true) {
-                return const Center(child: CustomLoadingPagination());
-              }
-              return const SizedBox.shrink();
-            })
+              builder: (context, state) {
+                if (state.weightUnitsLoadmore == true) {
+                  return const Center(child: CustomLoadingPagination());
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ),

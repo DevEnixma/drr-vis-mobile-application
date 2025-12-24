@@ -137,8 +137,6 @@ class _UnitDetailsWeighingTrucksScreenState
 
   bool isSave = false;
 
-  // TextController
-
   File? _imageFront;
   File? _imageBack;
   File? _imageLeft;
@@ -148,9 +146,7 @@ class _UnitDetailsWeighingTrucksScreenState
   final ImagePicker _picker = ImagePicker();
 
   List<VehicleRes> vehicleCar = [];
-
   List<ProvinceModelRes> province = [];
-
   List<MaterialModelRes> materials = [];
 
   int driveShaft = 2;
@@ -174,7 +170,6 @@ class _UnitDetailsWeighingTrucksScreenState
   double ds7 = 0;
 
   CarDetailModelRes? itemCarDetail;
-
   VehicleRes? selectVehicleType;
   bool isShowIconError2 = false;
 
@@ -203,8 +198,6 @@ class _UnitDetailsWeighingTrucksScreenState
     if (carDetail == null) return;
 
     logger.i(carDetail.toJson());
-    logger.i(
-        '============[test]=======0=vehicleClassId: $vehicleClassId==> ${carDetail.toJson()}');
 
     try {
       setState(() {
@@ -674,7 +667,9 @@ class _UnitDetailsWeighingTrucksScreenState
       logger.e(payload.toJson());
 
       // ปิด loading dialog
-      Navigator.of(context).pop();
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
 
       if (widget.tdId.isNotEmpty) {
         context.read<WeightCarBloc>().add(PutWeightCarEvent(payload));
@@ -683,7 +678,7 @@ class _UnitDetailsWeighingTrucksScreenState
       }
     } catch (e) {
       // ปิด loading dialog ถ้ามี error
-      if (Navigator.of(context).canPop()) {
+      if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
 
@@ -693,12 +688,14 @@ class _UnitDetailsWeighingTrucksScreenState
 
       logger.e('=======[submitForm]======> $e');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('เกิดข้อผิดพลาดในการบันทึกข้อมูล'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('เกิดข้อผิดพลาดในการบันทึกข้อมูล'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -773,7 +770,6 @@ class _UnitDetailsWeighingTrucksScreenState
 
   Future<void> _pickImage(String type, ImageSource source) async {
     try {
-      // เลือกรูปพร้อม optimize ตั้งแต่ต้น
       final XFile? image = await _picker.pickImage(
         source: source,
         maxWidth: 1920,
@@ -783,13 +779,9 @@ class _UnitDetailsWeighingTrucksScreenState
 
       if (image != null) {
         File originalFile = File(image.path);
-
-        // ตรวจสอบขนาดไฟล์
         final fileSize = await originalFile.length();
-
         File finalFile = originalFile;
 
-        // ถ้าไฟล์ใหญ่กว่า 500 KB ให้ compress เพิ่ม
         if (fileSize > 500 * 1024) {
           logger.i(
               'File size: ${(fileSize / 1024).toStringAsFixed(2)} KB, compressing...');
@@ -889,13 +881,9 @@ class _UnitDetailsWeighingTrucksScreenState
     try {
       if (source != null) {
         File originalFile = File(source);
-
-        // ตรวจสอบขนาดไฟล์
         final fileSize = await originalFile.length();
-
         File finalFile = originalFile;
 
-        // ถ้าไฟล์ใหญ่กว่า 500 KB ให้ compress เพิ่ม
         if (fileSize > 500 * 1024) {
           logger.i(
               'Update image size: ${(fileSize / 1024).toStringAsFixed(2)} KB, compressing...');
@@ -1088,7 +1076,9 @@ class _UnitDetailsWeighingTrucksScreenState
       carWeightStatusController.clear();
 
       FocusScope.of(context).unfocus();
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       logger.e('Error clearing form: $e');
     }
@@ -1470,6 +1460,8 @@ class _UnitDetailsWeighingTrucksScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BlocListener<EstablishBloc, EstablishState>(
+                  listenWhen: (previous, current) =>
+                      previous.carDetailStatus != current.carDetailStatus,
                   listener: (context, state) {
                     if (state.carDetailStatus ==
                         CarInUnitDetailStatus.success) {
@@ -1478,15 +1470,19 @@ class _UnitDetailsWeighingTrucksScreenState
                         setDataUpdate(state.carDetail);
                       }
                     }
+
                     if (state.carDetailStatus == CarInUnitDetailStatus.error &&
-                        state.carDetailError == '') {
-                      showSnackbarBottom(
-                          context, state.carDetailError.toString());
+                        state.carDetailError != null &&
+                        state.carDetailError!.isNotEmpty) {
+                      showSnackbarBottom(context, state.carDetailError!);
                     }
                   },
                   child: const SizedBox.shrink(),
                 ),
                 BlocListener<EstablishBloc, EstablishState>(
+                  listenWhen: (previous, current) =>
+                      previous.carInUnitDetailImageStatus !=
+                      current.carInUnitDetailImageStatus,
                   listener: (context, state) {
                     if (state.carInUnitDetailImageStatus ==
                         CarInUnitDetailImageStatus.success) {
@@ -1494,16 +1490,12 @@ class _UnitDetailsWeighingTrucksScreenState
                         setDataUpdateImage(state.carDatailImage);
                       }
                     }
-                    if (state.carInUnitDetailImageStatus ==
-                            CarInUnitDetailImageStatus.error &&
-                        state.carDetailError == '') {
-                      showSnackbarBottom(
-                          context, state.carDetailError.toString());
-                    }
                   },
                   child: const SizedBox.shrink(),
                 ),
                 BlocListener<WeightCarBloc, WeightCarState>(
+                  listenWhen: (previous, current) =>
+                      previous.weightCarStatus != current.weightCarStatus,
                   listener: (context, state) {
                     if (state.weightCarStatus == WeightCarStatus.loading) {
                       isSave = true;
@@ -1529,9 +1521,9 @@ class _UnitDetailsWeighingTrucksScreenState
                       );
                     }
                     if (state.weightCarStatus == WeightCarStatus.error &&
-                        state.weightCarError.isNotEmpty) {
-                      showSnackbarBottom(
-                          context, state.weightCarError.toString());
+                        state.weightCarError != null &&
+                        state.weightCarError!.isNotEmpty) {
+                      showSnackbarBottom(context, state.weightCarError!);
                     }
                   },
                   child: const SizedBox.shrink(),
@@ -1565,6 +1557,9 @@ class _UnitDetailsWeighingTrucksScreenState
                   isRequired: true,
                 ),
                 BlocListener<ProvinceBloc, ProvinceState>(
+                  listenWhen: (previous, current) =>
+                      previous.provinceStatus != current.provinceStatus ||
+                      previous.selectProvince != current.selectProvince,
                   listener: (context, state) {
                     if (state.provinceStatus == ProvinceStatus.success) {
                       province = state.province ?? [];
@@ -1646,6 +1641,8 @@ class _UnitDetailsWeighingTrucksScreenState
                   title: carLicenseTailProvince,
                 ),
                 BlocListener<ProvinceBloc, ProvinceState>(
+                  listenWhen: (previous, current) =>
+                      previous.selectProvinceTail != current.selectProvinceTail,
                   listener: (context, state) {
                     if (state.selectProvinceTail != null) {
                       final selectedProvinceTail = state.selectProvinceTail!;
@@ -1708,6 +1705,9 @@ class _UnitDetailsWeighingTrucksScreenState
                   isRequired: true,
                 ),
                 BlocListener<VehicleCarBloc, VehicleCarState>(
+                  listenWhen: (previous, current) =>
+                      previous.vehicleCarStatus != current.vehicleCarStatus ||
+                      previous.selectVehicle != current.selectVehicle,
                   listener: (context, state) {
                     if (state.vehicleCarStatus == VehicleCarStatus.success) {
                       vehicleCar = state.vehicleCar ?? [];
@@ -1783,9 +1783,7 @@ class _UnitDetailsWeighingTrucksScreenState
                         ],
                       ),
                     ),
-                    SizedBox(
-                      width: 12.w,
-                    ),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -1811,11 +1809,14 @@ class _UnitDetailsWeighingTrucksScreenState
                   title: carTruckMaterial,
                 ),
                 BlocListener<MaterialsBloc, MaterialsState>(
+                  listenWhen: (previous, current) =>
+                      previous.materialStatus != current.materialStatus ||
+                      previous.material != current.material ||
+                      previous.loadMore != current.loadMore,
                   listener: (context, state) {
                     if (state.materialStatus == MaterialsStatus.success) {
                       materials = state.materials ?? [];
 
-                      // อัพเดทสถานะ pagination
                       if (state.materials != null &&
                           state.materials!.length < materialPageSize) {
                         hasMoreData = false;
@@ -1844,7 +1845,6 @@ class _UnitDetailsWeighingTrucksScreenState
                     onTap: () {
                       if (RolePermission.checkRoleViewer(role) &&
                           widget.isEdit) {
-                        // รีเซ็ตค่า pagination ก่อนเปิด modal
                         setState(() {
                           materialPage = 1;
                           hasMoreData = true;
@@ -1867,7 +1867,6 @@ class _UnitDetailsWeighingTrucksScreenState
                               expand: false,
                               builder: (BuildContext context,
                                   ScrollController scrollController) {
-                                // เพิ่ม scroll listener สำหรับ pagination
                                 scrollController.addListener(() {
                                   if (scrollController.position.pixels >=
                                       scrollController
@@ -1897,7 +1896,6 @@ class _UnitDetailsWeighingTrucksScreenState
                                             },
                                           ),
                                         ),
-                                        // แสดง loading indicator เมื่อกำลังโหลดข้อมูลเพิ่ม
                                         if (state.loadMore == true)
                                           Container(
                                             padding: EdgeInsets.all(16.0),
@@ -1975,9 +1973,7 @@ class _UnitDetailsWeighingTrucksScreenState
                         ],
                       ),
                     ),
-                    SizedBox(
-                      width: 12.w,
-                    ),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,

@@ -39,11 +39,6 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
 
   String isJoinItemMsg = '';
 
-  int page = 1;
-  int pageSize = 20;
-  DateTime startDate = DateTime.now();
-  DateTime endDate = DateTime.now();
-
   @override
   void initState() {
     super.initState();
@@ -59,57 +54,73 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
     }
   }
 
-  void clearJoinProcess() async {
-    context.read<EstablishBloc>().add(ClearPostJoinWeightUnit());
+  void clearJoinProcess() {
+    if (mounted) {
+      context.read<EstablishBloc>().add(ClearPostJoinWeightUnit());
+    }
   }
 
-  void showError(String errorMsg) async {
+  void showError(String errorMsg) {
     if (!processJoin && errorMsg != isJoinItemMsg) {
-      showSnackbarBottom(context, errorMsg);
+      if (mounted) {
+        showSnackbarBottom(context, errorMsg);
+      }
       clearJoinProcess();
     }
-    setState(() {
-      processJoin = true;
-      isJoinItemMsg = errorMsg;
-    });
+    if (mounted) {
+      setState(() {
+        processJoin = true;
+        isJoinItemMsg = errorMsg;
+      });
+    }
   }
 
-  void ClearUnitID() async {
+  Future<void> clearUnitID() async {
     final LocalStorage storage = LocalStorage();
     await storage.setValueString(KeyLocalStorage.weightUnitId, '');
   }
 
-  void funcIsJoinWeigthUnit() async {
+  Future<void> funcIsJoinWeightUnit() async {
+    if (!mounted) return;
+
     context.read<EstablishBloc>().add(ClearPostJoinWeightUnit());
 
     widget.isActionJoin('isActionJoin', isJoinSuccess);
+
     // ไปที่หน้ารายละเอียด
-    Routes.gotoWeightUnitDetailsScreen(context, widget.item.tID.toString());
+    if (mounted) {
+      Routes.gotoWeightUnitDetailsScreen(context, widget.item.tID.toString());
+    }
 
     // Reset flag หลังจากเสร็จสิ้น
-    setState(() {
-      processJoin = false;
-      isJoinSuccess = false;
-    });
+    if (mounted) {
+      setState(() {
+        processJoin = false;
+        isJoinSuccess = false;
+      });
+    }
   }
 
-  void funcIsLeaveJoin() async {
-    ClearUnitID();
+  Future<void> funcIsLeaveJoin() async {
+    await clearUnitID();
+
+    if (!mounted) return;
+
     context.read<EstablishBloc>().add(ClearPostJoinWeightUnit());
     widget.isActionJoin('isActionJoin', isLeaveJoinSuccess);
 
-    setState(() {
-      isLeaveJoinSuccess = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLeaveJoinSuccess = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     bool isJoinItem = widget.isJoinItem;
     return GestureDetector(
-      onTap: () {
-        goToWeightUnitDetail();
-      },
+      onTap: goToWeightUnitDetail,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 18.h),
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.h),
@@ -120,14 +131,14 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
             BoxShadow(
               color: Theme.of(context).colorScheme.tertiaryFixed,
               blurRadius: 2,
-              offset: Offset(0, 1),
+              offset: const Offset(0, 1),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              margin: EdgeInsets.only(left: 1, right: 10),
+              margin: const EdgeInsets.only(left: 1, right: 10),
               child: SvgPicture.asset(
                 'assets/svg/entypo_traffic-cone.svg',
                 color: Theme.of(context).colorScheme.primary,
@@ -135,91 +146,47 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
               ),
             ),
             Expanded(
-              child: Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    flex: 3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AutoSizeText(
+                          widget.item.wayID ?? '',
+                          style: AppTextStyle.title20bold(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        AutoSizeText(
+                          'ตั้งโดย ${StringHleper.checkString(widget.item.firstName)} ${StringHleper.checkString(widget.item.lastName)}',
+                          style: AppTextStyle.title14normal(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        AutoSizeText(
+                          'กม.ที่ ${StringHleper.checkString(widget.item.kMFrom)} ถึง ${StringHleper.checkString(widget.item.kMTo)}',
+                          style: AppTextStyle.title14normal(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isJoinItem && !widget.userIsJoin)
+                    Flexible(
+                      flex: 2,
+                      child: _buildJoinButton(context),
+                    ),
+                  if (isJoinItem)
                     Flexible(
                       flex: 3,
-                      child: Container(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AutoSizeText(widget.item.wayID ?? '', style: AppTextStyle.title20bold(color: Theme.of(context).colorScheme.primary)),
-                            Container(
-                              child: AutoSizeText(
-                                'ตั้งโดย ${StringHleper.checkString(widget.item.firstName)} ${StringHleper.checkString(widget.item.lastName)}',
-                                style: AppTextStyle.title14normal(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Container(
-                              child: AutoSizeText(
-                                'กม.ที่ ${StringHleper.checkString(widget.item.kMFrom)} ถึง ${StringHleper.checkString(widget.item.kMTo)}',
-                                style: AppTextStyle.title14normal(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      child: _buildLeaveButton(context),
                     ),
-                    if (!isJoinItem && !widget.userIsJoin)
-                      Flexible(
-                        flex: 2,
-                        child: GestureDetector(
-                          onTap: () {
-                            showCustomBottomSheetConfirm(context, widget.item);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.only(top: 6, bottom: 4, left: 8, right: 8),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(30),
-                              ),
-                            ),
-                            child: Text(
-                              'เข้าร่วมหน่วยชั่ง',
-                              style: AppTextStyle.title14bold(color: Theme.of(context).colorScheme.secondary),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (isJoinItem)
-                      Flexible(
-                        flex: 3,
-                        child: GestureDetector(
-                          onTap: () {
-                            showCustomBottomSheetChange(context, widget.item);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.only(top: 6, bottom: 4, left: 8, right: 8),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(30),
-                              ),
-                            ),
-                            child: Text(
-                              'ออกจากหน่วยชั่ง',
-                              style: AppTextStyle.title14bold(color: Theme.of(context).colorScheme.surface),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
             )
           ],
@@ -228,7 +195,64 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
     );
   }
 
-  void showCustomBottomSheetConfirm(BuildContext context, MobileMasterModel mobileMasterData) {
+  /// ปุ่ม "เข้าร่วมหน่วยชั่ง"
+  Widget _buildJoinButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showCustomBottomSheetConfirm(context, widget.item),
+      child: Container(
+        padding: const EdgeInsets.only(top: 6, bottom: 4, left: 8, right: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2.0,
+          ),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(30),
+          ),
+        ),
+        child: Text(
+          'เข้าร่วมหน่วยชั่ง',
+          style: AppTextStyle.title14bold(
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  /// ปุ่ม "ออกจากหน่วยชั่ง"
+  Widget _buildLeaveButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showCustomBottomSheetChange(context, widget.item),
+      child: Container(
+        padding: const EdgeInsets.only(top: 6, bottom: 4, left: 8, right: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2.0,
+          ),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(30),
+          ),
+        ),
+        child: Text(
+          'ออกจากหน่วยชั่ง',
+          style: AppTextStyle.title14bold(
+            color: Theme.of(context).colorScheme.surface,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  /// Bottom Sheet สำหรับยืนยันการเข้าร่วม
+  void _showCustomBottomSheetConfirm(
+    BuildContext context,
+    MobileMasterModel mobileMasterData,
+  ) {
     showModalBottomSheet(
       backgroundColor: Colors.white,
       context: context,
@@ -240,7 +264,8 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
         return CustomBottomSheetWidget(
           icon: 'check_icon_shadow',
           title: 'ยืนยันการเข้าร่วม',
-          message: 'ท่านยืนยันที่จะเข้าร่วมสายทาง ${mobileMasterData.wayID} \nใช่หรือไม่ ?',
+          message:
+              'ท่านยืนยันที่จะเข้าร่วมสายทาง ${mobileMasterData.wayID} \nใช่หรือไม่ ?',
           onConfirm: () {
             Navigator.pop(context);
             onJoinWeightUnit(mobileMasterData.tID!, true);
@@ -253,7 +278,11 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
     );
   }
 
-  void showCustomBottomSheetChange(BuildContext context, MobileMasterModel mobileMasterData) {
+  /// Bottom Sheet สำหรับยืนยันการออกจากหน่วย
+  void _showCustomBottomSheetChange(
+    BuildContext context,
+    MobileMasterModel mobileMasterData,
+  ) {
     showModalBottomSheet(
       backgroundColor: Colors.white,
       context: context,
@@ -265,11 +294,11 @@ class _CardWeightUnitWidgetState extends State<CardWeightUnitWidget> {
         return CustomBottomSheetWidget(
           icon: 'icon_exit',
           title: 'ออกจากหน่วยชั่ง',
-          message: 'ท่านยืนยันที่จะออกจากสายทาง ${mobileMasterData.wayID} ปัจจุบัน\nใช่หรือไม่ ?',
+          message:
+              'ท่านยืนยันที่จะออกจากสายทาง ${mobileMasterData.wayID} ปัจจุบัน\nใช่หรือไม่ ?',
           onConfirm: () {
             Navigator.pop(context);
             onJoinWeightUnit(mobileMasterData.tID!, false);
-            // Routes.gotoEstablishUnitDetails(context, mobileMasterData.tID);
           },
           onCancel: () {
             Navigator.pop(context);

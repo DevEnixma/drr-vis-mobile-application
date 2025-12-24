@@ -38,8 +38,9 @@ class WeightUnitDetailsScreen extends StatefulWidget {
   State<WeightUnitDetailsScreen> createState() => _EstablishUnitDetailsState();
 }
 
-class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with SingleTickerProviderStateMixin {
-  Color appBarBackgroundColor = Colors.blue; // สีเริ่มต้น
+class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen>
+    with SingleTickerProviderStateMixin {
+  Color appBarBackgroundColor = Colors.blue;
 
   final FocusNode focusNode = FocusNode();
 
@@ -58,6 +59,7 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
   final ScrollController scrollController = ScrollController();
 
   bool showAppBar = true;
+
   @override
   void initState() {
     super.initState();
@@ -66,7 +68,8 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
     _tabController.addListener(_handleTabSelection);
 
     scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
         loadMore();
       }
     });
@@ -82,7 +85,9 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
   }
 
   void getWeightUnitDetail() {
-    context.read<EstablishBloc>().add(MobileMasterDepartmentFetchEvent(tid: widget.tid!));
+    context
+        .read<EstablishBloc>()
+        .add(MobileMasterDepartmentFetchEvent(tid: widget.tid!));
   }
 
   void _handleTabSelection() async {
@@ -112,14 +117,13 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
   void dispose() {
     _tabController.dispose();
     scrollController.dispose();
-
     focusNode.dispose();
     super.dispose();
   }
 
   void unfocusTextField() {
     if (focusNode.hasFocus) {
-      focusNode.unfocus(); // ยกเลิกการโฟกัส TextField
+      focusNode.unfocus();
     }
   }
 
@@ -139,14 +143,18 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
   }
 
   void closeWeightUnit() async {
-    context.read<EstablishBloc>().add(PostWeightUnitCloseEvent(widget.tid.toString()));
+    context
+        .read<EstablishBloc>()
+        .add(PostWeightUnitCloseEvent(widget.tid.toString()));
   }
 
   void afterCloseUnit() async {
     await ClearUnitID();
     await GetWeightUnitsIsJoinEventBloc();
     await getWeightUnitAll();
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (mounted) {
+      Navigator.popUntil(context, (route) => route.isFirst);
+    }
   }
 
   Future<void> ClearUnitID() async {
@@ -158,8 +166,10 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
     ClearUnitID();
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearAdd(endDate, 1)),
+            start_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearSubstract(startDate, 1)),
+            end_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,
           ),
@@ -169,8 +179,10 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
   Future<void> getWeightUnitAll() async {
     context.read<EstablishBloc>().add(
           MobileMasterFetchEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(ConvertDate.dateTimeYearAdd(endDate, 1)),
+            start_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearSubstract(startDate, 1)),
+            end_date: ConvertDate.convertDateToYYYYDDMM(
+                ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,
           ),
@@ -188,152 +200,307 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
   @override
   Widget build(BuildContext context) {
     var role = context.read<ProfileBloc>().state.profile!.deptType;
-    Provider.of<TokenRefreshService>(context, listen: false).startTokenRefreshTimer();
+    Provider.of<TokenRefreshService>(context, listen: false)
+        .startTokenRefreshTimer();
     return Scaffold(
       body: GestureDetector(
         onTap: unfocusTextField,
         behavior: HitTestBehavior.opaque,
-        child: BlocBuilder<EstablishBloc, EstablishState>(
-          builder: (context, state) {
-            if (state.establishMobileMasterDepartmentStatus == EstablishMobileMasterDepartmentStatus.loading) {
-              return const Center(child: CustomLoadingPagination());
-            }
-            if (state.establishMobileMasterDepartmentStatus == EstablishMobileMasterDepartmentStatus.success) {
-              if (state.mobileMasterDepartmentData != null) {
-                return LayoutBuilder(builder: (context, constraints) {
-                  return CustomScrollView(
-                    controller: scrollController,
-                    slivers: <Widget>[
-                      SliverAppBar(
-                        leading: IconButton(
-                          onPressed: () {
-                            Navigator.popUntil(context, (route) => route.isFirst);
-                          },
-                          icon: Icon(Icons.arrow_back),
-                        ),
-                        actions: [
-                          if (RolePermission.checkRole1(role))
-                            GestureDetector(
-                              onTap: () {
-                                showCustomBottomSheet(context);
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(32.r),
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<EstablishBloc, EstablishState>(
+              listenWhen: (previous, current) =>
+                  previous.establishMobileMasterDepartmentStatus !=
+                  current.establishMobileMasterDepartmentStatus,
+              listener: (context, state) {
+                if (state.establishMobileMasterDepartmentStatus ==
+                        EstablishMobileMasterDepartmentStatus.error &&
+                    state.establishMobileMasterDepartmentError != null &&
+                    state.establishMobileMasterDepartmentError!.isNotEmpty) {
+                  showSnackbarBottom(
+                      context, state.establishMobileMasterDepartmentError!);
+                }
+              },
+            ),
+            BlocListener<WeightUnitBloc, WeightUnitState>(
+              listenWhen: (previous, current) =>
+                  previous.weightUnitCarsStatus != current.weightUnitCarsStatus,
+              listener: (context, state) {
+                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error &&
+                    state.weightUnitsError != null &&
+                    state.weightUnitsError!.isNotEmpty) {
+                  showSnackbarBottom(context, state.weightUnitsError!);
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<EstablishBloc, EstablishState>(
+            builder: (context, state) {
+              if (state.establishMobileMasterDepartmentStatus ==
+                  EstablishMobileMasterDepartmentStatus.loading) {
+                return const Center(child: CustomLoadingPagination());
+              }
+
+              if (state.establishMobileMasterDepartmentStatus ==
+                  EstablishMobileMasterDepartmentStatus.success) {
+                if (state.mobileMasterDepartmentData != null) {
+                  return LayoutBuilder(builder: (context, constraints) {
+                    return CustomScrollView(
+                      controller: scrollController,
+                      slivers: <Widget>[
+                        SliverAppBar(
+                          leading: IconButton(
+                            onPressed: () {
+                              Navigator.popUntil(
+                                  context, (route) => route.isFirst);
+                            },
+                            icon: Icon(Icons.arrow_back),
+                          ),
+                          actions: [
+                            if (RolePermission.checkRole1(role))
+                              GestureDetector(
+                                onTap: () {
+                                  showCustomBottomSheet(context);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(32.r),
+                                  ),
+                                  margin: const EdgeInsets.only(right: 16.0),
+                                  padding: EdgeInsets.only(
+                                      left: 12, right: 12, top: 5, bottom: 4),
+                                  child: Text('สิ้นสุดการจัดตั้งหน่วย',
+                                      style: AppTextStyle.title14bold(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary)),
                                 ),
-                                margin: const EdgeInsets.only(right: 16.0),
-                                padding: EdgeInsets.only(left: 12, right: 12, top: 5, bottom: 4),
-                                child: Text('สิ้นสุดการจัดตั้งหน่วย', style: AppTextStyle.title14bold(color: Theme.of(context).colorScheme.secondary)),
                               ),
+                          ],
+                          backgroundColor: ColorApps.colorMain,
+                          expandedHeight: constraints.maxWidth > 400 &&
+                                  constraints.maxWidth < 600
+                              ? 200.h
+                              : 290.h,
+                          toolbarHeight:
+                              constraints.maxWidth > 600 ? 70.h : 52.h,
+                          pinned: true,
+                          flexibleSpace: FlexibleSpaceBar(
+                            collapseMode: CollapseMode.parallax,
+                            background: TitleTopWidget(
+                              constraints: constraints,
+                              item: state.mobileMasterDepartmentData!,
                             ),
-                        ],
-                        backgroundColor: ColorApps.colorMain,
-                        expandedHeight: constraints.maxWidth > 400 && constraints.maxWidth < 600 ? 200.h : 290.h,
-                        toolbarHeight: constraints.maxWidth > 600 ? 70.h : 52.h,
-                        pinned: true,
-                        flexibleSpace: FlexibleSpaceBar(
-                          collapseMode: CollapseMode.parallax,
-                          background: TitleTopWidget(
-                            constraints: constraints,
-                            item: state.mobileMasterDepartmentData!,
+                          ),
+                          bottom: TabBar(
+                            tabAlignment: TabAlignment.center,
+                            dividerColor:
+                                Theme.of(context).colorScheme.tertiaryContainer,
+                            isScrollable: true,
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicatorColor:
+                                Theme.of(context).colorScheme.surface,
+                            labelColor: Theme.of(context).colorScheme.surface,
+                            unselectedLabelColor:
+                                Theme.of(context).colorScheme.onSurface,
+                            indicatorWeight: 3,
+                            labelStyle: AppTextStyle.title16bold(),
+                            controller: _tabController,
+                            tabs: [
+                              tabCarWeight(
+                                  context,
+                                  'assets/svg/iconamoon_news-fill.svg',
+                                  'รถเข้าชั่ง (${state.mobileMasterDepartmentData!.total.toString()})',
+                                  'รถเข้าชั่ง ()'),
+                              tabCarWeight(
+                                  context,
+                                  'assets/svg/truck_icon.svg',
+                                  'รถน้ำหนักเกิน (${state.mobileMasterDepartmentData!.totalOver.toString()})',
+                                  'รถน้ำหนักเกิน ()'),
+                            ],
                           ),
                         ),
-                        bottom: TabBar(
-                          tabAlignment: TabAlignment.center,
-                          dividerColor: Theme.of(context).colorScheme.tertiaryContainer,
-                          isScrollable: true,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          indicatorColor: Theme.of(context).colorScheme.surface,
-                          labelColor: Theme.of(context).colorScheme.surface,
-                          unselectedLabelColor: Theme.of(context).colorScheme.onSurface,
-                          indicatorWeight: 3,
-                          labelStyle: AppTextStyle.title16bold(),
-                          controller: _tabController,
-                          tabs: [
-                            tabCarWeight(context, 'assets/svg/iconamoon_news-fill.svg', 'รถเข้าชั่ง (${state.mobileMasterDepartmentData!.total.toString()})', 'รถเข้าชั่ง ()'),
-                            tabCarWeight(context, 'assets/svg/truck_icon.svg', 'รถน้ำหนักเกิน (${state.mobileMasterDepartmentData!.totalOver.toString()})', 'รถน้ำหนักเกิน ()'),
-                          ],
-                        ),
-                      ),
-                      BlocBuilder<WeightUnitBloc, WeightUnitState>(
-                        builder: (context, state) {
-                          return SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.loading) {
-                                  return Center(
-                                    child: SkeletionContainerWidget(
-                                      height: 80.h,
-                                      width: 300.w,
-                                      color: Theme.of(context).colorScheme.surface,
-                                    ),
-                                  );
-                                }
-
-                                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.success) {
-                                  if (state.weightUnitsCars != null && state.weightUnitsCars!.isNotEmpty) {
-                                    final carItem = state.weightUnitsCars![index];
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Routes.gotoUnitDetailsWeighingTrucks(context, widget.tid.toString(), carItem.tdId!, true);
-                                      },
-                                      child: CarItemWidget(item: carItem),
+                        BlocBuilder<WeightUnitBloc, WeightUnitState>(
+                          builder: (context, state) {
+                            return SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  if (state.weightUnitCarsStatus ==
+                                      WeightUnitCarsStatus.loading) {
+                                    return Center(
+                                      child: SkeletionContainerWidget(
+                                        height: 80.h,
+                                        width: 300.w,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
+                                      ),
                                     );
-                                  } else {
-                                    return EmptyWidget(title: 'ไม่พบรายการรถเข้าชั่ง', label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
                                   }
-                                }
 
-                                if (state.weightUnitCarsStatus == WeightUnitCarsStatus.error && state.weightUnitsError != '') {
-                                  showSnackbarBottom(context, state.weightUnitsError!);
+                                  if (state.weightUnitCarsStatus ==
+                                      WeightUnitCarsStatus.success) {
+                                    if (state.weightUnitsCars != null &&
+                                        state.weightUnitsCars!.isNotEmpty) {
+                                      final carItem =
+                                          state.weightUnitsCars![index];
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Routes.gotoUnitDetailsWeighingTrucks(
+                                              context,
+                                              widget.tid.toString(),
+                                              carItem.tdId!,
+                                              true);
+                                        },
+                                        child: CarItemWidget(item: carItem),
+                                      );
+                                    } else {
+                                      return EmptyWidget(
+                                          title: 'ไม่พบรายการรถเข้าชั่ง',
+                                          label: 'กรุณาเพิ่มรายการรถเข้าชั่ง');
+                                    }
+                                  }
+
+                                  if (state.weightUnitCarsStatus ==
+                                      WeightUnitCarsStatus.error) {
+                                    return Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 24.h, vertical: 24.h),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              size: 64,
+                                              color: Colors.red[300],
+                                            ),
+                                            SizedBox(height: 16),
+                                            Text(
+                                              'เกิดข้อผิดพลาด',
+                                              style: AppTextStyle.title16bold(),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              state.weightUnitsError ??
+                                                  'Unknown error',
+                                              style: AppTextStyle.title14normal(
+                                                color: Colors.grey[600],
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            SizedBox(height: 24),
+                                            ElevatedButton.icon(
+                                              onPressed: () {
+                                                setState(() {
+                                                  page = 1;
+                                                });
+                                                getWeightUnitCars();
+                                              },
+                                              icon: Icon(Icons.refresh),
+                                              label: Text('ลองอีกครั้ง'),
+                                              style: ElevatedButton.styleFrom(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 24,
+                                                  vertical: 12,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+
                                   return SizedBox.shrink();
-                                }
-
-                                return SizedBox.shrink();
-                              },
-                              childCount: state.weightUnitsCars != null && state.weightUnitsCars!.isNotEmpty ? state.weightUnitsCars!.length : 1,
-                            ),
-                          );
-                        },
-                      ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            BlocBuilder<WeightUnitBloc, WeightUnitState>(builder: (context, state) {
-                              if (state.weightUnitsCarsLoadMore == true) {
-                                return const Center(child: CustomLoadingPagination());
-                              }
-                              return const SizedBox.shrink();
-                            });
-
-                            return null;
+                                },
+                                childCount: state.weightUnitsCars != null &&
+                                        state.weightUnitsCars!.isNotEmpty
+                                    ? state.weightUnitsCars!.length
+                                    : 1,
+                              ),
+                            );
                           },
-                          childCount: 1, // กำหนดให้โหลดเพียงครั้งเดียว
                         ),
-                      ),
-                    ],
-                  );
-                });
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              return BlocBuilder<WeightUnitBloc,
+                                  WeightUnitState>(
+                                builder: (context, state) {
+                                  if (state.weightUnitsCarsLoadMore == true) {
+                                    return const Center(
+                                        child: CustomLoadingPagination());
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              );
+                            },
+                            childCount: 1,
+                          ),
+                        ),
+                      ],
+                    );
+                  });
+                }
               }
-            }
-            return SizedBox.shrink();
-          },
+
+              if (state.establishMobileMasterDepartmentStatus ==
+                  EstablishMobileMasterDepartmentStatus.error) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.h),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red[300],
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'เกิดข้อผิดพลาด',
+                          style: AppTextStyle.title16bold(),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          state.establishMobileMasterDepartmentError ??
+                              'Unknown error',
+                          style: AppTextStyle.title14normal(
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            getWeightUnitDetail();
+                            getWeightUnitCars();
+                          },
+                          icon: Icon(Icons.refresh),
+                          label: Text('ลองอีกครั้ง'),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return SizedBox.shrink();
+            },
+          ),
         ),
       ),
-      // floatingActionButton: RolePermission.checkRoleViewer(role)
-      //     ? FloatingActionButton(
-      //         backgroundColor: Theme.of(context).colorScheme.primary,
-      //         foregroundColor: Theme.of(context).colorScheme.surface,
-      //         shape: RoundedRectangleBorder(
-      //           borderRadius: BorderRadius.circular(90.0),
-      //         ),
-      //         onPressed: () {
-      //           Routes.gotoUnitDetailsWeighingTrucks(context, widget.tid.toString(), '', true);
-      //         },
-      //         child: Icon(Icons.add),
-      //       )
-      //     : null,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.surface,
@@ -341,7 +508,8 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
           borderRadius: BorderRadius.circular(90.0),
         ),
         onPressed: () {
-          Routes.gotoUnitDetailsWeighingTrucks(context, widget.tid.toString(), '', true);
+          Routes.gotoUnitDetailsWeighingTrucks(
+              context, widget.tid.toString(), '', true);
         },
         child: Icon(Icons.add),
       ),
@@ -352,35 +520,33 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
     return Tab(
       child: Row(
         children: [
-          BlocListener<EstablishBloc, EstablishState>(
-            listener: (context, state) {
-              if (state.weightUnistCloseStatus == WeightUnistCloseStatus.success) {
-                context.read<EstablishBloc>().add(ClearPostJoinWeightUnit());
-                afterCloseUnit();
-              }
-            },
-            child: SizedBox(width: 10),
-          ),
           SvgPicture.asset(
             svgIcon,
-            color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface,
+            color: _tabController.index == 0
+                ? Theme.of(context).colorScheme.surface
+                : Theme.of(context).colorScheme.onSurface,
             width: 20.h,
           ),
           SizedBox(width: 5.h),
           BlocBuilder<EstablishBloc, EstablishState>(
             builder: (context, state) {
-              if (state.establishMobileMasterDepartmentStatus == EstablishMobileMasterDepartmentStatus.success) {
+              if (state.establishMobileMasterDepartmentStatus ==
+                  EstablishMobileMasterDepartmentStatus.success) {
                 return Text(
                   carAmount,
                   style: TextStyle(
-                    color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                    color: _tabController.index == 0
+                        ? Theme.of(context).colorScheme.surface
+                        : Theme.of(context).colorScheme.onSurface,
                   ),
                 );
               }
               return Text(
                 mockText,
                 style: TextStyle(
-                  color: _tabController.index == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.onSurface, // Change color on select
+                  color: _tabController.index == 0
+                      ? Theme.of(context).colorScheme.surface
+                      : Theme.of(context).colorScheme.onSurface,
                 ),
               );
             },
@@ -399,32 +565,43 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen> with Sin
         minWidth: MediaQuery.of(context).size.width,
       ),
       builder: (BuildContext context) {
-        return CustomBottomSheetWidget(
-          icon: 'exclamation_icon_shadow',
-          title: 'สิ้นสุดการจัดตั้งหน่วย',
-          message: 'ท่านต้องการสิ้นสุดการจัดตั้งหน่วยหรือไม่ ?',
-          onConfirm: () {
-            Navigator.pop(context);
-            closeWeightUnit();
+        return BlocListener<EstablishBloc, EstablishState>(
+          listenWhen: (previous, current) =>
+              previous.weightUnistCloseStatus != current.weightUnistCloseStatus,
+          listener: (context, state) {
+            if (state.weightUnistCloseStatus ==
+                WeightUnistCloseStatus.success) {
+              context.read<EstablishBloc>().add(ClearPostJoinWeightUnit());
+              afterCloseUnit();
+            }
+          },
+          child: CustomBottomSheetWidget(
+            icon: 'exclamation_icon_shadow',
+            title: 'สิ้นสุดการจัดตั้งหน่วย',
+            message: 'ท่านต้องการสิ้นสุดการจัดตั้งหน่วยหรือไม่ ?',
+            onConfirm: () {
+              Navigator.pop(context);
+              closeWeightUnit();
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SuccessScreen(
-                  icon: 'assets/svg/ant-design_check-circle-filled.svg',
-                  titleBT: 'กลับหน้าแรก',
-                  title: 'สิ้นสุดการจัดหน่วยสำเร็จ',
-                  message: 'สามารถเริ่มการจัดตั้งหน่วยใหม่ได้',
-                  onConfirm: () {
-                    Navigator.popUntil(context, (route) => route.isFirst);
-                  },
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SuccessScreen(
+                    icon: 'assets/svg/ant-design_check-circle-filled.svg',
+                    titleBT: 'กลับหน้าแรก',
+                    title: 'สิ้นสุดการจัดหน่วยสำเร็จ',
+                    message: 'สามารถเริ่มการจัดตั้งหน่วยใหม่ได้',
+                    onConfirm: () {
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                  ),
                 ),
-              ),
-            );
-          },
-          onCancel: () {
-            Navigator.pop(context);
-          },
+              );
+            },
+            onCancel: () {
+              Navigator.pop(context);
+            },
+          ),
         );
       },
     );

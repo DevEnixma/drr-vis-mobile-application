@@ -196,6 +196,22 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            BlocListener<EstablishBloc, EstablishState>(
+              listenWhen: (previous, current) =>
+                  previous.establishMobileMasterStatus !=
+                  current.establishMobileMasterStatus,
+              listener: (context, state) {
+                if (state.establishMobileMasterStatus ==
+                        EstablishMobileMasterStatus.error &&
+                    state.establishMobileMasterError != null &&
+                    state.establishMobileMasterError!.isNotEmpty) {
+                  showSnackbarBottom(
+                      context, state.establishMobileMasterError!);
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
+
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 18.h),
               child: Column(
@@ -262,11 +278,13 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
             Expanded(
               child: BlocBuilder<EstablishBloc, EstablishState>(
                 builder: (context, state) {
+                  // Loading state
                   if (state.establishMobileMasterStatus ==
                       EstablishMobileMasterStatus.loading) {
                     return const Center(child: CustomLoadingPagination());
                   }
 
+                  // Success state
                   if (state.establishMobileMasterStatus ==
                       EstablishMobileMasterStatus.success) {
                     final weightUnits = state.mobile_master_list ?? [];
@@ -312,20 +330,74 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
                   }
 
                   if (state.establishMobileMasterStatus ==
-                          EstablishMobileMasterStatus.error &&
-                      state.establishMobileMasterError != null) {
-                    showSnackbarBottom(
-                        context, state.establishMobileMasterError!);
+                      EstablishMobileMasterStatus.error) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24.h),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64.h,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'เกิดข้อผิดพลาด',
+                              style: AppTextStyle.title18bold(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              state.establishMobileMasterError ??
+                                  'ไม่สามารถโหลดข้อมูลได้',
+                              style: AppTextStyle.title14normal(
+                                color: ColorApps.colorGray,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 24.h),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _currentPage = 1;
+                                });
+                                _getMobileMasterList();
+                              },
+                              icon: Icon(Icons.refresh),
+                              label: Text('ลองอีกครั้ง'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.surface,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24.w,
+                                  vertical: 12.h,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   }
 
                   return const SizedBox.shrink();
                 },
               ),
             ),
+
+            // Load more indicator
             BlocBuilder<EstablishBloc, EstablishState>(
               builder: (context, state) {
                 if (state.isLoadMore == true) {
-                  return const Center(child: CustomLoadingPagination());
+                  return Padding(
+                    padding: EdgeInsets.all(16.h),
+                    child: const Center(child: CustomLoadingPagination()),
+                  );
                 }
                 return const SizedBox.shrink();
               },
@@ -432,35 +504,33 @@ class ArrestItemWidget extends StatelessWidget {
                 ),
 
                 // สถานที่
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/svg/tabler_map-pin.svg',
-                          width: 20.h,
-                        ),
-                        SizedBox(width: 5.h),
-                        Text(
-                          'ที่อยู่ที่จัดตั้ง',
-                          style: AppTextStyle.title16normal(),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          width: 220.w,
-                          child: Text(
-                            '${item.wayName ?? ''} ${item.subdistrict ?? ''} ${item.district ?? ''} ${item.province ?? ''}',
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/svg/tabler_map-pin.svg',
+                            width: 20.h,
+                          ),
+                          SizedBox(width: 5.h),
+                          Text(
+                            'ที่อยู่ที่จัดตั้ง',
                             style: AppTextStyle.title16normal(),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        '${item.wayName ?? ''} ${item.subdistrict ?? ''} ${item.district ?? ''} ${item.province ?? ''}',
+                        style: AppTextStyle.title16normal(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
