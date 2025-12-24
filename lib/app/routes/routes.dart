@@ -23,187 +23,229 @@ import 'routes_constant.dart';
 import '../../screens/arrest/arrest_screen.dart';
 
 class Routes {
+  Routes._();
+
+  // Generate route based on route settings
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case RoutesName.splashScreen:
-        return MaterialPageRoute(
-            builder: (context) => const AfterSplashScreen());
+        return _buildRoute(const AfterSplashScreen());
+
       case RoutesName.loginScreen:
-        return MaterialPageRoute(builder: (context) => const LoginScreen());
+        return _buildRoute(const LoginScreen());
+
       case RoutesName.dashboardScreen:
-        return MaterialPageRoute(
-            builder: (context) => BottomNavigationBarScreen(index_menu: 2));
+        return _buildRoute(BottomNavigationBarScreen(index_menu: 2));
+
       default:
-        return MaterialPageRoute(builder: (context) {
-          return Scaffold(
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                EmptyWidget(title: '404', label: 'No route generate'),
-              ],
-            ),
-          );
-        });
+        return _buildRoute(const _NotFoundScreen());
     }
   }
 
-  // ไม่รีเทินค่า ลบหน้าออกหมด
-  static void gotoBottomNavigation(context, int index_menu) async {
-    print('Routes gotoBottomNavigation');
+  // Helper method with generic type
+  static MaterialPageRoute<T> _buildRoute<T>(Widget screen) {
+    return MaterialPageRoute<T>(builder: (_) => screen);
+  }
+
+  // Navigate to bottom navigation and remove all previous routes
+  static Future<void> gotoBottomNavigation(
+    BuildContext context,
+    int indexMenu,
+  ) async {
     await Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              BottomNavigationBarScreen(index_menu: index_menu)),
-      (Route<dynamic> route) => false,
+      _buildRoute(BottomNavigationBarScreen(index_menu: indexMenu)),
+      (route) => false,
     );
   }
 
-  static Future<dynamic> gotoBottomNavigationRe(context, int index_menu) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to bottom navigation and wait for result
+  static Future<Map<String, dynamic>?> gotoBottomNavigationRe(
+    BuildContext context,
+    int indexMenu,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              BottomNavigationBarScreen(index_menu: index_menu)),
+      _buildRoute<Map<String, dynamic>>(
+        BottomNavigationBarScreen(index_menu: indexMenu),
+      ),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoOpenStreetMap(context, String title) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to map screen
+  static Future<Map<String, dynamic>?> gotoOpenStreetMap(
+    BuildContext context,
+    String title,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-          builder: (context) => OpenStreetMapScreen(title: title)),
+      _buildRoute<Map<String, dynamic>>(OpenStreetMapScreen(title: title)),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoCreateWeightUnit(context) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to create weight unit screen
+  static Future<Map<String, dynamic>?> gotoCreateWeightUnit(
+    BuildContext context,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(builder: (context) => const CreateWeightUnitScreen()),
+      _buildRoute<Map<String, dynamic>>(const CreateWeightUnitScreen()),
     );
-    return data;
   }
 
-  //   static Future<dynamic> gotoSuccessScreen(context) async {
-  //   Map<String, dynamic>? data = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(builder: (context) =>  SuccessScreen()),
-  //   );
-  //   return data;
-  // }
-
-  static Future<dynamic> gotoErrorScreen(context) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to error screen
+  static Future<Map<String, dynamic>?> gotoErrorScreen(
+    BuildContext context,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(builder: (context) => ErrorScreen()),
+      _buildRoute<Map<String, dynamic>>(ErrorScreen()),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoWeightUnitDetailsScreen(
-      context, String tid) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to weight unit details screen
+  static Future<Map<String, dynamic>?> gotoWeightUnitDetailsScreen(
+    BuildContext context,
+    String tid,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-          builder: (context) => WeightUnitDetailsScreen(tid: tid)),
+      _buildRoute<Map<String, dynamic>>(WeightUnitDetailsScreen(tid: tid)),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoUnitDetailsWeighingTrucks(
-      context, String tid, String tdId, bool isEdit) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to unit details weighing trucks screen
+  static Future<Map<String, dynamic>?> gotoUnitDetailsWeighingTrucks(
+    BuildContext context,
+    String tid,
+    String tdId,
+    bool isEdit,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (context) => UnitDetailsWeighingTrucksScreen(
+      _buildRoute<Map<String, dynamic>>(
+        UnitDetailsWeighingTrucksScreen(
           tid: tid,
           tdId: tdId,
           isEdit: isEdit,
         ),
       ),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoEstablishSuccess(context) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to establish success screen
+  static Future<Map<String, dynamic>?> gotoEstablishSuccess(
+    BuildContext context,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(builder: (context) => EstablishSuccessScreen()),
+      _buildRoute<Map<String, dynamic>>(EstablishSuccessScreen()),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoArrestFormScreen(
-      {context, required MobileCarModel item}) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to arrest form screen
+  // ใช้ named parameters เพื่อ backward compatibility
+  static Future<Map<String, dynamic>?> gotoArrestFormScreen({
+    required BuildContext context,
+    required MobileCarModel item,
+  }) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(builder: (context) => ArrestFormScreen(item: item)),
+      _buildRoute<Map<String, dynamic>>(ArrestFormScreen(item: item)),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoPreviewFile(
-      {context, required String url, required String fileName}) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to preview file screen
+  // ใช้ named parameters เพื่อ backward compatibility
+  static Future<Map<String, dynamic>?> gotoPreviewFile({
+    required BuildContext context,
+    required String url,
+    required String fileName,
+  }) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              CustomPreviewFile(url: url, fileName: fileName)),
+      _buildRoute<Map<String, dynamic>>(
+        CustomPreviewFile(url: url, fileName: fileName),
+      ),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoProfile(context) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to profile screen
+  static Future<Map<String, dynamic>?> gotoProfile(
+    BuildContext context,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(builder: (context) => ProfileScreen()),
+      _buildRoute<Map<String, dynamic>>(ProfileScreen()),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoInformationDetails(
-      context, NewsModelRes item) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to information details screen
+  static Future<Map<String, dynamic>?> gotoInformationDetails(
+    BuildContext context,
+    NewsModelRes item,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-          builder: (context) => InformationDetailsScreen(item: item)),
+      _buildRoute<Map<String, dynamic>>(InformationDetailsScreen(item: item)),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoHistoryDetails(
-      context, MobileMasterModel tid) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to history details screen
+  static Future<Map<String, dynamic>?> gotoHistoryDetails(
+    BuildContext context,
+    MobileMasterModel item,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(builder: (context) => HistoryDetailsScreen(item: tid)),
+      _buildRoute<Map<String, dynamic>>(HistoryDetailsScreen(item: item)),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoHistoryDetailsView(
-      context, String tid, String tdId) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to history details view screen
+  static Future<Map<String, dynamic>?> gotoHistoryDetailsView(
+    BuildContext context,
+    String tid,
+    String tdId,
+  ) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (context) => HistoryDetailsViewScreen(
+      _buildRoute<Map<String, dynamic>>(
+        HistoryDetailsViewScreen(
           tid: tid,
           tdId: tdId,
         ),
       ),
     );
-    return data;
   }
 
-  static Future<dynamic> gotoArrestScreen(
-      {required BuildContext context}) async {
-    Map<String, dynamic>? data = await Navigator.push(
+  // Navigate to arrest screen
+  // ใช้ named parameters เพื่อ backward compatibility
+  static Future<Map<String, dynamic>?> gotoArrestScreen({
+    required BuildContext context,
+  }) async {
+    return await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-          builder: (context) => const ArrestScreen(title: 'การจับกุม')),
+      _buildRoute<Map<String, dynamic>>(
+        const ArrestScreen(title: 'การจับกุม'),
+      ),
     );
-    return data;
+  }
+}
+
+// 404 Not Found Screen
+class _NotFoundScreen extends StatelessWidget {
+  const _NotFoundScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: EmptyWidget(
+          title: '404',
+          label: 'No route generated',
+        ),
+      ),
+    );
   }
 }
