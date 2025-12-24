@@ -166,9 +166,9 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen>
     ClearUnitID();
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(
+            startDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(
+            endDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,
@@ -179,9 +179,9 @@ class _EstablishUnitDetailsState extends State<WeightUnitDetailsScreen>
   Future<void> getWeightUnitAll() async {
     context.read<EstablishBloc>().add(
           MobileMasterFetchEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(
+            startDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(
+            endDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,

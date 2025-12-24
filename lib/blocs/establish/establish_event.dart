@@ -8,16 +8,17 @@ sealed class EstablishEvent extends Equatable {
 }
 
 class MobileMasterFetchEvent extends EstablishEvent {
-  final String start_date;
-  final String end_date;
+  final String startDate;
+  final String endDate;
   final int page;
   final int pageSize;
 
-  const MobileMasterFetchEvent(
-      {required this.start_date,
-      required this.end_date,
-      required this.page,
-      required this.pageSize});
+  const MobileMasterFetchEvent({
+    required this.startDate,
+    required this.endDate,
+    required this.page,
+    required this.pageSize,
+  });
 }
 
 class MobileMasterDepartmentFetchEvent extends EstablishEvent {
@@ -42,9 +43,9 @@ class ResetCreateUnitWeight extends EstablishEvent {
 }
 
 class GetCarDetailEvent extends EstablishEvent {
-  final String paylaod;
+  final String payload;
 
-  const GetCarDetailEvent(this.paylaod);
+  const GetCarDetailEvent(this.payload);
 }
 
 class GetCarDetailImageEvent extends EstablishEvent {
@@ -69,16 +70,17 @@ class DeleteJoinWeightUnit extends EstablishEvent {
 }
 
 class GetWeightUnitsIsJoinEvent extends EstablishEvent {
-  final String start_date;
-  final String end_date;
+  final String startDate;
+  final String endDate;
   final int page;
   final int pageSize;
 
-  const GetWeightUnitsIsJoinEvent(
-      {required this.start_date,
-      required this.end_date,
-      required this.page,
-      required this.pageSize});
+  const GetWeightUnitsIsJoinEvent({
+    required this.startDate,
+    required this.endDate,
+    required this.page,
+    required this.pageSize,
+  });
 }
 
 class ClearPostJoinWeightUnit extends EstablishEvent {

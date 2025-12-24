@@ -1486,8 +1486,8 @@ class _UnitDetailsWeighingTrucksScreenState
                   listener: (context, state) {
                     if (state.carInUnitDetailImageStatus ==
                         CarInUnitDetailImageStatus.success) {
-                      if (state.carDatailImage != null) {
-                        setDataUpdateImage(state.carDatailImage);
+                      if (state.carDetailImage != null) {
+                        setDataUpdateImage(state.carDetailImage);
                       }
                     }
                   },
@@ -2011,10 +2011,10 @@ class _UnitDetailsWeighingTrucksScreenState
                         builder: (context, state) {
                           if (state.carInUnitDetailImageStatus ==
                               CarInUnitDetailImageStatus.success) {
-                            if (state.carDatailImage != null) {
+                            if (state.carDetailImage != null) {
                               return InputImageUpdateWidget(
                                   imageUrl:
-                                      state.carDatailImage!.imagePath1 ?? '',
+                                      state.carDetailImage!.imagePath1 ?? '',
                                   label: 'ด้านหน้า',
                                   keyName: 'front',
                                   isDisable: widget.isEdit,
@@ -2030,10 +2030,10 @@ class _UnitDetailsWeighingTrucksScreenState
                         builder: (context, state) {
                           if (state.carInUnitDetailImageStatus ==
                               CarInUnitDetailImageStatus.success) {
-                            if (state.carDatailImage != null) {
+                            if (state.carDetailImage != null) {
                               return InputImageUpdateWidget(
                                   imageUrl:
-                                      state.carDatailImage!.imagePath2 ?? '',
+                                      state.carDetailImage!.imagePath2 ?? '',
                                   label: 'ด้านหลัง',
                                   keyName: 'back',
                                   isDisable: widget.isEdit,
@@ -2049,10 +2049,10 @@ class _UnitDetailsWeighingTrucksScreenState
                         builder: (context, state) {
                           if (state.carInUnitDetailImageStatus ==
                               CarInUnitDetailImageStatus.success) {
-                            if (state.carDatailImage != null) {
+                            if (state.carDetailImage != null) {
                               return InputImageUpdateWidget(
                                   imageUrl:
-                                      state.carDatailImage!.imagePath3 ?? '',
+                                      state.carDetailImage!.imagePath3 ?? '',
                                   label: 'ด้านซ้าย',
                                   keyName: 'left',
                                   isDisable: widget.isEdit,
@@ -2068,10 +2068,10 @@ class _UnitDetailsWeighingTrucksScreenState
                         builder: (context, state) {
                           if (state.carInUnitDetailImageStatus ==
                               CarInUnitDetailImageStatus.success) {
-                            if (state.carDatailImage != null) {
+                            if (state.carDetailImage != null) {
                               return InputImageUpdateWidget(
                                   imageUrl:
-                                      state.carDatailImage!.imagePath4 ?? '',
+                                      state.carDetailImage!.imagePath4 ?? '',
                                   label: 'ด้านขวา',
                                   keyName: 'right',
                                   isDisable: widget.isEdit,
@@ -2087,10 +2087,10 @@ class _UnitDetailsWeighingTrucksScreenState
                         builder: (context, state) {
                           if (state.carInUnitDetailImageStatus ==
                               CarInUnitDetailImageStatus.success) {
-                            if (state.carDatailImage != null) {
+                            if (state.carDetailImage != null) {
                               return InputImageUpdateWidget(
                                   imageUrl:
-                                      state.carDatailImage!.imagePath5 ?? '',
+                                      state.carDetailImage!.imagePath5 ?? '',
                                   label: 'สลิปน้ำหนัก',
                                   keyName: 'weight',
                                   isDisable: widget.isEdit,
@@ -2106,10 +2106,10 @@ class _UnitDetailsWeighingTrucksScreenState
                         builder: (context, state) {
                           if (state.carInUnitDetailImageStatus ==
                               CarInUnitDetailImageStatus.success) {
-                            if (state.carDatailImage != null) {
+                            if (state.carDetailImage != null) {
                               return InputImageUpdateWidget(
                                   imageUrl:
-                                      state.carDatailImage!.imagePath6 ?? '',
+                                      state.carDetailImage!.imagePath6 ?? '',
                                   label: 'ใบขับขี่',
                                   keyName: 'license',
                                   isDisable: widget.isEdit,

@@ -106,8 +106,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   void _getWeightUnitsIsJoin() {
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(_startDate),
-            end_date: ConvertDate.convertDateToYYYYDDMM(_endDate),
+            startDate: ConvertDate.convertDateToYYYYDDMM(_startDate),
+            endDate: ConvertDate.convertDateToYYYYDDMM(_endDate),
             page: _currentPage,
             pageSize: _pageSize,
           ),
@@ -117,8 +117,8 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   void _getWeightUnitAll() {
     context.read<EstablishBloc>().add(
           MobileMasterFetchEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(_startDate),
-            end_date: ConvertDate.convertDateToYYYYDDMM(_endDate),
+            startDate: ConvertDate.convertDateToYYYYDDMM(_startDate),
+            endDate: ConvertDate.convertDateToYYYYDDMM(_endDate),
             page: _currentPage,
             pageSize: _pageSize,
           ),
@@ -576,7 +576,7 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   Widget _buildSuccessState(EstablishState state) {
-    final weightUnits = state.mobile_master_list;
+    final weightUnits = state.mobileMasterList;
 
     if (weightUnits != null && weightUnits.isNotEmpty) {
       _weightUnits = weightUnits;

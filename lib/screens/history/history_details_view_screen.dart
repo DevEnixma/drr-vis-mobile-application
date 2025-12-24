@@ -247,17 +247,17 @@ class _HistoryDetailsViewScreenState extends State<HistoryDetailsViewScreen> {
                     runSpacing: _defaultSpacing.w,
                     children: [
                       _buildImageTile(
-                          'ด้านหน้า', state.carDatailImage?.imagePath1),
+                          'ด้านหน้า', state.carDetailImage?.imagePath1),
                       _buildImageTile(
-                          'ด้านหลัง', state.carDatailImage?.imagePath2),
+                          'ด้านหลัง', state.carDetailImage?.imagePath2),
                       _buildImageTile(
-                          'ด้านซ้าย', state.carDatailImage?.imagePath3),
+                          'ด้านซ้าย', state.carDetailImage?.imagePath3),
                       _buildImageTile(
-                          'ด้านขวา', state.carDatailImage?.imagePath4),
+                          'ด้านขวา', state.carDetailImage?.imagePath4),
                       _buildImageTile(
-                          'สลิปน้ำหนัก', state.carDatailImage?.imagePath5),
+                          'สลิปน้ำหนัก', state.carDetailImage?.imagePath5),
                       _buildImageTile(
-                          'ใบขับขี่', state.carDatailImage?.imagePath6),
+                          'ใบขับขี่', state.carDetailImage?.imagePath6),
                     ],
                   ),
                   SizedBox(height: _defaultSpacing.w),

@@ -79,9 +79,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void GetWeightUnitsIsJoinEventBloc() {
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(
+            startDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearSubstract(DateTime.now(), 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(
+            endDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearAdd(DateTime.now(), 1)),
             page: 1,
             pageSize: 1,

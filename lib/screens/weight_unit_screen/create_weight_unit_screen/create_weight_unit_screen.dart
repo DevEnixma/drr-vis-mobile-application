@@ -260,9 +260,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   void GetWeightUnitsIsJoinEventBloc() {
     context.read<EstablishBloc>().add(
           GetWeightUnitsIsJoinEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(
+            startDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(
+            endDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,
@@ -273,9 +273,9 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   void getWeightUnitAll() {
     context.read<EstablishBloc>().add(
           MobileMasterFetchEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(
+            startDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearSubstract(startDate, 1)),
-            end_date: ConvertDate.convertDateToYYYYDDMM(
+            endDate: ConvertDate.convertDateToYYYYDDMM(
                 ConvertDate.dateTimeYearAdd(endDate, 1)),
             page: page,
             pageSize: pageSize,

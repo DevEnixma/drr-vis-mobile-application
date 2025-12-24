@@ -23,358 +23,433 @@ part 'establish_event.dart';
 part 'establish_state.dart';
 
 class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
-  EstablishBloc() : super(EstablishState()) {
-    on<MobileMasterFetchEvent>((event, emit) async {
-      if (event.page == 1) {
+  EstablishBloc() : super(const EstablishState()) {
+    on<MobileMasterFetchEvent>(_onMobileMasterFetch);
+    on<MobileMasterDepartmentFetchEvent>(_onMobileMasterDepartmentFetch);
+    on<CreateUnitWeight>(_onCreateUnitWeight);
+    on<ResetCreateUnitWeight>(_onResetCreateUnitWeight);
+    on<GetCarDetailEvent>(_onGetCarDetail);
+    on<GetCarDetailImageEvent>(_onGetCarDetailImage);
+    on<PostJoinWeightUnit>(_onPostJoinWeightUnit);
+    on<DeleteJoinWeightUnit>(_onDeleteJoinWeightUnit);
+    on<GetWeightUnitsIsJoinEvent>(_onGetWeightUnitsIsJoin);
+    on<ClearPostJoinWeightUnit>(_onClearPostJoinWeightUnit);
+    on<DeleteWeightUnitLeaveEvent>(_onDeleteWeightUnitLeave);
+    on<PostWeightUnitCloseEvent>(_onPostWeightUnitClose);
+  }
+
+  Future<void> _onMobileMasterFetch(
+    MobileMasterFetchEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    if (event.page == 1) {
+      emit(state.copyWith(
+        establishMobileMasterStatus: EstablishMobileMasterStatus.loading,
+      ));
+    } else {
+      emit(state.copyWith(isLoadMore: true));
+    }
+
+    try {
+      final body = EstablishWeightReq(
+        startDate: event.startDate,
+        endDate: event.endDate,
+        page: event.page,
+        pageSize: event.pageSize,
+        isOpen: '1',
+      );
+
+      final response = await establishRepo.getMobileMaster(body.toJson());
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List resultList = response.data["data"];
+        final result =
+            resultList.map((e) => MobileMasterModel.fromJson(e)).toList();
+        final pagination =
+            EstablishWeightPaginationRes.fromJson(response.data["meta"]);
+
+        final updatedList =
+            event.page == 1 ? result : [...?state.mobileMasterList, ...result];
+
         emit(state.copyWith(
-            establishMobileMasterStatus: EstablishMobileMasterStatus.loading));
+          establishMobileMasterStatus: EstablishMobileMasterStatus.success,
+          mobileMasterList: updatedList,
+          establishMobileMasterPagination: pagination,
+          isLoadMore: false,
+        ));
       } else {
-        emit(state.copyWith(isLoadMore: true));
-      }
-      try {
-        var body = EstablishWeightReq(
-          startDate: event.start_date,
-          endDate: event.end_date,
-          page: event.page,
-          pageSize: event.pageSize,
-          isOpen: '1',
-        );
-        final response = await establishRepo.getMobileMaster(body.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List resultList = response.data["data"];
-          var result =
-              resultList.map((e) => MobileMasterModel.fromJson(e)).toList();
-          var pagination =
-              EstablishWeightPaginationRes.fromJson(response.data["meta"]);
-
-          emit(state.copyWith(establishMobileMasterPagination: pagination));
-
-          if (event.page != 1) {
-            state.mobile_master_list!.addAll(result);
-
-            emit(state.copyWith(
-                establishMobileMasterStatus:
-                    EstablishMobileMasterStatus.success,
-                mobile_master_list: state.mobile_master_list,
-                isLoadMore: false));
-          } else {
-            emit(state.copyWith(
-                establishMobileMasterStatus:
-                    EstablishMobileMasterStatus.success,
-                mobile_master_list: result));
-          }
-
-          return;
-        }
-
         emit(state.copyWith(
-            establishMobileMasterStatus: EstablishMobileMasterStatus.error,
-            establishMobileMasterError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            establishMobileMasterStatus: EstablishMobileMasterStatus.error,
-            establishMobileMasterError: e.toString()));
+          establishMobileMasterStatus: EstablishMobileMasterStatus.error,
+          establishMobileMasterError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
       }
-    });
-
-    on<MobileMasterDepartmentFetchEvent>((event, emit) async {
+    } catch (e) {
       emit(state.copyWith(
+        establishMobileMasterStatus: EstablishMobileMasterStatus.error,
+        establishMobileMasterError: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onMobileMasterDepartmentFetch(
+    MobileMasterDepartmentFetchEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    emit(state.copyWith(
+      establishMobileMasterDepartmentStatus:
+          EstablishMobileMasterDepartmentStatus.loading,
+      mobileMasterDepartmentData: MobileMasterDepartmentModel.empty(),
+    ));
+
+    try {
+      final response =
+          await establishRepo.getMobileMasterDepartment(tid: event.tid);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final result =
+            MobileMasterDepartmentModel.fromJson(response.data['data']);
+
+        emit(state.copyWith(
           establishMobileMasterDepartmentStatus:
-              EstablishMobileMasterDepartmentStatus.loading,
-          mobileMasterDepartmentData: MobileMasterDepartmentModel.empty()));
-
-      try {
-        final response =
-            await establishRepo.getMobileMasterDepartment(tid: event.tid);
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          var result =
-              MobileMasterDepartmentModel.fromJson(response.data['data']);
-          emit(state.copyWith(
-              establishMobileMasterDepartmentStatus:
-                  EstablishMobileMasterDepartmentStatus.success,
-              mobileMasterDepartmentData: result));
-          return;
-        }
-
+              EstablishMobileMasterDepartmentStatus.success,
+          mobileMasterDepartmentData: result,
+        ));
+      } else {
         emit(state.copyWith(
-            establishMobileMasterDepartmentStatus:
-                EstablishMobileMasterDepartmentStatus.error,
-            establishMobileMasterDepartmentError:
-                response.error ?? 'เกิดข้อผิดพลาด'));
-        return;
-      } catch (e) {
-        emit(state.copyWith(
-            establishMobileMasterDepartmentStatus:
-                EstablishMobileMasterDepartmentStatus.error,
-            establishMobileMasterDepartmentError: e.toString()));
-        return;
+          establishMobileMasterDepartmentStatus:
+              EstablishMobileMasterDepartmentStatus.error,
+          establishMobileMasterDepartmentError:
+              response.error ?? 'เกิดข้อผิดพลาด',
+        ));
       }
-    });
-
-    on<MobileCarFetchEvent>((event, emit) async {
-      // Commented out - not used
-    });
-
-    on<CreateUnitWeight>((event, emit) async {
-      try {
-        emit(state.copyWith(
-            createEstablishStatus: CreateEstablishStatus.loading));
-
-        var body = json.encode(event.payload.toJson());
-        final response = await establishRepo.postUnitWeight(body);
-
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          var result = EstablishAddUnitRes.fromJson(response.data['data']);
-
-          final LocalStorage storage = LocalStorage();
-          await storage.setValueString(
-              KeyLocalStorage.weightUnitId, result.tId.toString());
-
-          final responseImage = await establishRepo.postUnitWeightImage(
-              result.tId.toString(), event.payload.file1, event.payload.file2);
-          emit(state.copyWith(
-              createEstablishStatus: CreateEstablishStatus.success,
-              createEstablishUnit: result));
-          return;
-        }
-
-        emit(state.copyWith(
-            createEstablishStatus: CreateEstablishStatus.error,
-            createEstablishError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            createEstablishStatus: CreateEstablishStatus.error,
-            createEstablishError: e.toString()));
-      }
-    });
-
-    on<ResetCreateUnitWeight>((event, emit) async {
+    } catch (e) {
       emit(state.copyWith(
-          createEstablishStatus: CreateEstablishStatus.initial,
-          createEstablishError: ''));
-    });
+        establishMobileMasterDepartmentStatus:
+            EstablishMobileMasterDepartmentStatus.error,
+        establishMobileMasterDepartmentError: e.toString(),
+      ));
+    }
+  }
 
-    on<GetCarDetailEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(carDetailStatus: CarInUnitDetailStatus.loading));
+  Future<void> _onCreateUnitWeight(
+    CreateUnitWeight event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(
+          state.copyWith(createEstablishStatus: CreateEstablishStatus.loading));
 
-        final response = await establishRepo.getMobileCarDetail(event.paylaod);
+      final body = json.encode(event.payload.toJson());
+      final response = await establishRepo.postUnitWeight(body);
 
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List dataList = response.data['data'];
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final result = EstablishAddUnitRes.fromJson(response.data['data']);
 
-          if (dataList.isEmpty) {
-            emit(state.copyWith(
-                carDetailStatus: CarInUnitDetailStatus.error,
-                carDetailError: 'ไม่พบข้อมูลรถ'));
-            return;
-          }
-
-          var result = CarDetailModelRes.fromJson(dataList[0]);
-
-          emit(state.copyWith(
-              carDetailStatus: CarInUnitDetailStatus.success,
-              carDetail: result));
-          return;
-        }
-
-        emit(state.copyWith(
-            carDetailStatus: CarInUnitDetailStatus.error,
-            carDetailError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            carDetailStatus: CarInUnitDetailStatus.error,
-            carDetailError: e.toString()));
-        return;
-      }
-    });
-
-    on<GetCarDetailImageEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(
-            carInUnitDetailImageStatus: CarInUnitDetailImageStatus.loading));
-
-        final response = await establishRepo.getImageCar(event.tId, event.tdId);
-
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final List dataList = response.data['data'];
-
-          if (dataList.isEmpty) {
-            emit(state.copyWith(
-                carInUnitDetailImageStatus: CarInUnitDetailImageStatus.success,
-                carDatailImage: null));
-            return;
-          }
-
-          var result = CarDetailModelImageRes.fromJson(dataList[0]);
-
-          emit(state.copyWith(
-              carInUnitDetailImageStatus: CarInUnitDetailImageStatus.success,
-              carDatailImage: result));
-          return;
-        }
-
-        emit(state.copyWith(
-            carInUnitDetailImageStatus: CarInUnitDetailImageStatus.error,
-            carDatailImageError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            carInUnitDetailImageStatus: CarInUnitDetailImageStatus.error,
-            carDatailImageError: e.toString()));
-        return;
-      }
-    });
-
-    on<PostJoinWeightUnit>((event, emit) async {
-      try {
-        emit(
-            state.copyWith(weightUnitJoinStatus: WeightUnitJoinStatus.loading));
-
-        var body = json.encode(event.payload.toJson());
-        final response = await establishRepo.postJoinWeightUnit(body);
-
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          emit(state.copyWith(
-              weightUnitJoinStatus: WeightUnitJoinStatus.success,
-              weightUnitJoinScreen: event.weightUnitJoinScreen));
-
-          return;
-        }
-
-        emit(state.copyWith(
-            weightUnitJoinStatus: WeightUnitJoinStatus.error,
-            weightUnitJoinError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            weightUnitJoinStatus: WeightUnitJoinStatus.error,
-            weightUnitJoinError: e.toString()));
-      }
-    });
-
-    on<DeleteJoinWeightUnit>((event, emit) async {
-      try {
-        emit(state.copyWith(
-            weightUnitUnJoinStatus: WeightUnitUnJoinStatus.loading));
-
-        final response =
-            await establishRepo.deleteJoinWeightUnit(event.tId, event.username);
-
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          emit(state.copyWith(
-              weightUnitUnJoinStatus: WeightUnitUnJoinStatus.success));
-          return;
-        }
-
-        emit(state.copyWith(
-            weightUnitUnJoinStatus: WeightUnitUnJoinStatus.error,
-            weightUnitUnJoinError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            weightUnitUnJoinStatus: WeightUnitUnJoinStatus.error,
-            weightUnitUnJoinError: e.toString()));
-      }
-    });
-
-    on<GetWeightUnitsIsJoinEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(
-            weightUnitIsJoinStatus: WeightUnitIsJoinStatus.loading));
-        var body = EstablishWeightReq(
-          startDate: event.start_date,
-          endDate: event.end_date,
-          page: event.page,
-          pageSize: event.pageSize,
-          isJoin: '1',
+        final storage = LocalStorage();
+        await storage.setValueString(
+          KeyLocalStorage.weightUnitId,
+          result.tId.toString(),
         );
 
-        final response = await establishRepo.getMobileMaster(body.toJson());
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final LocalStorage storage = LocalStorage();
+        await establishRepo.postUnitWeightImage(
+          result.tId.toString(),
+          event.payload.file1,
+          event.payload.file2,
+        );
 
-          final List result = response.data['data'];
+        emit(state.copyWith(
+          createEstablishStatus: CreateEstablishStatus.success,
+          createEstablishUnit: result,
+        ));
+      } else {
+        emit(state.copyWith(
+          createEstablishStatus: CreateEstablishStatus.error,
+          createEstablishError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        createEstablishStatus: CreateEstablishStatus.error,
+        createEstablishError: e.toString(),
+      ));
+    }
+  }
 
-          if (result.isEmpty) {
-            await storage.setValueString(KeyLocalStorage.weightUnitId, '');
-            emit(state.copyWith(weightUnitIsJoin: MobileMasterModel.empty()));
-          } else {
-            var item = MobileMasterModel.fromJson(result[0]);
-            await storage.setValueString(
-                KeyLocalStorage.weightUnitId, item.tID.toString());
-            emit(state.copyWith(weightUnitIsJoin: item));
-          }
+  void _onResetCreateUnitWeight(
+    ResetCreateUnitWeight event,
+    Emitter<EstablishState> emit,
+  ) {
+    emit(state.copyWith(
+      createEstablishStatus: CreateEstablishStatus.initial,
+      createEstablishError: '',
+    ));
+  }
 
+  Future<void> _onGetCarDetail(
+    GetCarDetailEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(carDetailStatus: CarInUnitDetailStatus.loading));
+
+      final response = await establishRepo.getMobileCarDetail(event.payload);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List dataList = response.data['data'];
+
+        if (dataList.isEmpty) {
           emit(state.copyWith(
-              weightUnitIsJoinStatus: WeightUnitIsJoinStatus.success));
+            carDetailStatus: CarInUnitDetailStatus.error,
+            carDetailError: 'ไม่พบข้อมูลรถ',
+          ));
           return;
         }
 
+        final result = CarDetailModelRes.fromJson(dataList[0]);
+
         emit(state.copyWith(
-            weightUnitIsJoinStatus: WeightUnitIsJoinStatus.error,
-            weightUnitsError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
+          carDetailStatus: CarInUnitDetailStatus.success,
+          carDetail: result,
+        ));
+      } else {
         emit(state.copyWith(
-            weightUnitIsJoinStatus: WeightUnitIsJoinStatus.error,
-            weightUnitsError: e.toString()));
+          carDetailStatus: CarInUnitDetailStatus.error,
+          carDetailError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
       }
-    });
-
-    on<ClearPostJoinWeightUnit>((event, emit) async {
+    } catch (e) {
       emit(state.copyWith(
-          weightUnitJoinStatus: WeightUnitJoinStatus.initial,
-          weightUnitJoinError: ''));
+        carDetailStatus: CarInUnitDetailStatus.error,
+        carDetailError: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onGetCarDetailImage(
+    GetCarDetailImageEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
       emit(state.copyWith(
-          weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.initial,
-          weightUnistLeaveJoinError: ''));
-      emit(state.copyWith(
-          weightUnistCloseStatus: WeightUnistCloseStatus.initial,
-          weightUnistCloseError: ''));
-    });
+        carInUnitDetailImageStatus: CarInUnitDetailImageStatus.loading,
+      ));
 
-    on<DeleteWeightUnitLeaveEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(
-            weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.loading));
+      final response = await establishRepo.getImageCar(event.tId, event.tdId);
 
-        final response =
-            await establishRepo.deleteJoinWeightUnit(event.tId, event.username);
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final List dataList = response.data['data'];
 
-        if (response.statusCode >= 200 && response.statusCode < 400) {
+        if (dataList.isEmpty) {
           emit(state.copyWith(
-              weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.success));
+            carInUnitDetailImageStatus: CarInUnitDetailImageStatus.success,
+            carDetailImage: null,
+          ));
           return;
         }
 
+        final result = CarDetailModelImageRes.fromJson(dataList[0]);
+
         emit(state.copyWith(
-            weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.error,
-            weightUnistLeaveJoinError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
+          carInUnitDetailImageStatus: CarInUnitDetailImageStatus.success,
+          carDetailImage: result,
+        ));
+      } else {
         emit(state.copyWith(
-            weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.error,
-            weightUnistLeaveJoinError: e.toString()));
+          carInUnitDetailImageStatus: CarInUnitDetailImageStatus.error,
+          carDetailImageError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        carInUnitDetailImageStatus: CarInUnitDetailImageStatus.error,
+        carDetailImageError: e.toString(),
+      ));
+    }
+  }
 
-    on<PostWeightUnitCloseEvent>((event, emit) async {
-      try {
+  Future<void> _onPostJoinWeightUnit(
+    PostJoinWeightUnit event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(weightUnitJoinStatus: WeightUnitJoinStatus.loading));
+
+      final body = json.encode(event.payload.toJson());
+      final response = await establishRepo.postJoinWeightUnit(body);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
         emit(state.copyWith(
-            weightUnistCloseStatus: WeightUnistCloseStatus.loading));
+          weightUnitJoinStatus: WeightUnitJoinStatus.success,
+          weightUnitJoinScreen: event.weightUnitJoinScreen,
+        ));
+      } else {
+        emit(state.copyWith(
+          weightUnitJoinStatus: WeightUnitJoinStatus.error,
+          weightUnitJoinError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        weightUnitJoinStatus: WeightUnitJoinStatus.error,
+        weightUnitJoinError: e.toString(),
+      ));
+    }
+  }
 
-        final response = await establishRepo.postCloseWeightUnit(event.tId);
+  Future<void> _onDeleteJoinWeightUnit(
+    DeleteJoinWeightUnit event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(
+        weightUnitUnJoinStatus: WeightUnitUnJoinStatus.loading,
+      ));
 
-        if (response.statusCode >= 200 && response.statusCode < 400) {
+      final response =
+          await establishRepo.deleteJoinWeightUnit(event.tId, event.username);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        emit(state.copyWith(
+          weightUnitUnJoinStatus: WeightUnitUnJoinStatus.success,
+        ));
+      } else {
+        emit(state.copyWith(
+          weightUnitUnJoinStatus: WeightUnitUnJoinStatus.error,
+          weightUnitUnJoinError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        weightUnitUnJoinStatus: WeightUnitUnJoinStatus.error,
+        weightUnitUnJoinError: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onGetWeightUnitsIsJoin(
+    GetWeightUnitsIsJoinEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(
+        weightUnitIsJoinStatus: WeightUnitIsJoinStatus.loading,
+      ));
+
+      final body = EstablishWeightReq(
+        startDate: event.startDate,
+        endDate: event.endDate,
+        page: event.page,
+        pageSize: event.pageSize,
+        isJoin: '1',
+      );
+
+      final response = await establishRepo.getMobileMaster(body.toJson());
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        final storage = LocalStorage();
+        final List result = response.data['data'];
+
+        if (result.isEmpty) {
+          await storage.setValueString(KeyLocalStorage.weightUnitId, '');
           emit(state.copyWith(
-              weightUnistCloseStatus: WeightUnistCloseStatus.success));
-          return;
+            weightUnitIsJoin: MobileMasterModel.empty(),
+            weightUnitIsJoinStatus: WeightUnitIsJoinStatus.success,
+          ));
+        } else {
+          final item = MobileMasterModel.fromJson(result[0]);
+          await storage.setValueString(
+            KeyLocalStorage.weightUnitId,
+            item.tID.toString(),
+          );
+          emit(state.copyWith(
+            weightUnitIsJoin: item,
+            weightUnitIsJoinStatus: WeightUnitIsJoinStatus.success,
+          ));
         }
-
+      } else {
         emit(state.copyWith(
-            weightUnistCloseStatus: WeightUnistCloseStatus.error,
-            weightUnistCloseError: response.error ?? 'เกิดข้อผิดพลาด'));
-      } catch (e) {
-        emit(state.copyWith(
-            weightUnistCloseStatus: WeightUnistCloseStatus.error,
-            weightUnistCloseError: e.toString()));
+          weightUnitIsJoinStatus: WeightUnitIsJoinStatus.error,
+          weightUnitsError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        weightUnitIsJoinStatus: WeightUnitIsJoinStatus.error,
+        weightUnitsError: e.toString(),
+      ));
+    }
+  }
+
+  void _onClearPostJoinWeightUnit(
+    ClearPostJoinWeightUnit event,
+    Emitter<EstablishState> emit,
+  ) {
+    emit(state.copyWith(
+      weightUnitJoinStatus: WeightUnitJoinStatus.initial,
+      weightUnitJoinError: '',
+      weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.initial,
+      weightUnistLeaveJoinError: '',
+      weightUnistCloseStatus: WeightUnistCloseStatus.initial,
+      weightUnistCloseError: '',
+    ));
+  }
+
+  Future<void> _onDeleteWeightUnitLeave(
+    DeleteWeightUnitLeaveEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(
+        weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.loading,
+      ));
+
+      final response =
+          await establishRepo.deleteJoinWeightUnit(event.tId, event.username);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        emit(state.copyWith(
+          weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.success,
+        ));
+      } else {
+        emit(state.copyWith(
+          weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.error,
+          weightUnistLeaveJoinError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        weightUnistLeaveJoinStatus: WeightUnistLeaveJoinStatus.error,
+        weightUnistLeaveJoinError: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onPostWeightUnitClose(
+    PostWeightUnitCloseEvent event,
+    Emitter<EstablishState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(
+        weightUnistCloseStatus: WeightUnistCloseStatus.loading,
+      ));
+
+      final response = await establishRepo.postCloseWeightUnit(event.tId);
+
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        emit(state.copyWith(
+          weightUnistCloseStatus: WeightUnistCloseStatus.success,
+        ));
+      } else {
+        emit(state.copyWith(
+          weightUnistCloseStatus: WeightUnistCloseStatus.error,
+          weightUnistCloseError: response.error ?? 'เกิดข้อผิดพลาด',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        weightUnistCloseStatus: WeightUnistCloseStatus.error,
+        weightUnistCloseError: e.toString(),
+      ));
+    }
   }
 }

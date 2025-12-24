@@ -84,8 +84,8 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
   void _getMobileMasterList() {
     context.read<EstablishBloc>().add(
           MobileMasterFetchEvent(
-            start_date: ConvertDate.convertDateToYYYYDDMM(_startDate),
-            end_date: ConvertDate.convertDateToYYYYDDMM(_endDate),
+            startDate: ConvertDate.convertDateToYYYYDDMM(_startDate),
+            endDate: ConvertDate.convertDateToYYYYDDMM(_endDate),
             page: _currentPage,
             pageSize: _pageSize,
           ),
@@ -259,7 +259,7 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
                     builder: (context, state) {
                       if (state.establishMobileMasterStatus ==
                           EstablishMobileMasterStatus.success) {
-                        final weightUnits = state.mobile_master_list ?? [];
+                        final weightUnits = state.mobileMasterList ?? [];
                         final filtered = _filterList(weightUnits);
                         return Text(
                           '${StringHleper.numberAddComma(filtered.length.toString())} รายการ',
@@ -287,7 +287,7 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
                   // Success state
                   if (state.establishMobileMasterStatus ==
                       EstablishMobileMasterStatus.success) {
-                    final weightUnits = state.mobile_master_list ?? [];
+                    final weightUnits = state.mobileMasterList ?? [];
                     final filtered = _filterList(weightUnits);
 
                     if (filtered.isEmpty) {
