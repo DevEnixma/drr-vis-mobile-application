@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 
 import '../../data/models/login/login_req.dart';
 import '../../data/models/login/login_res.dart';
@@ -14,67 +13,102 @@ part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  // LoginBloc() : super(LoginInitial());
+  final LocalStorage _storage = LocalStorage();
+
   LoginBloc() : super(const LoginState()) {
-    on<PostLoginEvent>((event, emit) async {
-      emit(state.copyWith(loginStatus: LoginStatus.loading));
+    on<PostLoginEvent>(_onPostLogin);
+    on<RefreshTokenEvent>(_onRefreshToken);
+  }
 
-      try {
-        var body = json.encode(event.bodyReq.toJson());
-        final response = await loginRepo.postLogin(body);
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final result = LoginModelRes.fromJson(response.data);
-          final LocalStorage storage = LocalStorage();
-          await storage.setValueString(KeyLocalStorage.accessToken, result.accessToken.toString());
-          await storage.setValueString(KeyLocalStorage.refreshToken, result.refreshToken.toString());
+  Future<void> _onPostLogin(
+    PostLoginEvent event,
+    Emitter<LoginState> emit,
+  ) async {
+    emit(state.copyWith(loginStatus: LoginStatus.loading));
 
-          await storage.setValueString(KeyLocalStorage.username, event.bodyReq.username.toString());
-          await storage.setValueString(KeyLocalStorage.password, event.bodyReq.password.toString());
+    try {
+      final result = await _performLogin(event.bodyReq);
 
-          await storage.setValueBool(KeyLocalStorage.isUser, true);
+      await _saveCredentials(
+        accessToken: result.accessToken.toString(),
+        refreshToken: result.refreshToken.toString(),
+        username: event.bodyReq.username.toString(),
+        password: event.bodyReq.password.toString(),
+      );
 
-          emit(state.copyWith(loginStatus: LoginStatus.success, login: result));
+      emit(state.copyWith(
+        loginStatus: LoginStatus.success,
+        login: result,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        loginStatus: LoginStatus.error,
+        loginError: e.toString(),
+      ));
+    }
+  }
 
-          return;
-        }
+  Future<void> _onRefreshToken(
+    RefreshTokenEvent event,
+    Emitter<LoginState> emit,
+  ) async {
+    emit(state.copyWith(loginStatus: LoginStatus.loading));
 
-        emit(state.copyWith(loginStatus: LoginStatus.error, loginError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(loginStatus: LoginStatus.error, loginError: e.toString()));
-        return;
-      }
-    });
+    try {
+      final username = await _storage.getValueString(KeyLocalStorage.username);
+      final password = await _storage.getValueString(KeyLocalStorage.password);
 
-    on<RefreshTokenEvent>((event, emit) async {
-      try {
-        emit(state.copyWith(loginStatus: LoginStatus.loading));
-        final LocalStorage storage = LocalStorage();
-        var payload = LoginModelReq(
-          username: await storage.getValueString(KeyLocalStorage.username),
-          password: await storage.getValueString(KeyLocalStorage.password),
-        );
-        var body = json.encode(payload);
-        final response = await loginRepo.postLogin(body);
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          final result = LoginModelRes.fromJson(response.data);
-          final LocalStorage storage = LocalStorage();
-          await storage.setValueString(KeyLocalStorage.accessToken, result.accessToken.toString());
-          await storage.setValueString(KeyLocalStorage.refreshToken, result.refreshToken.toString());
+      final payload = LoginModelReq(
+        username: username,
+        password: password,
+      );
 
-          await storage.setValueBool(KeyLocalStorage.isUser, true);
+      final result = await _performLogin(payload);
 
-          emit(state.copyWith(loginStatus: LoginStatus.success, login: result));
+      await _saveCredentials(
+        accessToken: result.accessToken.toString(),
+        refreshToken: result.refreshToken.toString(),
+      );
 
-          return;
-        }
+      emit(state.copyWith(
+        loginStatus: LoginStatus.success,
+        login: result,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        loginStatus: LoginStatus.error,
+        loginError: e.toString(),
+      ));
+    }
+  }
 
-        emit(state.copyWith(loginStatus: LoginStatus.error, loginError: response.error));
-        return;
-      } catch (e) {
-        emit(state.copyWith(loginStatus: LoginStatus.error, loginError: e.toString()));
-        return;
-      }
-    });
+  Future<LoginModelRes> _performLogin(LoginModelReq credentials) async {
+    final body = json.encode(credentials.toJson());
+    final response = await loginRepo.postLogin(body);
+
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      return LoginModelRes.fromJson(response.data);
+    }
+
+    throw Exception(response.error ?? 'Login failed');
+  }
+
+  Future<void> _saveCredentials({
+    required String accessToken,
+    required String refreshToken,
+    String? username,
+    String? password,
+  }) async {
+    await _storage.setValueString(KeyLocalStorage.accessToken, accessToken);
+    await _storage.setValueString(KeyLocalStorage.refreshToken, refreshToken);
+
+    if (username != null) {
+      await _storage.setValueString(KeyLocalStorage.username, username);
+    }
+    if (password != null) {
+      await _storage.setValueString(KeyLocalStorage.password, password);
+    }
+
+    await _storage.setValueBool(KeyLocalStorage.isUser, true);
   }
 }

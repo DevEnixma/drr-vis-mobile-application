@@ -1,6 +1,5 @@
 part of 'login_bloc.dart';
 
-@immutable
 sealed class LoginEvent extends Equatable {
   const LoginEvent();
 
@@ -8,13 +7,15 @@ sealed class LoginEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class PostLoginEvent extends LoginEvent {
-  final BuildContext context;
+final class PostLoginEvent extends LoginEvent {
   final LoginModelReq bodyReq;
 
-  const PostLoginEvent(this.bodyReq, this.context);
+  const PostLoginEvent(this.bodyReq);
+
+  @override
+  List<Object> get props => [bodyReq];
 }
 
-class RefreshTokenEvent extends LoginEvent {
+final class RefreshTokenEvent extends LoginEvent {
   const RefreshTokenEvent();
 }
