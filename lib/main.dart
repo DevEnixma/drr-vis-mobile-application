@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui'; // ✅ Import สำหรับ PlatformDispatcher
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,42 +16,74 @@ import 'data/repo/repo.dart';
 import 'data/service/service.dart';
 import 'service/token_refresh.service.dart';
 
-var logger = Logger(
+/// ✅ Global loggers - lazy initialization
+final logger = Logger(
   printer: PrettyPrinter(),
 );
-var loggerNoStack = Logger(
+
+final loggerNoStack = Logger(
   printer: PrettyPrinter(methodCount: 0),
 );
 
-void main() {
-  runZonedGuarded(() {
-    initService();
-    initRepo();
-    apiService.init(baseUrl: ServerConfig.baseUrl);
+Future<void> main() async {
+  runZonedGuarded(
+    () async {
+      // ✅ Initialize Flutter binding first
+      WidgetsFlutterBinding.ensureInitialized();
 
-    Bloc.observer = TalkerBlocObserver();
+      // ✅ Set preferred orientations
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
 
+      // ✅ Initialize app services and configurations
+      await _initializeApp();
+
+      // ✅ Run app with providers
+      runApp(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (_) => TokenRefreshService(),
+              lazy: true, // Create only when needed
+            ),
+          ],
+          child: const MyApp(),
+        ),
+      );
+    },
+    (error, stack) {
+      // ✅ Log uncaught errors properly
+      logger.e('Uncaught error', error: error, stackTrace: stack);
+    },
+  );
+}
+
+/// Initialize all app services and configurations
+Future<void> _initializeApp() async {
+  // Initialize services
+  initService();
+  initRepo();
+  apiService.init(baseUrl: ServerConfig.baseUrl);
+
+  // Setup Bloc observer
+  Bloc.observer = TalkerBlocObserver();
+
+  // Set logger level (only in debug mode)
+  assert(() {
     Logger.level = Level.debug;
+    return true;
+  }());
 
-    WidgetsFlutterBinding.ensureInitialized();
-    Locale deviceLocale = WidgetsBinding.instance.window.locale;
-    print("Device Locale: ${deviceLocale.toString()}");
-    Intl.defaultLocale = deviceLocale.toString(); //ตั้งภาษาแรกตามพื้นที่
-    initializeDateFormatting(deviceLocale.toString()); //ตั้งปฏิทินแรกตามพื้นที่
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp, // Only portrait mode
-    ]);
+  // ✅ Initialize locale with PlatformDispatcher (modern approach)
+  final deviceLocale = PlatformDispatcher.instance.locale;
+  final localeString = deviceLocale.toString();
 
-    runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => TokenRefreshService()),
-        ],
-        child: MyApp(),
-      ),
-    );
-    // runApp(const MyApp());
-  }, (error, stack) {
-    debugPrint("Error: $error");
-  });
+  debugPrint('Device Locale: $localeString');
+
+  // Set default locale for intl package
+  Intl.defaultLocale = localeString;
+
+  // Initialize date formatting for device locale
+  await initializeDateFormatting(localeString);
 }
