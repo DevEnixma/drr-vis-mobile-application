@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +20,6 @@ import '../../utils/libs/convert_date.dart';
 import '../../utils/libs/string_helper.dart';
 import '../../utils/permission_device/location_device.dart';
 import '../../utils/widgets/buttom_sheet_widget/buttom_sheet_alert_widger.dart';
-import '../../utils/widgets/custom_loading.dart';
 import '../../utils/widgets/custom_loading_pagination.dart';
 import '../../utils/widgets/skeletion_widgets/skeletion_container_widget.dart';
 import '../../utils/widgets/sneckbar_message.dart';
@@ -51,7 +49,6 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   String _selectWeightUnitId = '';
   List<MobileMasterModel> _weightUnits = [];
 
-  // Static date range (1 year before to 1 year after current date)
   late final DateTime _startDate;
   late final DateTime _endDate;
 
@@ -134,41 +131,18 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   Future<void> _addEstablishItem(String value) async {
-    try {
-      _showLoadingDialog();
-      await _getLocationPermission();
-      _hideLoadingDialog();
+    final hasPermission =
+        await requestLocationPermissionWithDisclosure(context);
+
+    if (hasPermission) {
       if (mounted) {
         Routes.gotoCreateWeightUnit(context);
       }
-    } catch (e) {
+    } else {
       if (mounted) {
-        _hideLoadingDialog();
-        _showLocationPermissionError(e.toString());
+        _showLocationSettingsModal();
       }
     }
-  }
-
-  void _showLoadingDialog() {
-    CustomLoading.showLoadingDialog(
-      context,
-      Theme.of(context).colorScheme.primary,
-    );
-  }
-
-  void _hideLoadingDialog() {
-    if (mounted) {
-      Navigator.pop(context);
-    }
-  }
-
-  Future<Position> _getLocationPermission() async {
-    return await getGeoLocationPosition();
-  }
-
-  void _showLocationPermissionError(String error) {
-    showSnackbarBottom(context, error);
-    _showLocationSettingsModal();
   }
 
   void _showLocationSettingsModal() {
@@ -273,7 +247,6 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Start token refresh timer
     Provider.of<TokenRefreshService>(context, listen: false)
         .startTokenRefreshTimer();
 
@@ -408,13 +381,11 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
               previous.weightUnistLeaveJoinStatus !=
                   current.weightUnistLeaveJoinStatus,
           listener: (context, state) {
-            // Join error
             if (state.weightUnitJoinStatus == WeightUnitJoinStatus.error &&
                 state.weightUnitJoinError != null &&
                 state.weightUnitJoinError!.isNotEmpty) {
               showSnackbarBottom(context, state.weightUnitJoinError!);
             }
-            // Leave error
             if (state.weightUnistLeaveJoinStatus ==
                     WeightUnistLeaveJoinStatus.error &&
                 state.weightUnistLeaveJoinError != null &&
@@ -518,7 +489,6 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   Widget _buildCreateWeightUnitSection() {
     return BlocBuilder<EstablishBloc, EstablishState>(
       builder: (context, state) {
-        // Show CreateWeightUnitWidget when user has viewer role, not joined, and there are weight units
         if (_shouldShowCreateWidget &&
             state.establishMobileMasterStatus ==
                 EstablishMobileMasterStatus.success &&

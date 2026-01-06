@@ -22,7 +22,6 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0.0"
 }
 
-// แก้ส่วนนี้ให้รองรับกรณีไม่มี keystore
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 def hasKeystore = false
@@ -31,13 +30,11 @@ if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.withReader('UTF-8') { reader ->
         keystoreProperties.load(reader)
     }
-    // ตรวจสอบว่ามีค่าครบถ้วน
     hasKeystore = keystoreProperties['keyAlias'] != null && 
                   keystoreProperties['keyPassword'] != null &&
                   keystoreProperties['storeFile'] != null &&
                   keystoreProperties['storePassword'] != null
     
-    // ตรวจสอบว่าไฟล์ keystore มีอยู่จริง
     if (hasKeystore) {
         def storeFilePath = keystoreProperties['storeFile']
         def storeFile = file(storeFilePath)
@@ -64,10 +61,18 @@ android {
 
     defaultConfig {
         applicationId = "th.go.drr.vis"
-        minSdk = flutter.minSdkVersion
+        minSdkVersion = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        
+        manifestPlaceholders = [
+            excludePermissions: "android.permission.READ_EXTERNAL_STORAGE," +
+                              "android.permission.WRITE_EXTERNAL_STORAGE," +
+                              "android.permission.READ_MEDIA_IMAGES," +
+                              "android.permission.READ_MEDIA_VIDEO," +
+                              "android.permission.READ_MEDIA_AUDIO"
+        ]
     }
 
     signingConfigs {

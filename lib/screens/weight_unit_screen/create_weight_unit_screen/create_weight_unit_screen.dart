@@ -120,7 +120,6 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
     super.initState();
     initScreen();
     _loadExistingLocation();
-    _getCurrentLocation();
   }
 
   void initScreen() async {
@@ -152,35 +151,49 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
     });
 
     try {
-      await getCurrentLocation();
+      final position = await getCurrentLocation();
 
-      double? lat = await storage.getValueDouble(KeyLocalStorage.lat);
-      double? lng = await storage.getValueDouble(KeyLocalStorage.lng);
+      if (position != null) {
+        setState(() {
+          currentLatitude = position.latitude;
+          currentLongitude = position.longitude;
+          isLoadingLocation = false;
+        });
 
-      setState(() {
-        currentLatitude = lat;
-        currentLongitude = lng;
-        isLoadingLocation = false;
-      });
-
-      logger.i(
-          'Retrieved location from storage: $currentLatitude, $currentLongitude');
+        logger.i('Retrieved location: $currentLatitude, $currentLongitude');
+      } else {
+        setState(() {
+          isLoadingLocation = false;
+          locationError = 'ไม่สามารถดึงตำแหน่งได้';
+        });
+      }
     } catch (e) {
       setState(() {
         isLoadingLocation = false;
         locationError = e.toString();
       });
       logger.e('Error getting location: $e');
-
-      if (mounted) {
-        showSnackbarBottom(
-            context, 'ไม่สามารถดึงตำแหน่งปัจจุบันได้: ${e.toString()}');
-      }
     }
   }
 
   Future<void> _refreshLocation() async {
     await _getCurrentLocation();
+  }
+
+  Future<bool> _requestLocationPermissionIfNeeded() async {
+    final hasPermission = await storage.getValueBool(
+      KeyLocalStorage.permissionAllowLocation,
+    );
+
+    if (hasPermission) {
+      return true;
+    }
+
+    if (mounted) {
+      return await requestLocationPermissionWithDisclosure(context);
+    }
+
+    return false;
   }
 
   void getCollaborativeBloc() {
@@ -327,7 +340,13 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
               if (!isLoadingLocation &&
                   (currentLatitude == null || currentLongitude == null))
                 IconButton(
-                  onPressed: _refreshLocation,
+                  onPressed: () async {
+                    final hasPermission =
+                        await _requestLocationPermissionIfNeeded();
+                    if (hasPermission) {
+                      _refreshLocation();
+                    }
+                  },
                   icon: Icon(
                     Icons.refresh,
                     color: Theme.of(context).colorScheme.primary,
@@ -424,7 +443,13 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                 ),
                                 SizedBox(height: 4.h),
                                 TextButton(
-                                  onPressed: _refreshLocation,
+                                  onPressed: () async {
+                                    final hasPermission =
+                                        await _requestLocationPermissionIfNeeded();
+                                    if (hasPermission) {
+                                      _refreshLocation();
+                                    }
+                                  },
                                   child: Text(
                                     'ลองใหม่',
                                     style: AppTextStyle.label12bold(
