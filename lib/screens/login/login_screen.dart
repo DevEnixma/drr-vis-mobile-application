@@ -63,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void loginSuccessGotoDashboardScreen() async {
-    getProfile();
     await Navigator.pushNamedAndRemoveUntil(
       context,
       RoutesName.dashboardScreen,

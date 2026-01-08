@@ -37,6 +37,7 @@ class ApiServiceImpl extends ApiService {
 
   void _setupInterceptors() {
     _dio.interceptors.addAll([
+      _AuthInterceptor(_storage),
       TalkerDioLogger(
         settings: const TalkerDioLoggerSettings(
           printRequestHeaders: true,
@@ -47,31 +48,10 @@ class ApiServiceImpl extends ApiService {
         ),
       ),
       InterceptorsWrapper(
-        onRequest: _onRequest,
         onResponse: _onResponse,
         onError: _onError,
       ),
     ]);
-  }
-
-  Future<void> _onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
-    try {
-      final accessToken =
-          await _storage.getValueString(KeyLocalStorage.accessToken);
-
-      if (accessToken != null && accessToken.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $accessToken';
-      }
-
-      logger.i('REQUEST[${options.method}] => ${options.path}');
-    } catch (e) {
-      logger.e('Error adding auth token: $e');
-    }
-
-    handler.next(options);
   }
 
   void _onResponse(
@@ -91,7 +71,6 @@ class ApiServiceImpl extends ApiService {
 
     if (e.response?.statusCode == 401) {
       logger.e('401 Unauthorized - Token expired');
-      // Token refresh logic can be added here if needed
     }
 
     handler.next(e);
@@ -298,6 +277,34 @@ class ApiServiceImpl extends ApiService {
       default:
         return 'Unknown error occurred';
     }
+  }
+}
+
+class _AuthInterceptor extends Interceptor {
+  final LocalStorage _storage;
+
+  _AuthInterceptor(this._storage);
+
+  @override
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    try {
+      final accessToken =
+          await _storage.getValueString(KeyLocalStorage.accessToken);
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $accessToken';
+        logger.i('REQUEST[${options.method}] => ${options.path}');
+      } else {
+        logger.w('No access token found for ${options.path}');
+      }
+    } catch (e) {
+      logger.e('Error adding auth token: $e');
+    }
+
+    handler.next(options);
   }
 }
 
