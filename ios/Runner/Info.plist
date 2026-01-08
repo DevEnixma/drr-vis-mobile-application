@@ -38,6 +38,12 @@
 	<string>DRR VIS uses the microphone for recording audio to accompany reports or capture audio evidence related to traffic law violations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>DRR VIS needs access to your photo library to let you select saved images to attach to incident reports or submit evidence of traffic violations.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>DRR VIS needs permission to save files to your photo library.</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

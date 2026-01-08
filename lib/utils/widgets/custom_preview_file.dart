@@ -68,7 +68,6 @@ class _CustomPreviewFileState extends State<CustomPreviewFile> {
       final directory = await getTemporaryDirectory();
       final filePath = '${directory.path}/${widget.fileName}';
 
-      // Check if file already exists
       final file = File(filePath);
       if (await file.exists()) {
         setState(() {
@@ -79,14 +78,12 @@ class _CustomPreviewFileState extends State<CustomPreviewFile> {
         return;
       }
 
-      // Get access token
       final accessToken = await _getAccessToken();
 
       if (accessToken == null || accessToken.isEmpty) {
         throw Exception('ไม่พบ Access Token กรุณาเข้าสู่ระบบใหม่');
       }
 
-      // Download the file with authorization header
       final dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $accessToken';
       dio.options.receiveTimeout = const Duration(minutes: 10);
@@ -104,7 +101,6 @@ class _CustomPreviewFileState extends State<CustomPreviewFile> {
         },
       );
 
-      // Verify file was downloaded
       final downloadedFile = File(filePath);
       if (!await downloadedFile.exists()) {
         throw Exception('ไม่สามารถบันทึกไฟล์ได้');
@@ -169,15 +165,48 @@ class _CustomPreviewFileState extends State<CustomPreviewFile> {
     setState(() => _isSharing = true);
 
     try {
-      final xfile = XFile(_downloadedFile!.path, mimeType: 'application/pdf');
-      await Share.shareXFiles([xfile], text: widget.fileName);
-    } catch (e) {
+      if (!await _downloadedFile!.exists()) {
+        throw Exception('ไฟล์ไม่พบ');
+      }
+
+      final fileSize = await _downloadedFile!.length();
+      logger.i('File size: $fileSize bytes');
+
+      if (fileSize == 0) {
+        throw Exception('ไฟล์มีขนาด 0 bytes');
+      }
+
+      final xfile = XFile(
+        _downloadedFile!.path,
+        name: widget.fileName,
+        mimeType: 'application/pdf',
+      );
+
+      logger.i('Sharing file from: ${xfile.path}');
+
+      final box = context.findRenderObject() as RenderBox?;
+      final sharePositionOrigin =
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+
+      logger.i('Share position origin: $sharePositionOrigin');
+
+      final result = await Share.shareXFiles(
+        [xfile],
+        subject: widget.fileName,
+        sharePositionOrigin: sharePositionOrigin,
+      );
+
+      logger.i('Share result status: ${result.status}');
+    } catch (e, stackTrace) {
       logger.e('Share error: $e');
+      logger.e('Stack trace: $stackTrace');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ไม่สามารถแชร์ไฟล์ได้'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text('ไม่สามารถแชร์ไฟล์ได้: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
           ),
         );
       }
