@@ -47,6 +47,14 @@ class _ArrestListScreenState extends State<ArrestListScreen> {
     super.initState();
     _initializeDates();
     _setupScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileState = context.read<ProfileBloc>().state;
+      if (profileState.profileStatus != ProfileStatus.success) {
+        context.read<ProfileBloc>().add(const GetProfileEvent());
+      }
+    });
+
     _initScreen();
   }
 
