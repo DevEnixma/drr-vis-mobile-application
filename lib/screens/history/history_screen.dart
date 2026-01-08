@@ -55,27 +55,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profileState = context.read<ProfileBloc>().state;
-      if (profileState.profileStatus != ProfileStatus.success) {
-        context.read<ProfileBloc>().add(const GetProfileEvent());
-      }
-    });
-
     initScreen();
   }
 
   void initScreen() async {
     String? token = await storage.getValueString(KeyLocalStorage.accessToken);
-    if (context.read<ProfileBloc>().state.profile != null && token != null) {
-      setState(() {
-        accessToken = token;
-      });
-    } else {
-      setState(() {
-        accessToken = null;
-      });
-    }
+
+    // ⭐ เปลี่ยนจากการเช็ค profile เป็นเช็ค token อย่างเดียว
+    setState(() {
+      accessToken = token;
+    });
 
     getWeightUnits();
   }

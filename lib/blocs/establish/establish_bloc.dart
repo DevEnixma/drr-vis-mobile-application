@@ -45,6 +45,8 @@ class EstablishBloc extends Bloc<EstablishEvent, EstablishState> {
     if (event.page == 1) {
       emit(state.copyWith(
         establishMobileMasterStatus: EstablishMobileMasterStatus.loading,
+        mobileMasterList: [],
+        establishMobileMasterPagination: null,
       ));
     } else {
       emit(state.copyWith(isLoadMore: true));

@@ -4,11 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../app/routes/routes_constant.dart';
+import '../blocs/establish/establish_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../local_storage.dart';
-import '../main.dart';
 import '../utils/constants/key_localstorage.dart';
 import '../utils/constants/text_style.dart';
+import '../utils/libs/convert_date.dart';
 import 'arrest/arrest_list_screen.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'history/history_screen.dart';
@@ -26,15 +27,6 @@ class BottomNavigationBarScreen extends StatefulWidget {
 
 class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
   final LocalStorage _storage = LocalStorage();
-
-  static final List<Widget> _widgetOptions = [
-    const WeightUnitScreen(),
-    const InformationScreen(title: 'ข่าวสาร'),
-    const DashboardScreen(),
-    const HistoryScreen(title: 'ดูข้อมูลย้อนหลัง'),
-    const ArrestListScreen(),
-  ];
-
   late int _selectedIndex;
   String? _cachedAccessToken;
 
@@ -43,6 +35,18 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     super.initState();
     _selectedIndex = widget.index_menu;
     _loadAccessToken();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final token = await _storage.getValueString(KeyLocalStorage.accessToken);
+      if (token != null && token.isNotEmpty && mounted) {
+        final profileState = context.read<ProfileBloc>().state;
+        if (profileState.profile == null ||
+            profileState.profileStatus == ProfileStatus.error ||
+            profileState.profileStatus == ProfileStatus.initial) {
+          context.read<ProfileBloc>().add(const GetProfileEvent());
+        }
+      }
+    });
   }
 
   Future<void> _loadAccessToken() async {
@@ -57,6 +61,8 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
   }
 
   Future<void> _onItemTapped(int index) async {
+    if (index == _selectedIndex) return;
+
     if (index == 4) {
       final isLoggedIn = await _isLoggedIn();
       if (!isLoggedIn) {
@@ -68,7 +74,32 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     }
 
     if (mounted) {
-      context.read<ProfileBloc>().add(const GetProfileEvent());
+      if (index == 0 || index == 4) {
+        final now = DateTime.now();
+        final startDate = ConvertDate.dateTimeYearSubstract(now, 1);
+        final endDate = ConvertDate.dateTimeYearAdd(now, 1);
+
+        context.read<EstablishBloc>().add(
+              MobileMasterFetchEvent(
+                startDate: ConvertDate.convertDateToYYYYDDMM(startDate),
+                endDate: ConvertDate.convertDateToYYYYDDMM(endDate),
+                page: 1,
+                pageSize: 20,
+              ),
+            );
+
+        if (index == 0) {
+          context.read<EstablishBloc>().add(
+                GetWeightUnitsIsJoinEvent(
+                  startDate: ConvertDate.convertDateToYYYYDDMM(startDate),
+                  endDate: ConvertDate.convertDateToYYYYDDMM(endDate),
+                  page: 1,
+                  pageSize: 20,
+                ),
+              );
+        }
+      }
+
       setState(() => _selectedIndex = index);
     }
   }
@@ -81,7 +112,13 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
       backgroundColor: Colors.transparent,
       body: IndexedStack(
         index: _selectedIndex,
-        children: _widgetOptions,
+        children: const [
+          WeightUnitScreen(),
+          InformationScreen(title: 'ข่าวสาร'),
+          DashboardScreen(),
+          HistoryScreen(title: 'ดูข้อมูลย้อนหลัง'),
+          ArrestListScreen(),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );

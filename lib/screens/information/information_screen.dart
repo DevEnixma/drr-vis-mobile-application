@@ -55,15 +55,11 @@ class _InformationScreenState extends State<InformationScreen> {
 
   void initScreen() async {
     String? token = await storage.getValueString(KeyLocalStorage.accessToken);
-    if (context.read<ProfileBloc>().state.profile != null && token != null) {
-      setState(() {
-        accessToken = token;
-      });
-    } else {
-      setState(() {
-        accessToken = null;
-      });
-    }
+
+    // ⭐ เปลี่ยนจากการเช็ค profile เป็นเช็ค token อย่างเดียว
+    setState(() {
+      accessToken = token;
+    });
 
     getNewsesBloc();
   }

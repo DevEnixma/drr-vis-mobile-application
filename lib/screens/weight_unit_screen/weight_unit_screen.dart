@@ -57,15 +57,13 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
     super.initState();
     _initializeDates();
     _setupScrollController();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profileState = context.read<ProfileBloc>().state;
-      if (profileState.profileStatus != ProfileStatus.success) {
-        context.read<ProfileBloc>().add(const GetProfileEvent());
-      }
-    });
-
     _initScreen();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _initializeDates() {
@@ -94,10 +92,10 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
 
   Future<void> _loadAccessToken() async {
     final token = await _storage.getValueString(KeyLocalStorage.accessToken);
-    final profile = context.read<ProfileBloc>().state.profile;
 
+    // ⭐ เปลี่ยนจากการเช็ค profile เป็นเช็ค token อย่างเดียว
     setState(() {
-      _accessToken = (profile != null && token != null) ? token : null;
+      _accessToken = token;
     });
   }
 
@@ -131,10 +129,11 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   Future<void> _refreshData() async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 300));
     setState(() {
       _currentPage = 1;
     });
+    _getWeightUnitsIsJoin();
     _getWeightUnitAll();
   }
 
@@ -248,32 +247,54 @@ class _WeightUnitScreenState extends State<WeightUnitScreen> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     Provider.of<TokenRefreshService>(context, listen: false)
         .startTokenRefreshTimer();
 
-    return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) => Stack(
-          children: [
-            _buildBackground(),
-            SafeArea(
-              child: Column(
+    return BlocBuilder<EstablishBloc, EstablishState>(
+      builder: (context, state) {
+        if (state.establishMobileMasterStatus ==
+                EstablishMobileMasterStatus.loading &&
+            _currentPage == 1) {
+          return Scaffold(
+            body: LayoutBuilder(
+              builder: (context, constraints) => Stack(
                 children: [
-                  _buildHeader(constraints),
-                  _buildBody(),
+                  _buildBackground(),
+                  SafeArea(
+                    child: Column(
+                      children: [
+                        _buildHeader(constraints),
+                        const Expanded(
+                          child: Center(child: CustomLoadingPagination()),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+          );
+        }
+
+        return Scaffold(
+          body: LayoutBuilder(
+            builder: (context, constraints) => Stack(
+              children: [
+                _buildBackground(),
+                SafeArea(
+                  child: Column(
+                    children: [
+                      _buildHeader(constraints),
+                      _buildBody(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
