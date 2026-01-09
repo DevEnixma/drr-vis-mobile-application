@@ -119,11 +119,23 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
   void initState() {
     super.initState();
     initScreen();
-    _loadExistingLocation();
+    _initializeLocation();
   }
 
   void initScreen() async {
     getCollaborativeBloc();
+  }
+
+  Future<void> _initializeLocation() async {
+    await _loadExistingLocation();
+
+    final hasPermission = await storage.getValueBool(
+      KeyLocalStorage.permissionAllowLocation,
+    );
+
+    if (hasPermission) {
+      await _getCurrentLocation();
+    }
   }
 
   Future<void> _loadExistingLocation() async {
@@ -154,13 +166,17 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
       final position = await getCurrentLocation();
 
       if (position != null) {
+        await storage.setValueDouble(KeyLocalStorage.lat, position.latitude);
+        await storage.setValueDouble(KeyLocalStorage.lng, position.longitude);
+
         setState(() {
           currentLatitude = position.latitude;
           currentLongitude = position.longitude;
           isLoadingLocation = false;
         });
 
-        logger.i('Retrieved location: $currentLatitude, $currentLongitude');
+        logger.i(
+            'Retrieved and saved location: $currentLatitude, $currentLongitude');
       } else {
         setState(() {
           isLoadingLocation = false;
@@ -178,6 +194,13 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
 
   Future<void> _refreshLocation() async {
     await _getCurrentLocation();
+  }
+
+  Future<void> _handleRefresh() async {
+    final hasPermission = await _requestLocationPermissionIfNeeded();
+    if (hasPermission) {
+      await _getCurrentLocation();
+    }
   }
 
   Future<bool> _requestLocationPermissionIfNeeded() async {
@@ -308,53 +331,129 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'ตำแหน่งปัจจุบัน',
-                      style: AppTextStyle.title14bold(),
-                    ),
-                    if (isLoadingLocation)
-                      Text(
-                        'กำลังดึงตำแหน่ง...',
-                        style: AppTextStyle.label12normal(
-                          color: Theme.of(context).colorScheme.primary,
+                    Row(
+                      children: [
+                        Text(
+                          'ตำแหน่งปัจจุบัน',
+                          style: AppTextStyle.title14bold(),
                         ),
+                        SizedBox(width: 4.w),
+                        Icon(
+                          Icons.info_outline,
+                          size: 14.h,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4.h),
+                    if (isLoadingLocation)
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 12.w,
+                            height: 12.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'กำลังดึงตำแหน่ง...',
+                            style: AppTextStyle.label12normal(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
                       )
                     else if (currentLatitude != null &&
                         currentLongitude != null)
-                      Text(
-                        'Lat: ${currentLatitude!.toStringAsFixed(6)}, Lon: ${currentLongitude!.toStringAsFixed(6)}',
-                        style: AppTextStyle.label12normal(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lat: ${currentLatitude!.toStringAsFixed(6)}',
+                            style: AppTextStyle.label12normal(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          Text(
+                            'Lon: ${currentLongitude!.toStringAsFixed(6)}',
+                            style: AppTextStyle.label12normal(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
                       )
                     else if (locationError != null)
                       Text(
-                        'ไม่สามารถดึงตำแหน่งได้',
+                        locationError!,
                         style: AppTextStyle.label12normal(
                           color: Theme.of(context).colorScheme.error,
+                        ),
+                      )
+                    else
+                      Text(
+                        'ยังไม่มีตำแหน่ง',
+                        style: AppTextStyle.label12normal(
+                          color: Colors.grey,
                         ),
                       ),
                   ],
                 ),
               ),
-              if (!isLoadingLocation &&
-                  (currentLatitude == null || currentLongitude == null))
-                IconButton(
-                  onPressed: () async {
-                    final hasPermission =
-                        await _requestLocationPermissionIfNeeded();
-                    if (hasPermission) {
-                      _refreshLocation();
-                    }
-                  },
-                  icon: Icon(
-                    Icons.refresh,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20.h,
+              if (!isLoadingLocation)
+                Container(
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: IconButton(
+                    onPressed: () async {
+                      final hasPermission =
+                          await _requestLocationPermissionIfNeeded();
+                      if (hasPermission) {
+                        _refreshLocation();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.near_me,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20.h,
+                    ),
+                    tooltip: 'ดึงตำแหน่งใหม่',
                   ),
                 ),
             ],
           ),
+          SizedBox(height: 12.h),
+          if (currentLatitude == null || currentLongitude == null)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.swipe_down,
+                    size: 16.h,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  SizedBox(width: 6.w),
+                  Expanded(
+                    child: Text(
+                      'เลื่อนลงเพื่อรีเฟรชตำแหน่ง',
+                      style: AppTextStyle.label12normal(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           SizedBox(height: 12.h),
           Container(
             height: 200.h,
@@ -442,7 +541,7 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 4.h),
-                                TextButton(
+                                TextButton.icon(
                                   onPressed: () async {
                                     final hasPermission =
                                         await _requestLocationPermissionIfNeeded();
@@ -450,7 +549,11 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                       _refreshLocation();
                                     }
                                   },
-                                  child: Text(
+                                  icon: Icon(
+                                    Icons.refresh,
+                                    size: 16.h,
+                                  ),
+                                  label: Text(
                                     'ลองใหม่',
                                     style: AppTextStyle.label12bold(
                                       color:
@@ -532,234 +635,280 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                 color: Theme.of(context).colorScheme.surface),
           ),
         ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 12.h),
-                child: Form(
-                  key: newFormKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TitleWidget(
-                        title: 'ที่ตั้งหน่วย',
-                        icon: Icons.location_on,
-                      ),
-                      SizedBox(height: 12.w),
-                      buildLocationStatus(),
-                      LabelInputWidget(
-                        title: routerCode,
-                        isRequired: true,
-                      ),
-                      BlocListener<WaysBloc, WaysState>(
-                        listener: (context, state) {
-                          if (state.waysStatus == WaysStatus.success) {
-                            if (state.ways != null && state.ways!.isNotEmpty) {
-                              ways = state.ways!;
-                            } else {
-                              ways = [];
-                            }
-                          }
-                          if (state.selectedWay!.id != null) {
-                            routerCodeController.text =
-                                state.selectedWay!.wayCode ?? '';
-                          }
-                        },
-                        child: DropdownInputCustomWidget(
-                          label: "Text Input 1",
-                          hint: routerCode,
-                          controller: routerCodeController,
-                          focusNode: routerCodeFocusNode,
-                          onTap: () => {
-                            showModalBottomSheet(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.surface,
-                              context: context,
-                              isScrollControlled: true,
-                              constraints: BoxConstraints(
-                                minWidth: MediaQuery.of(context).size.width,
-                              ),
-                              builder: (BuildContext context) {
-                                return DraggableScrollableSheet(
-                                  initialChildSize: 0.6,
-                                  minChildSize: 0.6,
-                                  maxChildSize: 0.8,
-                                  expand: false,
-                                  builder: (BuildContext context,
-                                      ScrollController scrollController) {
-                                    return CustomRouteBottomSheet(
-                                      scrollController: scrollController,
-                                      title: routerCode,
-                                      onClose: (String result) {
-                                        Navigator.pop(context);
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            ).then((onValue) {})
-                          },
+        body: RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: Theme.of(context).colorScheme.primary,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          displacement: 40.0,
+          strokeWidth: 3.0,
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.h, vertical: 12.h),
+                  child: Form(
+                    key: newFormKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TitleWidget(
+                          title: 'ที่ตั้งหน่วย',
+                          icon: Icons.location_on,
                         ),
-                      ),
-                      SizedBox(height: 12.w),
-                      LabelInputWidget(
-                        title: collaborative,
-                      ),
-                      BlocListener<CollaborativeBloc, CollaborativeState>(
-                        listener: (context, state) {
-                          if (state.collaborativeStatus ==
-                              CollaborativeStatus.success) {
-                            if (state.collaborative != null &&
-                                state.collaborative!.isNotEmpty) {
-                              collaborativeList = state.collaborative!;
-                            } else {
-                              collaborativeList = [];
+                        SizedBox(height: 12.w),
+                        buildLocationStatus(),
+                        LabelInputWidget(
+                          title: routerCode,
+                          isRequired: true,
+                        ),
+                        BlocListener<WaysBloc, WaysState>(
+                          listener: (context, state) {
+                            if (state.waysStatus == WaysStatus.success) {
+                              if (state.ways != null &&
+                                  state.ways!.isNotEmpty) {
+                                ways = state.ways!;
+                              } else {
+                                ways = [];
+                              }
                             }
-                          }
-                          if (state.isSelectedCollaborativeText != null) {
-                            collaborativeController.text =
-                                state.isSelectedCollaborativeText!;
-                          }
-                        },
-                        child: DropdownInputCustomWidget(
-                          label: "Text Input 1",
-                          hint: collaborative,
-                          controller: collaborativeController,
-                          onTap: () => {
-                            showModalBottomSheet(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.surface,
-                              context: context,
-                              isScrollControlled: true,
-                              constraints: BoxConstraints(
-                                minWidth: MediaQuery.of(context).size.width,
-                              ),
-                              builder: (BuildContext context) {
-                                double initialChildSize = 0.7;
-                                return StatefulBuilder(builder:
-                                    (BuildContext context,
-                                        StateSetter setModalState) {
+                            if (state.selectedWay!.id != null) {
+                              routerCodeController.text =
+                                  state.selectedWay!.wayCode ?? '';
+                            }
+                          },
+                          child: DropdownInputCustomWidget(
+                            label: "Text Input 1",
+                            hint: routerCode,
+                            controller: routerCodeController,
+                            focusNode: routerCodeFocusNode,
+                            onTap: () => {
+                              showModalBottomSheet(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.surface,
+                                context: context,
+                                isScrollControlled: true,
+                                constraints: BoxConstraints(
+                                  minWidth: MediaQuery.of(context).size.width,
+                                ),
+                                builder: (BuildContext context) {
                                   return DraggableScrollableSheet(
-                                    initialChildSize: initialChildSize,
-                                    minChildSize: 0.7,
-                                    maxChildSize: 0.9,
+                                    initialChildSize: 0.6,
+                                    minChildSize: 0.6,
+                                    maxChildSize: 0.8,
                                     expand: false,
                                     builder: (BuildContext context,
                                         ScrollController scrollController) {
-                                      return CollaborativeListWidget(
-                                        data_list: collaborativeList!,
+                                      return CustomRouteBottomSheet(
                                         scrollController: scrollController,
-                                        title: collaborative,
-                                        onClose: (result) {
-                                          Navigator.pop(context, result);
+                                        title: routerCode,
+                                        onClose: (String result) {
+                                          Navigator.pop(context);
                                         },
-                                        onSearchFocused: (isFocused) {},
                                       );
                                     },
                                   );
-                                });
-                              },
-                            ).then((onValue) {})
-                          },
+                                },
+                              ).then((onValue) {})
+                            },
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 12.w),
-                      BlocListener<WaysBloc, WaysState>(
-                        listener: (context, state) {
-                          if (state.wayDetailStatus ==
-                              WayDetailStatus.success) {
-                            nameRouterController.text =
-                                state.waysDetailRes!.subdistrict ?? '';
-                            addressController.text =
-                                state.waysDetailRes!.district ?? '';
-                          }
-                        },
-                        child: SizedBox.shrink(),
-                      ),
-                      LabelInputWidget(
-                        title: routeName,
-                      ),
-                      TextInputWidget(
-                        label: "Text Input 1",
-                        hint: routeName,
-                        controller: nameRouterController,
-                        isMultiLine: true,
-                        isDisable: true,
-                      ),
-                      SizedBox(height: 12.w),
-                      LabelInputWidget(
-                        title: routeAddress,
-                      ),
-                      TextInputWidget(
-                        label: "Text Input 2",
-                        hint: routeAddress,
-                        controller: addressController,
-                        isMultiLine: true,
-                        isDisable: true,
-                      ),
-                      SizedBox(height: 12.w),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                LabelInputWidget(
-                                  title: routeStart,
-                                  isRequired: true,
+                        SizedBox(height: 12.w),
+                        LabelInputWidget(
+                          title: collaborative,
+                        ),
+                        BlocListener<CollaborativeBloc, CollaborativeState>(
+                          listener: (context, state) {
+                            if (state.collaborativeStatus ==
+                                CollaborativeStatus.success) {
+                              if (state.collaborative != null &&
+                                  state.collaborative!.isNotEmpty) {
+                                collaborativeList = state.collaborative!;
+                              } else {
+                                collaborativeList = [];
+                              }
+                            }
+                            if (state.isSelectedCollaborativeText != null) {
+                              collaborativeController.text =
+                                  state.isSelectedCollaborativeText!;
+                            }
+                          },
+                          child: DropdownInputCustomWidget(
+                            label: "Text Input 1",
+                            hint: collaborative,
+                            controller: collaborativeController,
+                            onTap: () => {
+                              showModalBottomSheet(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.surface,
+                                context: context,
+                                isScrollControlled: true,
+                                constraints: BoxConstraints(
+                                  minWidth: MediaQuery.of(context).size.width,
                                 ),
-                                TextInputWidget(
-                                  label: "Text Input 1",
-                                  hint: routeStart,
-                                  controller: routeStartController,
-                                  focusNode: routeStartFocusNode,
-                                ),
-                              ],
+                                builder: (BuildContext context) {
+                                  double initialChildSize = 0.7;
+                                  return StatefulBuilder(builder:
+                                      (BuildContext context,
+                                          StateSetter setModalState) {
+                                    return DraggableScrollableSheet(
+                                      initialChildSize: initialChildSize,
+                                      minChildSize: 0.7,
+                                      maxChildSize: 0.9,
+                                      expand: false,
+                                      builder: (BuildContext context,
+                                          ScrollController scrollController) {
+                                        return CollaborativeListWidget(
+                                          data_list: collaborativeList!,
+                                          scrollController: scrollController,
+                                          title: collaborative,
+                                          onClose: (result) {
+                                            Navigator.pop(context, result);
+                                          },
+                                          onSearchFocused: (isFocused) {},
+                                        );
+                                      },
+                                    );
+                                  });
+                                },
+                              ).then((onValue) {})
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 12.w),
+                        BlocListener<WaysBloc, WaysState>(
+                          listener: (context, state) {
+                            if (state.wayDetailStatus ==
+                                WayDetailStatus.success) {
+                              nameRouterController.text =
+                                  state.waysDetailRes!.subdistrict ?? '';
+                              addressController.text =
+                                  state.waysDetailRes!.district ?? '';
+                            }
+                          },
+                          child: SizedBox.shrink(),
+                        ),
+                        LabelInputWidget(
+                          title: routeName,
+                        ),
+                        TextInputWidget(
+                          label: "Text Input 1",
+                          hint: routeName,
+                          controller: nameRouterController,
+                          isMultiLine: true,
+                          isDisable: true,
+                        ),
+                        SizedBox(height: 12.w),
+                        LabelInputWidget(
+                          title: routeAddress,
+                        ),
+                        TextInputWidget(
+                          label: "Text Input 2",
+                          hint: routeAddress,
+                          controller: addressController,
+                          isMultiLine: true,
+                          isDisable: true,
+                        ),
+                        SizedBox(height: 12.w),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LabelInputWidget(
+                                    title: routeStart,
+                                    isRequired: true,
+                                  ),
+                                  TextInputWidget(
+                                    label: "Text Input 1",
+                                    hint: routeStart,
+                                    controller: routeStartController,
+                                    focusNode: routeStartFocusNode,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 12.w,
-                          ),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                LabelInputWidget(
-                                  title: routeEnd,
-                                  isRequired: true,
-                                ),
-                                TextInputWidget(
-                                  label: "Text Input 1",
-                                  hint: routeEnd,
-                                  controller: routeEndController,
-                                  focusNode: routeEndFocusNode,
-                                ),
-                              ],
+                            SizedBox(
+                              width: 12.w,
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 18.w),
-                      TitleWidget(
-                        title: 'รูปการจัดตั้งหน่วยชั่ง',
-                        icon: Icons.photo_size_select_actual_outlined,
-                      ),
-                      SizedBox(height: 12.w),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          LabelInputWidget(
-                            title: '1. จัดจราจรตั้งหน่วยชั่ง',
-                            isRequired: true,
-                          ),
-                          _imageTraffic == null
-                              ? SizedBox.shrink()
-                              : IconButton(
-                                  onPressed: () {
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LabelInputWidget(
+                                    title: routeEnd,
+                                    isRequired: true,
+                                  ),
+                                  TextInputWidget(
+                                    label: "Text Input 1",
+                                    hint: routeEnd,
+                                    controller: routeEndController,
+                                    focusNode: routeEndFocusNode,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 18.w),
+                        TitleWidget(
+                          title: 'รูปการจัดตั้งหน่วยชั่ง',
+                          icon: Icons.photo_size_select_actual_outlined,
+                        ),
+                        SizedBox(height: 12.w),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            LabelInputWidget(
+                              title: '1. จัดจราจรตั้งหน่วยชั่ง',
+                              isRequired: true,
+                            ),
+                            _imageTraffic == null
+                                ? SizedBox.shrink()
+                                : IconButton(
+                                    onPressed: () {
+                                      select_photo_bottom_sheet(
+                                        context,
+                                        () {
+                                          _pickImageTraffic(ImageSource.camera);
+                                          Navigator.pop(context);
+                                        },
+                                        () {
+                                          _pickImageTraffic(
+                                              ImageSource.gallery);
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.add_photo_alternate,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      size: 22.h,
+                                    ),
+                                  )
+                          ],
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(8.h),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.r),
+                              border: Border.all(
+                                color: isValidateImageTraffic == false
+                                    ? ColorApps.grayBorder
+                                    : Theme.of(context).colorScheme.error,
+                                width: 1,
+                              )),
+                          height: 130.h,
+                          width: double.infinity,
+                          child: _imageTraffic == null
+                              ? InkWell(
+                                  onTap: () {
                                     select_photo_bottom_sheet(
                                       context,
                                       () {
@@ -772,89 +921,91 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                       },
                                     );
                                   },
-                                  icon: Icon(
-                                    Icons.add_photo_alternate,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    size: 22.h,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.add),
+                                      Text(
+                                        'อัปโหลดรูป',
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyle.title16bold(),
+                                      )
+                                    ],
                                   ),
                                 )
-                        ],
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(8.h),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(
-                              color: isValidateImageTraffic == false
-                                  ? ColorApps.grayBorder
-                                  : Theme.of(context).colorScheme.error,
-                              width: 1,
-                            )),
-                        height: 130.h,
-                        width: double.infinity,
-                        child: _imageTraffic == null
-                            ? InkWell(
-                                onTap: () {
-                                  select_photo_bottom_sheet(
-                                    context,
-                                    () {
-                                      _pickImageTraffic(ImageSource.camera);
-                                      Navigator.pop(context);
-                                    },
-                                    () {
-                                      _pickImageTraffic(ImageSource.gallery);
-                                      Navigator.pop(context);
-                                    },
-                                  );
-                                },
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.add),
-                                    Text(
-                                      'อัปโหลดรูป',
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyle.title16bold(),
-                                    )
-                                  ],
-                                ),
-                              )
-                            : GestureDetector(
-                                onTap: () {
-                                  showPreviewImage(context, _imageTraffic!);
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  child: Image.file(
-                                    _imageTraffic!,
-                                    fit: BoxFit.cover,
+                              : GestureDetector(
+                                  onTap: () {
+                                    showPreviewImage(context, _imageTraffic!);
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    child: Image.file(
+                                      _imageTraffic!,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
+                        ),
+                        isValidateImageTraffic == false
+                            ? SizedBox.shrink()
+                            : Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'กรุณา อัปโหลดรูป',
+                                  style: AppTextStyle.label12bold(
+                                      color:
+                                          Theme.of(context).colorScheme.error),
+                                ),
                               ),
-                      ),
-                      isValidateImageTraffic == false
-                          ? SizedBox.shrink()
-                          : Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'กรุณา อัปโหลดรูป',
-                                style: AppTextStyle.label12bold(
-                                    color: Theme.of(context).colorScheme.error),
-                              ),
+                        SizedBox(height: 12.w),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            LabelInputWidget(
+                              title: '2. เจ้าหน้าที่ร่วมตั้งหน่วยชั่ง',
+                              isRequired: true,
                             ),
-                      SizedBox(height: 12.w),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          LabelInputWidget(
-                            title: '2. เจ้าหน้าที่ร่วมตั้งหน่วยชั่ง',
-                            isRequired: true,
-                          ),
-                          _imageOfficer == null
-                              ? SizedBox.shrink()
-                              : IconButton(
-                                  onPressed: () {
+                            _imageOfficer == null
+                                ? SizedBox.shrink()
+                                : IconButton(
+                                    onPressed: () {
+                                      select_photo_bottom_sheet(
+                                        context,
+                                        () {
+                                          _pickImageOfficer(ImageSource.camera);
+                                          Navigator.pop(context);
+                                        },
+                                        () {
+                                          _pickImageOfficer(
+                                              ImageSource.gallery);
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.add_photo_alternate,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      size: 22.h,
+                                    ),
+                                  ),
+                          ],
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(8.h),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.r),
+                              border: Border.all(
+                                color: isValidateImageOfficer == false
+                                    ? ColorApps.grayBorder
+                                    : Theme.of(context).colorScheme.error,
+                                width: 1,
+                              )),
+                          height: 130.h,
+                          width: double.infinity,
+                          child: _imageOfficer == null
+                              ? InkWell(
+                                  onTap: () {
                                     select_photo_bottom_sheet(
                                       context,
                                       () {
@@ -867,154 +1018,121 @@ class _CreateWeightUnitScreenState extends State<CreateWeightUnitScreen> {
                                       },
                                     );
                                   },
-                                  icon: Icon(
-                                    Icons.add_photo_alternate,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    size: 22.h,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.add),
+                                      Text(
+                                        'อัปโหลดรูป',
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyle.title16bold(),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    showPreviewImage(context, _imageOfficer!);
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    child: Image.file(
+                                      _imageOfficer!,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
-                        ],
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(8.h),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(
-                              color: isValidateImageOfficer == false
-                                  ? ColorApps.grayBorder
-                                  : Theme.of(context).colorScheme.error,
-                              width: 1,
-                            )),
-                        height: 130.h,
-                        width: double.infinity,
-                        child: _imageOfficer == null
-                            ? InkWell(
-                                onTap: () {
-                                  select_photo_bottom_sheet(
-                                    context,
-                                    () {
-                                      _pickImageOfficer(ImageSource.camera);
-                                      Navigator.pop(context);
-                                    },
-                                    () {
-                                      _pickImageOfficer(ImageSource.gallery);
-                                      Navigator.pop(context);
-                                    },
-                                  );
-                                },
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.add),
-                                    Text(
-                                      'อัปโหลดรูป',
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyle.title16bold(),
-                                    )
-                                  ],
-                                ),
-                              )
-                            : GestureDetector(
-                                onTap: () {
-                                  showPreviewImage(context, _imageOfficer!);
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  child: Image.file(
-                                    _imageOfficer!,
-                                    fit: BoxFit.cover,
-                                  ),
+                        ),
+                        isValidateImageOfficer == false
+                            ? SizedBox.shrink()
+                            : Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'กรุณา อัปโหลดรูป',
+                                  style: AppTextStyle.label12bold(
+                                      color:
+                                          Theme.of(context).colorScheme.error),
                                 ),
                               ),
-                      ),
-                      isValidateImageOfficer == false
-                          ? SizedBox.shrink()
-                          : Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'กรุณา อัปโหลดรูป',
-                                style: AppTextStyle.label12bold(
-                                    color: Theme.of(context).colorScheme.error),
-                              ),
-                            ),
-                      SizedBox(height: 22.w),
-                      CustomeButton(
-                        text: 'จัดตั้งหน่วย',
-                        onPressed: newValidateForm,
-                      ),
-                      BlocListener<EstablishBloc, EstablishState>(
-                        listenWhen: (previous, current) =>
-                            previous.createEstablishStatus !=
-                            current.createEstablishStatus,
-                        listener: (context, state) {
-                          if (state.createEstablishStatus ==
-                              CreateEstablishStatus.loading) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              CustomLoading.showLoadingDialog(context,
-                                  Theme.of(context).colorScheme.primary);
-                            });
-                          }
-
-                          if (state.createEstablishStatus ==
-                              CreateEstablishStatus.success) {
-                            createUnitSuccess();
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SuccessScreen(
-                                  icon:
-                                      'assets/svg/ant-design_check-circle-filled.svg',
-                                  titleBT: 'ไปยังหน่วย',
-                                  title: 'ตั้งหน่วยสำเร็จ',
-                                  message: 'สามารถเริ่มการเข้าชั่งน้ำหนัก',
-                                  onConfirm: () {
-                                    GetWeightUnitsIsJoinEventBloc();
-                                    getWeightUnitAll();
-                                    Routes.gotoWeightUnitDetailsScreen(
-                                        context,
-                                        context
-                                            .read<EstablishBloc>()
-                                            .state
-                                            .createEstablishUnit!
-                                            .tId
-                                            .toString());
-                                  },
-                                  onCancel: () {
-                                    GetWeightUnitsIsJoinEventBloc();
-                                    getWeightUnitAll();
-                                    Navigator.popUntil(
-                                        context, (route) => route.isFirst);
-                                  },
-                                ),
-                              ),
-                            );
-                          }
-
-                          if (state.createEstablishStatus ==
-                              CreateEstablishStatus.error) {
-                            if (mounted && Navigator.canPop(context)) {
-                              Navigator.pop(context);
-                            }
-                            if (mounted &&
-                                state.createEstablishError != null &&
-                                state.createEstablishError!.isNotEmpty) {
+                        SizedBox(height: 22.w),
+                        CustomeButton(
+                          text: 'จัดตั้งหน่วย',
+                          onPressed: newValidateForm,
+                        ),
+                        BlocListener<EstablishBloc, EstablishState>(
+                          listenWhen: (previous, current) =>
+                              previous.createEstablishStatus !=
+                              current.createEstablishStatus,
+                          listener: (context, state) {
+                            if (state.createEstablishStatus ==
+                                CreateEstablishStatus.loading) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                showSnackbarBottom(
-                                    context, state.createEstablishError!);
+                                CustomLoading.showLoadingDialog(context,
+                                    Theme.of(context).colorScheme.primary);
                               });
                             }
-                          }
-                        },
-                        child: SizedBox(height: 22.w),
-                      ),
-                    ],
+
+                            if (state.createEstablishStatus ==
+                                CreateEstablishStatus.success) {
+                              createUnitSuccess();
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SuccessScreen(
+                                    icon:
+                                        'assets/svg/ant-design_check-circle-filled.svg',
+                                    titleBT: 'ไปยังหน่วย',
+                                    title: 'ตั้งหน่วยสำเร็จ',
+                                    message: 'สามารถเริ่มการเข้าชั่งน้ำหนัก',
+                                    onConfirm: () {
+                                      GetWeightUnitsIsJoinEventBloc();
+                                      getWeightUnitAll();
+                                      Routes.gotoWeightUnitDetailsScreen(
+                                          context,
+                                          context
+                                              .read<EstablishBloc>()
+                                              .state
+                                              .createEstablishUnit!
+                                              .tId
+                                              .toString());
+                                    },
+                                    onCancel: () {
+                                      GetWeightUnitsIsJoinEventBloc();
+                                      getWeightUnitAll();
+                                      Navigator.popUntil(
+                                          context, (route) => route.isFirst);
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+
+                            if (state.createEstablishStatus ==
+                                CreateEstablishStatus.error) {
+                              if (mounted && Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                              if (mounted &&
+                                  state.createEstablishError != null &&
+                                  state.createEstablishError!.isNotEmpty) {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  showSnackbarBottom(
+                                      context, state.createEstablishError!);
+                                });
+                              }
+                            }
+                          },
+                          child: SizedBox(height: 22.w),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
